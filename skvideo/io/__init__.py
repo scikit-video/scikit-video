@@ -2,11 +2,14 @@
 
 """
 
+
+from .ffmpeg import *
 from ._io import *
 
 __all__ = [
     'vread',
-    'vread_generator',
-    'vopen',
-    'vsave'
+    'vreader',
+    'vwrite'
+    'vwriter'
+    'FFmpegReader'
 ]
