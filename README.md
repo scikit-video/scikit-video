@@ -70,6 +70,4 @@ After installation, you can launch the test suite from outside the source direct
 
 $ nosetests2 -v skvideo
 
-##Copyright 2015 scikit-video developers
-
-* Todd Goodall
+Copyright 2015 Todd Goodall
