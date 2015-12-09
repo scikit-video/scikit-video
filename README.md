@@ -15,7 +15,6 @@ This project is available under the BSD.
 - python2
 - numpy
 - scipy
-- (optional) pygame, matplotlib for plotting video frames
 
 ##Installation:
 
