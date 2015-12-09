@@ -14,7 +14,7 @@ skvideo.io.vread_generator          0.469693 seconds
 
 """
 # Author: Todd Goodall <tgoodall@utexas.edu>
-# License: BSD 3 clause
+# License: BSD clause
 
 import os
 from time import time
