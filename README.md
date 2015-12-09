@@ -11,7 +11,7 @@ This project is available under the BSD.
 
 ##Dependencies:
 
-- libav - https://libav.org/download/
+- At least one of {ffmpeg, libav}
 - python2
 - numpy
 - scipy
@@ -19,7 +19,7 @@ This project is available under the BSD.
 
 ##Installation:
 
-Clone the skvideo repository, run
+Clone the scikit-video repository, run
 
 `python2 setup.py build`
 
