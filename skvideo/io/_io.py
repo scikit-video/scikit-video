@@ -1,19 +1,12 @@
 import numpy as np
 import subprocess
 import os
+from .ffmpeg import FFmpegReader
+from .ffmpeg import FFmpegWriter
 
-def _videoreader():
-    pass
+defaultplugin = "ffmpeg"
 
-def _videowriter():
-    pass
-
-class vopen:
-    def __init__():
-        pass
-
-
-def vsave(fname, data, **plugin_args):
+def vwrite(fname, data, **plugin_args):
     """Save a video to file entirely from memory.
 
     Parameters
@@ -36,25 +29,29 @@ def vsave(fname, data, **plugin_args):
         Passed to the given plugin.
 
     """
+    global defaultplugin
+
     data = np.array(data)
     # check that the appropriate data size was passed
     if len(data.shape) != 4:
         raise ValueError, "Passed data does not have 4 dimensions"
 
     T, M, N, C = data.shape
-    height = M
-    width = N
     fps = 30
-    fourcc = "XVID"
+
+    if "plugin" in plugin_args:
+        defaultplugin = plugin_args["plugin"]
+
     if "fps" in plugin_args:
         fps = plugin_args["fps"]
-    if "fourcc" in plugin_args:
-        fourcc = plugin_args["XVID"]
 
-    wr = vopen(fname, fourcc, fps, frameSize=(width, height))
-    for t in xrange(T):
-        wr.write(data[t, :, :, :])
-    wr.close()
+    if defaultplugin == "ffmpeg":
+        writer = FFmpegWriter(fname, (T, M, N, C))
+        for t in xrange(T):
+            writer.writeFrame(data[t, :, :, :])
+        writer.close()
+    else:
+        raise NotImplemented
 
 
 def vread(fname, **plugin_args):
@@ -76,24 +73,32 @@ def vread(fname, **plugin_args):
         Passed to the given plugin.
 
     """
-    rd = 0
-    if "width" in plugin_args and "height" in plugin_args:
-        rd = _videoreader(fname, width=plugin_args["width"], height=plugin_arg["height"])
+    global defaultplugin
+
+    if "plugin" in plugin_args:
+        defaultplugin = plugin_args["plugin"]
+
+    if defaultplugin == "ffmpeg":
+        width = 0
+        if "width" in plugin_args:
+            width = plugin_args["width"]
+
+        height = 0
+        if "height" in plugin_args:
+            height = plugin_args["height"]
+
+        reader = FFmpegReader(fname)
+        T, M, N, C = reader.getShape()
+
+        videodata = np.zeros((T, M, N, C), dtype=np.uint8)
+        for idx, frame in enumerate(reader.nextFrame()):
+            videodata[idx, :, :, :] = frame 
+        return videodata
+
     else:
-        rd = _videoreader(fname)
+        raise NotImplemented
 
-    # allocate video memory if possible
-    videodata = np.zeros((rd.src_numframes, rd.src_height, rd.src_width, rd.depth), dtype=np.uint8)
-    # check on the video data
-    rd.open()
-    for i in xrange(rd.src_numframes):
-        retval, image1 = rd.read()
-        assert retval
-        videodata[i, :, :, :] = image1
-    rd.close()
-    return videodata
-
-def vread_generator(fname, **plugin_args):
+def vreader(fname, **plugin_args):
     """Load a video through the use of a generator. 
 
     Parameters
@@ -103,25 +108,29 @@ def vread_generator(fname, **plugin_args):
 
     Returns
     -------
-    vid_gen: generator
-        returns image frames
-
-    Other parameters
+    vid_gen: generator returns image frames Other parameters
     ----------------
     plugin_args : keywords
         Passed to the given plugin.
 
     """
-    rd = 0
-    if "width" in plugin_args and "height" in plugin_args:
-        rd = _videoreader(fname, width=plugin_args["width"], height=plugin_arg["height"])
-    else:
-        rd = _videoreader(fname)
+    global defaultplugin
 
-    # check on the video data
-    rd.open()
-    for i in xrange(rd.src_numframes):
-        retval, image1 = rd.read()
-        assert retval
-        yield image1
-    rd.close()
+    if "plugin" in plugin_args:
+        defaultplugin = plugin_args["plugin"]
+
+    if defaultplugin == "ffmpeg":
+        width = 0
+        if "width" in plugin_args:
+            width = plugin_args["width"]
+
+        height = 0
+        if "height" in plugin_args:
+            height = plugin_args["height"]
+
+        reader = FFmpegReader(fname)
+        for frame in reader.nextFrame():
+            yield frame
+
+    else:
+        raise NotImplemented
