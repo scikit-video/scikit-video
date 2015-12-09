@@ -3,10 +3,6 @@ scikit-video
 
 ##Video Processing SciKit
 
-Based on the initial scikit-video project at https://github.com/aizvorski/scikit-video, 
-this fork borrows coding styles and conventions from 
-scikit-image and scikit-learn for practical concerns.
-
 Borrowing coding styles and conventions from scikit-image and scikit-learn,
 scikit-video is a Python module for video processing built on top of 
 SciPy, Numpy, and libav. 
