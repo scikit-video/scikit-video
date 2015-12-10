@@ -8,6 +8,15 @@
 
 # setup ffmpeg dir
 export PATH="$HOME/ffmpeg_install:$HOME/ffmpeg_install/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavcodec:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavdevice:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavfilter:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavformat:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavresample:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libavutil:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libpostproc:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libswresample:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/ffmpeg_install/libswscale:$LD_LIBRARY_PATH"
 
 echo "which ffmpeg is used:"
 which ffmpeg
