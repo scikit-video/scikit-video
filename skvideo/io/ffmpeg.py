@@ -95,7 +95,7 @@ class FFmpegReader():
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=sp.PIPE)
+                                  stdout=sp.PIPE, stderr=None)
 
     def getShape(self):
         return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
