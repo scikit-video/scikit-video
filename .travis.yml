@@ -32,7 +32,8 @@ env:
 before_install:
     # Build ffmpeg (the real ffmpeg, not libav)
   - wget --no-check-certificate http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 || exit 1
-  - tar -xzf ffmpeg-snapshot.tar.bz2
+  - tar xjf ffmpeg-snapshot.tar.bz2
+  - ls
   - cd ffmpeg
   - echo ./configure
   - ./configure --disable-static --enable-shared --disable-doc --prefix="ffmpeg" || exit 2
