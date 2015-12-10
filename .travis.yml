@@ -21,6 +21,7 @@ addons:
       - python-numpy
       - ffmpeg
       - mediainfo
+      - g++-4.9
 
 env:
   matrix:
@@ -28,6 +29,20 @@ env:
     # versions of numpy, scipy with ATLAS that comes with Ubuntu Precise 12.04
     - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true"
       CYTHON_VERSION="0.23.4" NAME="ubuntu"
+before_install:
+    # Build ffmpeg (the real ffmpeg, not libav)
+  - wget --no-check-certificate http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 || exit 1
+  - tar -xzf $PYAV_LIBRARY_SLUG.tar.gz
+  - cd ffmpeg
+  - echo ./configure
+  - ./configure --disable-static --enable-shared --disable-doc --prefix="ffmpeg" || exit 2
+  - echo make
+  - make -j4 || exit 3
+  - echo make install
+  - make install || exit 4
+  - cd ~
+  - find "ffmpeg" -name '*libav*'
+
 install: source continuous_integration/install.sh
 script: bash continuous_integration/test_script.sh
 after_success:
