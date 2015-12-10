@@ -1,5 +1,9 @@
+
+
 scikit-video
 ============
+
+[![Travis](https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master)](https://travis-ci.org/scikit-video/scikit-video)
 
 ##Video Processing SciKit
 
