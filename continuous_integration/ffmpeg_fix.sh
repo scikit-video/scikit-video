@@ -8,4 +8,4 @@ echo make
 make -j4 || exit 3
 echo make install
 make install || exit 4
-cd $GIT_TRAVIS_REPO
+cd $TRAVIS_BUILD_DIR
