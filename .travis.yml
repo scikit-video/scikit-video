@@ -49,7 +49,7 @@ before_install:
   - source continuous_integration/ffmpeg_fix.sh
 
 install: 
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage coveralls
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage
   - GIT_TRAVIS_REPO=$(pwd)
   - echo $GIT_TRAVIS_REPO
   - cd $HOME
