@@ -6,6 +6,7 @@ echo ./configure
 ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/ffmpeg" || exit 2
 echo make
 make -j4 || exit 3
-echo make install
-make install || exit 4
+# waste of time, just fix the paths
+# echo make install
+# make install || exit 4
 cd $TRAVIS_BUILD_DIR

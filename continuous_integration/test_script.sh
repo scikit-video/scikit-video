@@ -42,5 +42,5 @@ fi
 ls
 
 # Test doc
-cd $HOME/skvideo_build_$NAME/scikit-video
-make test-doc test-sphinxext
+# cd $HOME/skvideo_build_$NAME/scikit-video
+# make test-doc test-sphinxext
