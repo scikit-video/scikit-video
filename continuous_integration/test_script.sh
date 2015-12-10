@@ -7,7 +7,10 @@
 # License: 3-clause BSD
 
 # setup ffmpeg dir
-export PATH="~/ffmpeg_install/bin:$PATH"
+export PATH="$HOME/ffmpeg_install:$HOME/ffmpeg_install/bin:$PATH"
+
+echo "which ffmpeg is used:"
+which ffmpeg
 
 set -e
 
