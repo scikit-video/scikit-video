@@ -37,7 +37,8 @@ def MProbe(filename):
     command = ["mediainfo", "-f", "--Output=XML", filename]
 
     # simply get std output
-    xml = sp.check_output(command)
+    #xml = sp.check_output(command)
+    xml = check_output(command)
 
     d = xmltodictparser(xml)#, process_namespaces=True)
 

@@ -25,7 +25,7 @@ python -c "import numpy; print('numpy %s' % numpy.__version__)"
 python -c "import scipy; print('scipy %s' % scipy.__version__)"
 
 if [[ "$COVERAGE" == "true" ]]; then
-    nosetests -v --with-coverage skvideo
+    nosetests -v --with-coverage --cover-package=skvideo  skvideo
 else
     nosetests -v skvideo
 fi
