@@ -1,13 +1,11 @@
 language: python
 python:
-    - "2.5"
-    - "2.6"
-    - "2.7"
+    - "2.6_with_system_site_packages"
+    - "2.7_with_system_site_packages"
 
 # command to install dependencies
 install: 
-    - pip install numpy
-    - pip install scipy
+    - "pip install -r requirements.txt"
 # # command to run tests
 before_script: "sudo aptitude -y -q install ffmpeg mediainfo"
-script: nosetests
+script: nosetests2 -v skvideo
