@@ -31,6 +31,7 @@ env:
       CYTHON_VERSION="0.23.4" NAME="ubuntu"
 before_install:
     # Build ffmpeg (the real ffmpeg, not libav)
+  - cd ..
   - wget --no-check-certificate http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 || exit 1
   - tar xjf ffmpeg-snapshot.tar.bz2
   - cd ffmpeg
@@ -43,6 +44,7 @@ before_install:
   - echo make install
   - make install || exit 4
   - cd ..
+  - cd scikit-video
 
 install: source continuous_integration/install.sh
 script: bash continuous_integration/test_script.sh
