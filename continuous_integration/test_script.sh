@@ -17,8 +17,8 @@ set -e
 
 # Get into a temp directory to run test from the installed scikit learn and
 # check if we do not leave artifacts
-mkdir -p /tmp/skvideo_tmp
-cd /tmp/skvideo_tmp
+# mkdir -p /tmp/skvideo_tmp
+# cd /tmp/skvideo_tmp
 
 python --version
 python -c "import numpy; print('numpy %s' % numpy.__version__)"
