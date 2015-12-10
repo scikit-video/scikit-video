@@ -28,10 +28,10 @@ env:
     - FFMPEG=2.7
 
 before_install: 
-  - mkdir $HOME/skvideo_build_ubuntu
-  - mkdir $HOME/.cache/pip
-  - mkdir $HOME/download
-  - mkdir $HOME/builds
+  - mkdir $HOME/skvideo_build_ubuntu || echo "Already exists."
+  - mkdir $HOME/.cache/pip || echo "Already exists."
+  - mkdir $HOME/download || echo "Already exists."
+  - mkdir $HOME/builds || echo "Already exists."
   - cd $HOME/download
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
