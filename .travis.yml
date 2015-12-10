@@ -35,13 +35,15 @@ before_install:
   - tar xjf ffmpeg-snapshot.tar.bz2
   - cd ffmpeg
   - echo ./configure
-  - ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="ffmpeg" || exit 2
+  - mkdir ~/ffmpeg_install 
+  - echo ./configure
+  - ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="~/ffmpeg_install" || exit 2
   - echo make
   - make -j4 || exit 3
   - echo make install
   - make install || exit 4
   - cd ~
-  - find "ffmpeg" -name '*libav*'
+  - find "ffmpeg_install" -name '*libav*'
 
 install: source continuous_integration/install.sh
 script: bash continuous_integration/test_script.sh

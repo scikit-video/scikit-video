@@ -6,6 +6,9 @@
 
 # License: 3-clause BSD
 
+# setup ffmpeg dir
+export PATH="~/ffmpeg_install/bin:$PATH"
+
 set -e
 
 # Get into a temp directory to run test from the installed scikit learn and
