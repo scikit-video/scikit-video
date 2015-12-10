@@ -12,16 +12,15 @@ cache:
   - $HOME/skvideo_build_ubuntu
   - $HOME/.cache/pip
   - $HOME/download
+  - $HOME/ffmpeg_install
 addons:
   apt:
     packages:
-      - libatlas3gf-base
       - libatlas-dev
       - python-scipy
       - python-numpy
       - ffmpeg
       - mediainfo
-      - g++-4.9
 
 env:
   matrix:
@@ -29,23 +28,7 @@ env:
     # versions of numpy, scipy with ATLAS that comes with Ubuntu Precise 12.04
     - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true"
       CYTHON_VERSION="0.23.4" NAME="ubuntu"
-before_install:
-    # Build ffmpeg (the real ffmpeg, not libav)
-  - cd ..
-  - wget --no-check-certificate http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 || exit 1
-  - tar xjf ffmpeg-snapshot.tar.bz2
-  - cd ffmpeg
-  - echo ./configure
-  - mkdir ~/ffmpeg_install 
-  - echo ./configure
-  - ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="~/ffmpeg_install" || exit 2
-  - echo make
-  - make -j4 || exit 3
-  - echo make install
-  - make install || exit 4
-  - cd ..
-  - cd scikit-video
-
+before_install: source continuous_integration/install.sh
 install: source continuous_integration/install.sh
 script: bash continuous_integration/test_script.sh
 after_success:
