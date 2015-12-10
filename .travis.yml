@@ -13,11 +13,6 @@ cache:
   apt: true
   # We use three different cache directory
   # to work around a Travis bug with multi-platform cache
-  directories:
-  - $HOME/skvideo_build_ubuntu
-  - $HOME/.cache/pip
-  - $HOME/download
-  - $HOME/builds
 addons:
   apt:
     packages:
@@ -27,12 +22,16 @@ addons:
 
 env:
   global:
-   - COVERAGE="true"
+    - COVERAGE="true"
   matrix:
     # Primary targets.
-   - FFMPEG=2.7
+    - FFMPEG=2.7
 
 before_install: 
+  - mkdir $HOME/skvideo_build_ubuntu
+  - mkdir $HOME/.cache/pip
+  - mkdir $HOME/download
+  - mkdir $HOME/builds
   - cd $HOME/download
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
