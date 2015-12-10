@@ -6,17 +6,9 @@
 
 # License: 3-clause BSD
 
-# setup ffmpeg dir
-export PATH="$HOME/ffmpeg:$HOME/ffmpeg/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavcodec:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavdevice:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavfilter:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavformat:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavresample:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libavutil:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libpostproc:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libswresample:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$HOME/ffmpeg/libswscale:$LD_LIBRARY_PATH"
+# setup installed library paths
+export PATH="$HOME/builds/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/builds/lib:$LD_LIBRARY_PATH"
 
 echo "which ffmpeg is used:"
 which ffmpeg
