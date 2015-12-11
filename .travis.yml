@@ -1,0 +1,83 @@
+# make it explicit that we favor the new container-based travis workers
+language: python
+
+python:
+  - 2.7
+  - 2.6
+    #  - 3.3
+
+notifications:
+  email: true
+
+# Pre-install packages for the ubuntu distribution
+cache:
+  apt: true
+  # We use three different cache directory
+  # to work around a Travis bug with multi-platform cache
+addons:
+  apt:
+    packages:
+      - libatlas-dev
+      - ffmpeg # wrong version (libav), installed only for dependencies that come with it
+      - mediainfo
+
+env:
+  global:
+    - COVERAGE="true"
+  matrix:
+    # Primary targets.
+    - FFMPEG=1.0
+    - FFMPEG=1.2
+    - FFMPEG=2.0
+    - FFMPEG=2.2
+    - FFMPEG=2.4
+    - FFMPEG=2.6
+    - FFMPEG=2.8
+    - FFMPEG=snapshot
+
+before_install: 
+  - mkdir $HOME/skvideo_build_ubuntu || echo "Already exists."
+  - mkdir $HOME/.cache/pip || echo "Already exists."
+  - mkdir $HOME/download || echo "Already exists."
+  - mkdir $HOME/builds || echo "Already exists."
+  - cd $HOME/download
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH="$HOME/miniconda/bin:$HOME/miniconda2/bin:$HOME/miniconda3/bin:$PATH"
+  - cd $TRAVIS_BUILD_DIR
+  - conda update --yes conda
+  - conda create --yes -n condaenv python=$TRAVIS_PYTHON_VERSION
+  - conda install --yes -n condaenv pip
+  - source activate condaenv
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+  - python --version
+  - source scripts/ffmpeg_fix.sh
+
+install: 
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage
+  - GIT_TRAVIS_REPO=$(pwd)
+  - echo $GIT_TRAVIS_REPO
+  - cd $HOME
+  - if [ ! -d "skvideo_build_$NAME" ]; then  mkdir skvideo_build_$NAME; fi
+  - rsync -av --exclude='.git/' --exclude='testvenv/' $GIT_TRAVIS_REPO skvideo_build_${NAME}
+  - cd skvideo_build_${NAME}/scikit-video
+  - python --version
+  - python -c "import numpy; print('numpy %s' % numpy.__version__)"
+  - python -c "import scipy; print('scipy %s' % scipy.__version__)"
+script: 
+  - bash scripts/test_script.sh
+after_success:
+  # Ignore coveralls failures as the coveralls server is not very reliable
+  # but we don't want travis to report a failure in the github UI just
+  # because the coverage report failed to be published.
+  - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+notifications:
+  webhooks:
+      #urls:
+      #- https://webhooks.gitter.im/e/4ffabb4df010b70cd624
+    on_success: change  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: never     # options: [always|never|change] default: always

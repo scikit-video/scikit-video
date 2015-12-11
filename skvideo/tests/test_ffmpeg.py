@@ -7,7 +7,7 @@ import skvideo.datasets
 import inspect
 
 def test_FFmpegReader():
-    reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny())
+    reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), verbosity=1)
     
     t = 0
     h = 0

@@ -95,7 +95,7 @@ class FFmpegReader():
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=sp.PIPE)
+                                  stdout=sp.PIPE, stderr=None)
 
     def getShape(self):
         return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
@@ -130,7 +130,6 @@ class FFmpegReader():
         try:
             # Read framesize bytes
             s = read_n_bytes(self._proc.stdout, framesize)
-            print len(s), framesize
             # Check
             assert len(s) == framesize
         except Exception as err:

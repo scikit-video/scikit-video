@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 descr = """\
-Includes common video processing routines and techniques. 
-Also handles multiple video and I/O.  
+This library provides easy access to common as well as
+state-of-the-art video processing routines. 
 
 """
 
@@ -16,10 +16,16 @@ DOWNLOAD_URL        = URL
 PACKAGE_NAME        = 'skvideo'
 EXTRA_INFO          = dict(
     install_requires=['numpy', 'scipy'],
-    classifiers=['Development Status :: 1 - Planning',
+    classifiers=['Development Status :: 3 - Alpha',
                  'Intended Audience :: Developers',
                  'Intended Audience :: Science/Research',
                  'License :: OSI Approved :: BSD License',
+                 'Operating System :: POSIX :: Linux',
+                 'Operating System :: MacOS',
+                 'Operating System :: Microsoft :: Windows',
+                 'Programming Language :: Python :: 2.6'
+                 'Programming Language :: Python :: 2.7'
+                 'Topic :: Multimedia :: Video',
                  'Topic :: Scientific/Engineering']
 )
 

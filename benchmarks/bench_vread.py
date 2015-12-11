@@ -10,7 +10,7 @@ Output:
 Mean performance on loading 3 test videos:
 ------------------------------------------------------------
 skvideo.io.vread                    0.812771 seconds
-skvideo.io.vread_generator          0.469693 seconds
+skvideo.io.vreader          0.469693 seconds
 
 """
 # Author: Todd Goodall <tgoodall@utexas.edu>
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         # next test the speed at which the frame generator works
         time_start = time()
         for vnames in videos:
-            vobj = skvideo.io.vread_generator(vnames) 
+            vobj = skvideo.io.vreader(vnames) 
             for frame in vobj:
                 pass
         time_end = time()
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     print("Mean performance on loading %d test videos:" % (len(videos),))
     print("-" * 60)
     print("%s %f seconds" % ("skvideo.io.vread".ljust(35), np.mean(vread_times)))
-    print("%s %f seconds" % ("skvideo.io.vread_generator".ljust(35), np.mean(vread_generator_times)))
+    print("%s %f seconds" % ("skvideo.io.vreader".ljust(35), np.mean(vread_generator_times)))
     print("")
