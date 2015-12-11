@@ -9,17 +9,19 @@ scikit-video
 
 Borrowing coding styles and conventions from scikit-image and scikit-learn,
 scikit-video is a Python module for video processing built on top of 
-scipy, numpy, ffmpeg, mediainfo, and libav.
+scipy, numpy, ffmpeg, and mediainfo.
 
-This project is available under the BSD.
+This project is distributed under the 3-clause BSD.
 
 ##Dependencies:
 
-- ffmpeg
-- mediainfo
-- python2
-- numpy
-- scipy
+Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. Listed below are the minimum versions tested:
+
+- ffmpeg (version >= 1.0)
+- mediainfo (version >= 0.7.52)
+- python2 (2.6 or 2.7)
+- numpy (version >= 1.9.2)
+- scipy (version >= 0.16.0)
 
 ##Installation:
 
@@ -74,4 +76,4 @@ After installation, you can launch the test suite from outside the source direct
 
 $ nosetests2 -v skvideo
 
-Copyright 2015 Todd Goodall
+Copyright &copy; 2015 Todd Goodall. Special thanks to Martín Blech for xmltodict, the authors of pymediaprobe, and the developers behind imageio and pyav for releasing under BSD licenses.
