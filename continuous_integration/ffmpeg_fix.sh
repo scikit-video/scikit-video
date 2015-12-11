@@ -2,10 +2,10 @@ cd $HOME/download
 wget --no-check-certificate "http://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.bz2" || exit 1
 tar xjf "ffmpeg-$FFMPEG.tar.bz2"
 
-if [[ "$FFMPEG" == "snapshot" ]]; then 
-    cd "ffmpeg-$FFMPEG"; 
-else
+if [[ $FFMPEG == "snapshot" ]]; then 
     cd "ffmpeg";
+else
+    cd "ffmpeg-$FFMPEG"; 
 fi
 
 echo ./configure
