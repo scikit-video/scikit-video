@@ -61,9 +61,12 @@ then
 
 
 ##TODO:
-- Introduce quality metrics
-- Introduce motion estimation code library
-- Introduce temporal filtering helper functions and a library of window functions
+- Video Quality Assessment metrics
+- Motion estimation code library
+- Temporal filtering helper functions
+- MacOSX and Windows support
+- Python 3 support
+- Libav support
 
 
 ##For Contributors:
