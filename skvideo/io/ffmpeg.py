@@ -130,7 +130,6 @@ class FFmpegReader():
         try:
             # Read framesize bytes
             s = read_n_bytes(self._proc.stdout, framesize)
-            print len(s), framesize
             # Check
             assert len(s) == framesize
         except Exception as err:
