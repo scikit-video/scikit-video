@@ -26,7 +26,18 @@ env:
     - COVERAGE="true"
   matrix:
     # Primary targets.
+    - FFMPEG=1.1
+    - FFMPEG=1.2
+    - FFMPEG=2.0
+    - FFMPEG=2.1
+    - FFMPEG=2.2
+    - FFMPEG=2.3
+    - FFMPEG=2.4
+    - FFMPEG=2.5
+    - FFMPEG=2.6
     - FFMPEG=2.7
+    - FFMPEG=2.8
+    - FFMPEG=snapshot
 
 before_install: 
   - mkdir $HOME/skvideo_build_ubuntu || echo "Already exists."
