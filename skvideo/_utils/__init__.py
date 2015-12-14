@@ -36,3 +36,7 @@ def check_output(*popenargs, **kwargs):
         error.output = output
         raise error
     return output
+
+
+def rgb2gray(img):
+    return img[:, :, 0]*0.2989 + img[:, :, 1]*0.5870 + img[:, :, 2]*0.1140

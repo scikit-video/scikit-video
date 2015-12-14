@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import skvideo.io
 import skvideo.datasets
-import inspect
+
 
 def test_FFmpegReader():
     reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), verbosity=1)
@@ -29,6 +29,7 @@ def test_FFmpegReader():
     # check the numbers
 
     assert_equal(109.28332841215979, accumulation / (t * h * w * c))
+
 
 def test_FFmpegWriter():
     # generate random data for 5 frames
