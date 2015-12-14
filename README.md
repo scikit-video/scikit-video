@@ -1,4 +1,6 @@
 
+![scikit-video logo](http://live.ece.utexas.edu/logos/scikit-video.svg =300x)
+
 
 scikit-video
 ============
