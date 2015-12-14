@@ -5,7 +5,6 @@ import numpy as np
 import skvideo.io
 import skvideo.motion
 import skvideo.datasets
-import skimage.io
 
 # gaussian ball
 def gauss(cx, cy, sigma, sz):
