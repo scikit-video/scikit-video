@@ -187,15 +187,19 @@ def _DS(imgP, imgI, mbSize, p):
                 if k == 2:
                     continue
 
-                costs[idx] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
+                costs[k] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                 computations += 1
-            point = np.argmin(costs)
-            cost = costs[point]
+
+            point = 2
+            cost = 0 
+            if costs[2] != 0:
+                point = np.argmin(costs)
+                cost = costs[point]
 
             x += SDSP[point][0]
             y += SDSP[point][1]
 
-            vectors[i / mbSize, j / mbSize, :] = [y - i, x - j]
+            vectors[i / mbSize, j / mbSize, :] = [x - j, y - i]
 
             costs[:] = 65537
 
@@ -333,7 +337,7 @@ def _ARPS(imgP, imgI, mbSize, p):
                     costs[:] = 65537
                     costs[2] = cost
 
-            vectors[i / mbSize, j / mbSize, :] = [y - i, x - j]
+            vectors[i / mbSize, j / mbSize, :] = [x - j, y - i]
 
             costs[:] = 65537
 
@@ -747,11 +751,10 @@ def _4SS(imgP, imgI, mbSize, p):
                 for n in xrange(-2, 3, 2):
                     refBlkVer = y + m   # row/Vert co-ordinate for ref block
                     refBlkHor = x + n   # col/Horizontal co-ordinate
-                    if ((refBlkVer < 0) or
-                       (refBlkVer + mbSize >= h) or
-                       (refBlkHor < 0) or
-                       (refBlkHor + mbSize >= w)):
-                            continue
+
+                    if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+                        continue
+
                     costRow = m/2 + 1
                     costCol = n/2 + 1
                     if ((costRow == 1) and (costCol == 1)):
@@ -779,10 +782,7 @@ def _4SS(imgP, imgI, mbSize, p):
                     for n in xrange(-2, 3, 2):
                         refBlkVer = y + m
                         refBlkHor = x + n
-                        if ((refBlkVer < 0) or
-                           (refBlkVer + mbSize >= h) or
-                           (refBlkHor < 0) or
-                           (refBlkHor + mbSize >= w)):
+                        if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
                             continue
 
                         if ((refBlkHor >= xLast - 2) and
@@ -819,10 +819,8 @@ def _4SS(imgP, imgI, mbSize, p):
                 for n in xrange(-1, 2):
                     refBlkVer = y + m
                     refBlkHor = x + n
-                    if ((refBlkVer < 0) or
-                       (refBlkVer + mbSize >= h) or
-                       (refBlkHor < 0) or
-                       (refBlkHor + mbSize >= w)):
+
+                    if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
                         continue
                     costRow = m + 1
                     costRow = n + 1
@@ -869,9 +867,6 @@ def _ES(imgP, imgI, mbSize, p):
     # we will walk in steps of mbSize
     # for every marcoblock that we look at we will look for
     # a close match p pixels on the left, right, top and bottom of it
-    acc = 0
-    total_acc = 0
-    aa = time.time() 
     for i in xrange(0, h - mbSize + 1, mbSize):
         for j in xrange(0, w - mbSize + 1, mbSize):
             # the exhaustive search starts here
@@ -880,7 +875,6 @@ def _ES(imgP, imgI, mbSize, p):
             # m is row(vertical) index
             # n is col(horizontal) index
             # this means we are scanning in raster order
-            a = time.time()
 
             if ((j + p + mbSize >= w) or
                 (j - p < 0) or
@@ -908,25 +902,19 @@ def _ES(imgP, imgI, mbSize, p):
                         computations += 1
 
 
-            b = time.time()
-            acc += b - a
-
             # Now we find the vector where the cost is minimum
             # and store it ... this is what will be passed back.
             dx, dy, mi = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
             vectors[i / mbSize, j / mbSize, :] = [dy - p, dx - p]
 
             costs[:, :] = 65537
-    bb = time.time()
-    total_time = bb - aa
-    print acc, total_time
 
     return vectors, computations / ((h * w) / mbSize**2)
 
 
 def blockMotion(data, method='DS', **plugin_args):
     # methods:
-    #   ES = exaustive search
+    #   ES = exhaustive search
     #   4SS = 4-step search
     #   3SS = 3-step search
     #   N3SS = "new" 3-step search
