@@ -166,7 +166,11 @@ class FFmpegWriter():
 
         # TODO: check that size was passed into the dictionary
 
-        self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth = datashape
+        if len(datashape) == 4:
+            self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth = datashape
+        else:
+            self.inputframenum, self.inputheight, self.inputwidth = datashape
+            self.inputdepth = 1
 
         # TODO: check dictionary for settings, and provide defaults
 
@@ -222,7 +226,11 @@ class FFmpegWriter():
         im = np.array(im)
         im = im.astype(np.uint8)
 
-        h, w, c = im.shape
+        if len(im.shape) == 3:
+            h, w, c = im.shape
+        else:
+            h, w = im.shape
+            c = 1
 
         # Check size of image
         if h != self.inputheight or w != self.inputwidth:

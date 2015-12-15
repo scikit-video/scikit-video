@@ -33,25 +33,42 @@ def vwrite(fname, data, **plugin_args):
 
     data = np.array(data)
     # check that the appropriate data size was passed
-    if len(data.shape) != 4:
-        raise ValueError, "Passed data does not have 4 dimensions"
+    if len(data.shape) == 4:
+        T, M, N, C = data.shape
+        fps = 30
 
-    T, M, N, C = data.shape
-    fps = 30
+        if "plugin" in plugin_args:
+            defaultplugin = plugin_args["plugin"]
 
-    if "plugin" in plugin_args:
-        defaultplugin = plugin_args["plugin"]
+        if "fps" in plugin_args:
+            fps = plugin_args["fps"]
 
-    if "fps" in plugin_args:
-        fps = plugin_args["fps"]
+        if defaultplugin == "ffmpeg":
+            writer = FFmpegWriter(fname, (T, M, N, C))
+            for t in xrange(T):
+                writer.writeFrame(data[t, :, :, :])
+            writer.close()
+        else:
+            raise NotImplemented
+    elif len(data.shape) == 3:
+        T, M, N = data.shape
+        fps = 30
 
-    if defaultplugin == "ffmpeg":
-        writer = FFmpegWriter(fname, (T, M, N, C))
-        for t in xrange(T):
-            writer.writeFrame(data[t, :, :, :])
-        writer.close()
+        if "plugin" in plugin_args:
+            defaultplugin = plugin_args["plugin"]
+
+        if "fps" in plugin_args:
+            fps = plugin_args["fps"]
+
+        if defaultplugin == "ffmpeg":
+            writer = FFmpegWriter(fname, (T, M, N), pix_fmt='gray')
+            for t in xrange(T):
+                writer.writeFrame(data[t, :, :])
+            writer.close()
+        else:
+            raise NotImplemented
     else:
-        raise NotImplemented
+        raise ValueError, "Passed data does not have sensible dimensions..."
 
 
 def vread(fname, **plugin_args):
