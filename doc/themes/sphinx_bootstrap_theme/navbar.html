@@ -9,7 +9,7 @@
         </button>
         <a class="navbar-brand" href="{{ pathto(master_doc) }}">
           {%- block sidebarlogo %}
-            {%- if logo %}<img src="{{ pathto('_static/' + logo, 1) }}">{%- endif %}
+            {%- if logo %}<img width='100%' height='100%' src="{{ pathto('_static/' + logo, 1) }}">{%- endif %}
           {%- endblock %}
           {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}{{ project|e }}{%- endif -%}
         </a>

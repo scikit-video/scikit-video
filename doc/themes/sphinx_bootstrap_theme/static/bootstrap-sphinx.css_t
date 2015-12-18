@@ -17,6 +17,12 @@
   padding-top: 0;
 }
 
+.navbar-brand,
+.navbar-nav li a {
+    line-height: 150px;
+    height: 150px;
+}
+
 .page-top {
   top: 0px;
 }
@@ -29,16 +35,16 @@
 
   body {
     {% if theme_bootswatch_theme and theme_bootswatch_theme != "\"\"" %}
-      padding-top: 60px;
+      padding-top: 100px;
     {% else %}
-      padding-top: 40px;
+      padding-top: 80px;
     {% endif %}
   }
   .page-top {
     {% if theme_bootswatch_theme and theme_bootswatch_theme != "\"\"" %}
-      top: 60px;
+      top: 100px;
     {% else %}
-      top: 40px;
+      top: 80px;
     {% endif %}
   }
 
