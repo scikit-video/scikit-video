@@ -31,8 +31,26 @@ import subprocess as sp
 
 from .._utils import *
 
-def MProbe(filename):
-    # try to get meta data by using MediaProbe
+def mprobe(filename):
+    """get metadata by using mediainfo
+
+    Checks the output of mediainfo on the desired video
+    file. Data is then parsed into a dictionary and
+    checked for video data. If no such video data exists,
+    this function with throw an exception.
+
+    Parameters
+    ----------
+    filename : string
+        Path to the video file
+
+    Returns
+    -------
+    mediaDict : dict
+       Dictionary containing information about the
+       passed-in source video.
+
+    """
     # '-f' gets full output, and --Output=XML is xml formatted output
     command = ["mediainfo", "-f", "--Output=XML", filename]
 
