@@ -1,5 +1,5 @@
 
-![scikit-video logo](http://live.ece.utexas.edu/logos/scikit-video.svg)
+![scikit-video logo](scikit-video.png)
 
 
 scikit-video
@@ -63,12 +63,11 @@ then
 
 
 ##TODO:
-- Video Quality Assessment metrics
-- Motion estimation code library
-- Temporal filtering helper functions
 - MacOSX and Windows support
 - Python 3 support
 - Libav support
+- Video Quality Assessment metrics
+- Temporal filtering helper functions
 
 
 ##For Contributors:
@@ -81,4 +80,4 @@ After installation, you can launch the test suite from outside the source direct
 
 $ nosetests2 -v skvideo
 
-Copyright &copy; 2015 Todd Goodall. Special thanks to Martín Blech for xmltodict, the authors of pymediaprobe, and the developers behind imageio and pyav for releasing under BSD licenses.
+Copyright &copy; 2015 scikit-video team. Special thanks to Martín Blech for xmltodict, the authors of pymediaprobe, and the developers behind imageio and pyav for releasing under BSD licenses.
