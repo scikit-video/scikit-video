@@ -4,12 +4,15 @@
 
 
 from .ffmpeg import *
+from .mprobe import *
 from ._io import *
 
 __all__ = [
     'vread',
     'vreader',
-    'vwrite'
-    'vwriter'
-    'FFmpegReader'
+    'vwrite',
+    'vwriter',
+    'mprobe',
+    'FFmpegReader',
+    'FFmpegWriter'
 ]

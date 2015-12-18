@@ -657,18 +657,8 @@ def _N3SS(imgP, imgI, mbSize, p):
     return vectors, computations / ((h * w) / mbSize**2)
 
 
+# Three step search
 def _3SS(imgP, imgI, mbSize, p):
-    # Computes motion vectors using Three Step Search method
-    #
-    # Input
-    #   imgP : The image for which we want to find motion vectors
-    #   imgI : The reference image
-    #   mbSize : Size of the macroblock
-    #   p : Search parameter  (read literature to find what this means)
-    #
-    # Ouput
-    #   motionVect : the motion vectors for each integral macroblock in imgP
-    #   TSScomputations: The average number of points searched for a macroblock
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
@@ -842,20 +832,8 @@ def _4SS(imgP, imgI, mbSize, p):
     return vectors, computations / ((h * w) / mbSize**2)
 
 
-
+# Exhaustive Search
 def _ES(imgP, imgI, mbSize, p):
-    # Computes motion vectors using exhaustive search method
-    #
-    # Input
-    #   imgP : The image for which we want to find motion vectors
-    #   imgI : The reference image
-    #   mbSize : Size of the macroblock
-    #   p : Search parameter  (read literature to find what this means)
-    #
-    # Ouput
-    #   motionVect : the motion vectors for each integral macroblock in imgP
-    #   EScomputations: The average number of points searched for a macroblock
-
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
@@ -912,85 +890,134 @@ def _ES(imgP, imgI, mbSize, p):
     return vectors, computations / ((h * w) / mbSize**2)
 
 
-def blockMotion(data, method='DS', **plugin_args):
-    # methods:
-    #   ES = exhaustive search
-    #   4SS = 4-step search
-    #   3SS = 3-step search
-    #   N3SS = "new" 3-step search
-    #   SE3SS = Simple and Efficient 3SS
-    #   ARPS = Adaptive Rood Pattern search
-    #   DS = Diamond search
-    # data lkis simply (T, M, N, C)
+def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
+    """Block-based motion estimation
+    
+    Given a sequence of frames, this function
+    returns motion vectors between frames.
 
-    mbSize = 8
-    p = 2
+    Parameters
+    ----------
+    frameSequence : ndarray, shape (numFrames, height, width, channel)
+        A sequence of frames
 
-    T, M, N, C = data.shape
+    method : string
+        ES = exhaustive search
 
-    motionmatrix = np.zeros((T - 1, M / mbSize, N / mbSize, 2), np.int8)
+        3SS = 3-step search
+
+        N3SS = "new" 3-step search
+
+        SE3SS = Simple and Efficient 3SS
+
+        4SS = 4-step search
+
+        ARPS = Adaptive Rood Pattern search
+
+        DS = Diamond search
+
+    mbSize : int
+        Macroblock size
+
+    p : int
+        Algorithm search distance parameter
+
+    Returns
+    ----------
+    motionData : ndarray, shape (numFrames - 1, height/mbSize, width/mbSize, 2)
+
+        The motion vectors computed from frameSequence. The first element of the last axis contains the y motion component, and second element contains the x motion component.
+
+    References
+    ----------
+    N3SS : Renxiang Li, Bing Zeng, and Ming L. Liou, "A new three-step search algorithm for block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 4 (4) 438-442, Aug 1994
+
+    SE3SS : Jianhua Lu and Ming L. Liou, "A simple and efficient search algorithm for block-matching motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 7 (2) 429-433, Apr 1997
+
+    4SS : Lai-Man Po and Wing-Chung Ma, "A novel four-step search algorithm for fast block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 6 (3) 313-317, Jun 1996
+
+    ARPS : Yao Nie and Kai-Kuang Ma, "Adaptive rood pattern search for fast block-matching motion estimation." IEEE Transactions on Image Processing, 11 (12) 1442-1448, Dec 2002
+
+    DS : Shan Zhu and Kai-Kuang Ma, "A new diamond search algorithm for fast block-matching motion estimation." IEEE Transactions on Image Processing, 9 (2) 287-290, Feb 2000
+
+    """
+
+    numFrames, height, width, channels = frameSequence.shape
+
+    motionData = np.zeros((numFrames - 1, height / mbSize, width / mbSize, 2), np.int8)
 
     if method == "ES":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _ES(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "4SS":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _4SS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "3SS":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _3SS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "N3SS":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _N3SS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "SE3SS":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _SE3SS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "ARPS":  # BROKEN, check this
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _ARPS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     elif method == "DS":
-        for i in xrange(T - 1):
-            frame_current = rgb2gray(data[i, :, :])
-            frame_next = rgb2gray(data[i + 1, :, :])
+        for i in xrange(numFrames - 1):
+            frame_current = rgb2gray(frameSequence[i, :, :])
+            frame_next = rgb2gray(frameSequence[i + 1, :, :])
             motion, comps = _DS(frame_current, frame_next, mbSize, p)
-            motionmatrix[i, :, :, :] = motion
+            motionData[i, :, :, :] = motion
     else:
         raise NotImplementedError
 
-    return motionmatrix
+    return motionData
 
 
 
 def blockComp(refImg, motionVect, mbSize):
-    # Computes block-motion compensated image using the given motion vectors
-    #
-    # Input
-    #   imgI : The reference image
-    #   motionVect : The motion vectors
-    #   mbSize : Size of the macroblock
-    #
-    # Ouput
-    #   imgComp : The motion compensated image
-    #
-    # Written by Aroh Barjatya
+    """Block-based motion compensation
+    
+    Using the given motion vectors, this function
+    returns the motion-compensated image.
+
+    Parameters
+    ----------
+    refImg : ndarray
+        A MxN or MxNx3 ndarray representing an image frame
+
+    motionVect : ndarray
+        An ndarray representing block motion vectors
+
+    mbSize : int
+        Size of macroblock
+
+    Returns
+    -------
+    compImg : ndarray, shape same as refImg
+
+    """
+
     refImg = np.array(refImg)
 
     h, w = refImg.shape

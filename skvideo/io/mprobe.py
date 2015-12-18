@@ -31,8 +31,10 @@ import subprocess as sp
 
 from .._utils import *
 
-def MProbe(filename):
-    # try to get meta data by using MediaProbe
+def mprobe(filename):
+    """get metadata by using mediainfo
+
+    """
     # '-f' gets full output, and --Output=XML is xml formatted output
     command = ["mediainfo", "-f", "--Output=XML", filename]
 

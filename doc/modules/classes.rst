@@ -4,7 +4,7 @@ API Reference
 
 This is the class and function reference of scikit-video.
 
-.. _cluster_ref:
+.. _io_ref:
 
 :mod:`skvideo.io`: I/O
 ==================================
@@ -34,4 +34,44 @@ Functions
    io.vread
    io.vreader
    io.vwrite
+   io.mprobe
 
+.. _motion_ref:
+
+:mod:`skvideo.motion`: Motion
+==================================
+
+.. automodule:: skvideo.motion
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: skvideo
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   motion.blockMotion
+   motion.blockComp
+
+.. _datasets_ref:
+
+:mod:`skvideo.datasets`: Test Data
+==================================
+
+.. automodule:: skvideo.datasets
+   :no-members:
+   :no-inherited-members:
+
+Functions
+---------
+.. currentmodule:: skvideo
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   datasets.bigbuckbunny
+   datasets.fullreferencepair

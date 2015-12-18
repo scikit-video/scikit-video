@@ -52,15 +52,26 @@ import json
 
 import numpy as np
 
-from mprobe import MProbe
+from mprobe import mprobe
 from .._utils import *
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
+    """Reads frames using FFmpeg
+
+    Using FFmpeg as a backend, this class
+    provides sane initializations meant to
+    handle the default case well.
+
+    """
     def __init__(self, filename, inputdict={}, outputdict={}, verbosity=0):
-        """ Opens the file, creates the pipe. """
+        """Opens the file, creates the pipe. 
+        
+        Launches a subprocess of FFmpeg after 
+        probing the file for details with :ref:`MProbe`.
+        """
         # Output args, for writing to pipe
-        self._probe = MProbe(filename)
+        self._probe = mprobe(filename)
 
         # set the width, height, numframes
         self.inputwidth = np.int(self._probe["Video"]["Width"][0])
