@@ -101,6 +101,16 @@
 
 {%- block content %}
 {{ navBar() }}
+
+<!-- Github "fork me" ribbon -->
+<a href="https://github.com/scikit-video/scikit-video">
+  <img class="fork-me"
+       style="position: absolute; top: 0; right: 0; border: 0;"
+       src="{{ pathto('_static/forkme.png', 1) }}"
+       alt="Fork me on GitHub" />
+</a>
+
+
 <div class="container">
   <div class="row">
     {%- block sidebar1 %}{{ bsidebar() }}{% endblock %}
