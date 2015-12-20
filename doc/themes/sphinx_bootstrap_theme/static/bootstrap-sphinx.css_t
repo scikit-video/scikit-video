@@ -17,10 +17,14 @@
   padding-top: 0;
 }
 
-.navbar-brand,
+.navbar-brand li a {
+    line-height: 50px;
+    height: 80px;
+}
+
 .navbar-nav li a {
-    line-height: 150px;
-    height: 150px;
+    line-height: 20px;
+    height: 20px;
 }
 
 .page-top {
