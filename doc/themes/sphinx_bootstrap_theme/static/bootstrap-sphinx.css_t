@@ -5,6 +5,15 @@
  * Sphinx stylesheet -- Bootstrap theme.
  */
 
+.navbar-text2 {
+    color: #777;
+}
+
+.navbar-version-div {
+    width: 100%;
+    padding-top: 0px;
+}
+
 .navbar-inverse .brand {
   color: #FFF;
 }
@@ -18,8 +27,24 @@
 }
 
 .navbar-brand li a {
-    line-height: 50px;
-    height: 80px;
+    line-height: 20px;
+    height: 20px;
+}
+
+.navbar-brand-img {
+    height: 110px;
+}
+
+.navbar-header2 {
+    line-height: 20px;
+    height: 20px;
+    width: 100%;
+}
+
+.navbar-header {
+    line-height: 130px;
+    height: 150px;
+    width: 100%;
 }
 
 .navbar-nav li a {

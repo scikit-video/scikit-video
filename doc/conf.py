@@ -140,7 +140,11 @@ html_static_path = ['images']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+	'index': ['mycustomsidebar.html', 'localtoc.html', 'searchbox.html'],
+	'modules/classes': ['localtoc.html', 'searchbox.html'],
+	'**': ['localtoc.html', 'searchbox.html'], # all other pages 
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
