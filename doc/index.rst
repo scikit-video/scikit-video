@@ -42,4 +42,4 @@
    datasets
    examples
    benchmarks
-   modules/classes
+   classes
