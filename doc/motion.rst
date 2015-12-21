@@ -4,15 +4,15 @@
 Motion
 ===========================
 
-.. currentmodule:: sklearn.motion
+.. currentmodule:: skvideo.motion
 
-`sklearn.motion` is a module currently supporting block motion estimation and compensation routines.
+`skvideo.motion` is a module currently supporting block motion estimation and compensation routines.
 
 
 Block motion
 -----------------------
 
-To estimate a block motion field, simply use :func:`sklearn.motion.blockMotion`
+To estimate a block motion field, simply use :func:`skvideo.motion.blockMotion`
 
 .. code-block:: python
 
@@ -34,13 +34,13 @@ Output:
 	(132, 720, 1280, 3)
 	(131, 90, 160, 2)
 
-By default, :func:`sklearn.motion.blockMotion` uses 8x8 pixel macroblocks and the diamond search algorithm.
+By default, :func:`skvideo.motion.blockMotion` uses 8x8 pixel macroblocks and the diamond search algorithm.
 
 
 Block motion compensation
 -----------------------
 
-Use :func:`sklearn.motion.blockComp` to use the computed block motion vectors for motion compensation
+Use :func:`skvideo.motion.blockComp` to use the computed block motion vectors for motion compensation
 
 .. code-block:: python
 

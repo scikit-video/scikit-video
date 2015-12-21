@@ -4,24 +4,22 @@
 Test Datasets
 ===========================
 
-.. currentmodule:: sklearn.datasets
+.. currentmodule:: skvideo.datasets
 
-`sklearn.datasets` provides several test videos for benchmarking, testing, and example code.
+`skvideo.datasets` provides several test videos for benchmarking, testing, and example code.
 
 Big Buck Bunny sequence
 -----------------------
 
-The path to big buck bunny is local to the skvideo install and can be found using :func:`skvideo.datasets.bigbuckbunny`
+The full absolute path to bigbuckbunny comes bundled with the skvideo install and can be found using :func:`skvideo.datasets.bigbuckbunny`
 
 TODO add video to doc
 
 
-Big Buck Bunny sequence
+Carphone pristine and distorted sequences
 -----------------------
 
-
-
-
+The path to the carphone pristine and distorted sequences come bundled with the skvideo install and can be found using :func:`skvideo.datasets.fullreferencepair`
 
 
 .. toctree::
