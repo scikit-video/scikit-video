@@ -7,15 +7,15 @@
         <br/>
         <br/>
 	<div class="container">
-		<div class="col-md-4">
-		<a href='io.html'>Reading and Writing Videos</a>
-		</div>
-		<div class="col-md-4">
-		<a href='motion.html'>Motion</a>
-		</div>
-		<div class="col-md-4">
-		<a href='datasets.html'>Test Data</a>
-		</div>
+	<div class="col-md-4">
+	<a href='io.html'>Reading and Writing Videos</a>
+	</div>
+	<div class="col-md-4">
+	<a href='motion.html'>Motion</a>
+	</div>
+	<div class="col-md-4">
+	<a href='datasets.html'>Test Data</a>
+	</div>
 	</div>
 	<div class="container">
 		<div class="col-md-12">
@@ -30,4 +30,8 @@
    :maxdepth: 2
    :hidden:
 
+   io
+   motion
+   datasets
+   examples
    modules/classes
