@@ -31,7 +31,8 @@ Output:
 
 .. code-block:: python
 
-	todo
+	(132, 720, 1280, 3)
+	(131, 90, 160, 2)
 
 By default, :func:`sklearn.motion.blockMotion` uses 8x8 pixel macroblocks and the diamond search algorithm.
 
