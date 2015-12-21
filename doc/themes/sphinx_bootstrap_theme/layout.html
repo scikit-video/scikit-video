@@ -104,10 +104,9 @@
 {%- if parents %}
 <a href='{{ parents[0].link }}'>{{ parents[0].title }}</a> >>
 {%- endif %}
-{%- if title == "<no title>" %}
-hi
-{%- endif %}
+{%- if not "no title" in title %}
 {{ title }}
+{%- endif %}
 </div>
 
 <!-- Github "fork me" ribbon -->
