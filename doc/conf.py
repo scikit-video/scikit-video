@@ -143,7 +143,7 @@ html_static_path = ['images']
 html_sidebars = {
 	'index': ['mycustomsidebar.html', 'localtoc.html', 'searchbox.html'],
 	'modules/classes': ['home.html', 'localtoc.html', 'searchbox.html'],
-	'**': ['home.html', 'relations.html', 'localtoc.html', 'searchbox.html'], # all other pages 
+	'**': ['home.html', 'globaltoc.html', 'localtoc.html', 'members.html', 'searchbox.html'], # all other pages 
 }
 
 # Additional templates that should be rendered to pages, maps page names to
