@@ -98,9 +98,14 @@
 {% block relbar1 %}{% endblock %}
 {% block relbar2 %}{% endblock %}
 {% block sidebarsourcelink %}{% endblock %}
-
 {%- block content %}
 {{ navBar() }}
+<div class='container'>
+{%- if parents %}
+<a href='{{ parents[0].link }}'>{{ parents[0].title }}</a> >>
+{%- endif %}
+{{ title }}
+</div>
 
 <!-- Github "fork me" ribbon -->
 <a href="https://github.com/scikit-video/scikit-video">
