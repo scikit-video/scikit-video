@@ -61,13 +61,20 @@ Sometimes, particular use cases require fine tuning FFmpeg's reading parameters.
 
 	# here you can set keys and values for parameters in ffmpeg
 	inputparameters = {}
-	reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), inputdict=inputparameters)
+	outputparameters = {}
+	reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), 
+			inputdict=inputparameters,
+			outputdict=outputparameters)
 
 	# iterate through the frames
 	accumulation = 0
 	for frame in reader.nextFrame():
 		# do something with the ndarray frame
 		accumulation += np.sum(frame)
+
+For example, FFmpegReader will by default return an RGB representation of a video file, but you may want some other color space that FFmpeg supports, by setting appropriate key/values in outputparameters. Since FFmpeg output is piped into stdin, all FFmpeg commands can be used here.
+
+inputparameters may be useful for raw video which has no header information. Then you should FFmpeg exactly how to interpret your data.
 	
 
 Writing
@@ -84,6 +91,21 @@ To write an ndarray to a video file, use :func:`skvideo.io.write`
 	outputdata = outputdata.astype(np.uint8)
 
 	skvideo.io.vwrite("outputvideo.mp4", outputdata)
+
+Often, writing videos requires fine tuning FFmpeg's writing parameters to select encoders, framerates, bitrates, etc. For this, you can use :class:`skvideo.io.FFmpegWriter`
+
+.. code-block:: python
+
+	import skvideo.io	
+	import numpy as np
+
+	outputdata = np.random.random(size=(5, 480, 680, 3)) * 255
+	outputdata = outputdata.astype(np.uint8)
+
+	writer = skvideo.io.FFmpegWriter("outputvideo.mp4", (5, 480, 640, 3))
+	for i in xrange(5):
+		writer.writeFrame(outputdata[i, :, :, :])
+	writer.close()
 
 
 Probing
