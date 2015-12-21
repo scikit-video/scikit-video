@@ -141,9 +141,9 @@ html_static_path = ['images']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-	'index': ['mycustomsidebar.html', 'localtoc.html', 'searchbox.html'],
-	'modules/classes': ['home.html', 'localtoc.html', 'searchbox.html'],
-	'**': ['home.html', 'localtoc.html', 'searchbox.html'], # all other pages 
+	'index': ['mycustomsidebar.html', 'searchbox.html'],
+	'modules/classes': ['home.html', 'searchbox.html'],
+	'**': ['home.html', 'searchbox.html'], # all other pages 
 }
 
 # Additional templates that should be rendered to pages, maps page names to
