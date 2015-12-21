@@ -27,6 +27,16 @@
 		<a href='benchmarks.html'>Benchmarks</a>
 		</div>
 		<div class="col-md-4">
+		<a href='faq.html'>FAQ</a>
+		</div>
+	</div>
+	<div class="container">
+		<div class="col-md-4">
+		<a href='classes.html'>API Reference</a>
+		</div>
+		<div class="col-md-4">
+		</div>
+		<div class="col-md-4">
 		</div>
 	</div>
 
@@ -42,4 +52,5 @@
    datasets
    examples
    benchmarks
+   faq
    classes
