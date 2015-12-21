@@ -1,11 +1,11 @@
 .. _datasets:
 
-Test Data
+Test Datasets
 -----------------------
 
 .. currentmodule:: sklearn.datasets
 
-`sklearn.datasets` provides several test videos. It is thought to be useful as input to future algorithms and for internal testing of scikit-video.
+`sklearn.datasets` provides several test videos for benchmarking, testing, and example code.
 
 .. toctree::
     :hidden:
