@@ -55,7 +55,9 @@ Use :func:`skvideo.motion.blockComp` to use the computed block motion vectors fo
 	# compensate the video
 	compmotion = skvideo.motion.blockComp(videodata, motion)
 
-Here is bigbuckbunny when each frame is motion compensated
+Here is a motion compensated frame from bigbuckbunny 
+
+.. image:: images/blockComp.png
 
 
 .. toctree::
