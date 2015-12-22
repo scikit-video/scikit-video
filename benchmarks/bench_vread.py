@@ -9,8 +9,8 @@ Output:
 
 Mean performance on loading 3 test videos:
 ------------------------------------------------------------
-skvideo.io.vread                    0.812771 seconds
-skvideo.io.vreader          0.469693 seconds
+skvideo.io.vread                    1.346741 seconds
+skvideo.io.vreader                  1.311501 seconds
 
 """
 # Author: Todd Goodall <tgoodall@utexas.edu>

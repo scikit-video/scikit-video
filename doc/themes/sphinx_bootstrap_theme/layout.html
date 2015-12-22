@@ -1,5 +1,9 @@
 {% extends "basic/layout.html" %}
 
+{%- if "no title" in title %}
+{% set title = "Home" %}
+{%- endif %}
+
 {% set theme_css_files = [] %}
 {% if theme_bootstrap_version == "3" %}
   {% set bootstrap_version, bootstrap_additional_css, navbar_version = "3.3.4", "theme", "" %}
@@ -98,9 +102,25 @@
 {% block relbar1 %}{% endblock %}
 {% block relbar2 %}{% endblock %}
 {% block sidebarsourcelink %}{% endblock %}
-
 {%- block content %}
 {{ navBar() }}
+<div class='container'>
+{%- if parents %}
+<a href='{{ parents[0].link }}'>{{ parents[0].title }}</a> >>
+{%- endif %}
+{{title}}
+
+</div>
+
+<!-- Github "fork me" ribbon -->
+<a href="https://github.com/scikit-video/scikit-video">
+  <img class="fork-me"
+       style="position: absolute; top: 0; right: 0; border: 0;"
+       src="{{ pathto('_static/forkme.png', 1) }}"
+       alt="Fork me on GitHub" />
+</a>
+
+
 <div class="container">
   <div class="row">
     {%- block sidebar1 %}{{ bsidebar() }}{% endblock %}

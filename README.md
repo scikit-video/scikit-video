@@ -1,5 +1,5 @@
 
-![scikit-video logo](doc/_static/scikit-video.png)
+![scikit-video logo](doc/images/scikit-video.png)
 
 
 scikit-video

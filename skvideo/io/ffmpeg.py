@@ -1,44 +1,11 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) 2015, imageio contributors
-# distributed under the terms of the BSD License.
-
-# insprired/stolen from Almar Klein's imageio code
-
 """ Plugin that uses ffmpeg to read and write series of images to
 a wide range of video formats.
 
-Code inspired/based on code from moviepy: https://github.com/Zulko/moviepy/
-by Zulko
-
-
-Media info code comes largely from pymediainfo:
-
-The MIT License
-
-Copyright (c) 2010-2014, Patrick Altman <paltman@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
-
-    http://www.opensource.org/licenses/mit-license.php
-
-
 """
+
+# Copyright (c) 2015, imageio contributors
+# distributed under the terms of the BSD License (included in release).
+# lifted from Almar Klein's imageio code
 
 import sys
 import os
@@ -65,11 +32,30 @@ class FFmpegReader():
 
     """
     def __init__(self, filename, inputdict={}, outputdict={}, verbosity=0):
-        """Opens the file, creates the pipe. 
-        
-        Launches a subprocess of FFmpeg after 
-        probing the file for details with :ref:`MProbe`.
+        """Initializes FFmpeg in reading mode with the given parameters
+
+        During initialization, additional parameters about the video file
+        are parsed using :func:`skvideo.io.mprobe`. Then FFmpeg is launched
+        as a subprocess.
+
+        Parameters
+        ----------
+        filename : string
+            Video file path
+
+        inputdict : dict
+            Input dictionary parameters. How to interpret the filename.
+
+        outputdict : dict
+            Output dictionary parameters. How to provide and interpret 
+            the data during the read.
+
+        Returns
+        -------
+        none
+
         """
+
         # Output args, for writing to pipe
         self._probe = mprobe(filename)
 
@@ -109,6 +95,11 @@ class FFmpegReader():
                                   stdout=sp.PIPE, stderr=None)
 
     def getShape(self):
+        """Returns a tuple (T, M, N, C) 
+        
+        Returns the video shape in number of frames, height, width, and channels per pixel.
+        """
+           
         return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
 
 
@@ -163,15 +154,44 @@ class FFmpegReader():
         return result
 
     def nextFrame(self):
+        """Yields frames using a generator 
+        
+        Returns T ndarrays of size (M, N, C), where T is number of frames, 
+        M is height, N is width, and C is number of channels per pixel.
+
+        """
         for i in xrange(self.inputframenum):
             yield self._readFrame()
 
 
-
-# uses FFmpeg to write the given data to a given file with parameters
 class FFmpegWriter():
+    """Writes frames using FFmpeg
+
+    Using FFmpeg as a backend, this class
+    provides sane initializations for the default case.
+    """
     def __init__(self, filename, datashape, pix_fmt='rgb24', outputdict={}, verbosity=0):
-        # pixfmt can be 'gray', 'gray8a', 'rgb24' or 'rgba'
+        """Initializes FFmpeg in writing mode with the given parameters
+
+        Parameters
+        ----------
+        filename : string
+            Video file path
+
+        datashape : ndarray
+            Tuple of configuration (T, M, N, C), where T
+            is the number of frames, M is the height, N is
+            width, and C is depth. C is currently hardcoded to 3.
+
+        pix_fmt : string
+            Can be one of 'gray', 'gray8a', 'rgb24' or 'rgba'. 
+            which corresponds to 1, 2, 3, and 4 bytes per pixel, respectively.
+
+        Returns
+        -------
+        none
+
+        """
 
         self._filename = filename
 
@@ -222,6 +242,9 @@ class FFmpegWriter():
                                   stdout=sp.PIPE, stderr=None)
 
     def close(self):
+	"""Closes the video and terminates FFmpeg process
+
+	"""
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
@@ -233,7 +256,11 @@ class FFmpegWriter():
 
 
     def writeFrame(self, im):
-        # Ensure that image is in uint8
+	"""Sends ndarray frames to FFmpeg
+
+	"""
+
+        # Ensure that ndarray image is in uint8
         im = np.array(im)
         im = im.astype(np.uint8)
 

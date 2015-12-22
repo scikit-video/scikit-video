@@ -30,10 +30,6 @@ def _checkBounded(xval, yval, w, h, mbSize):
 def _DS(imgP, imgI, mbSize, p):
     # Computes motion vectors using Diamond Search method
     #
-    # Based on the paper by Shan Zhu, and Kai-Kuang Ma
-    # IEEE Trans. on Image Processing
-    # Volume 9, Number 2, February 2000 :  Pages 287:290
-    #
     # Input
     #   imgP : The image for which we want to find motion vectors
     #   imgI : The reference image
@@ -209,10 +205,6 @@ def _DS(imgP, imgI, mbSize, p):
 def _ARPS(imgP, imgI, mbSize, p):
     # Computes motion vectors using Adaptive Rood Pattern Search method
     #
-    # Based on the paper by Yao Nie, and Kai-Kuang Ma
-    # IEEE Trans. on Image Processing
-    # Volume 11 Number 12, December 2002 :  Pages 1442:1448
-    #
     # Input
     #   imgP : The image for which we want to find motion vectors
     #   imgI : The reference image
@@ -348,10 +340,6 @@ def _ARPS(imgP, imgI, mbSize, p):
 
 def _SE3SS(imgP, imgI, mbSize, p):
     # Computes motion vectors using Simple and Efficient TSS method
-    #
-    # Based on the paper by Jianhua Lu and Ming L. Liou
-    # IEEE Trans. on Circuits and Systems for Video Technology
-    # Volume 7, Number 2, April 1997 :  Pages 429:433
     #
     # Input
     #   imgP : The image for which we want to find motion vectors
@@ -500,10 +488,6 @@ def _SE3SS(imgP, imgI, mbSize, p):
 
 def _N3SS(imgP, imgI, mbSize, p):
     # Computes motion vectors using *NEW* Three Step Search method
-    #
-    # Based on the paper by R. Li, b. Zeng, and M. L. Liou
-    # IEEE Trans. on Circuits and Systems for Video Technology
-    # Volume 4, Number 4, August 1994 :  Pages 438:442
     #
     # Input
     #   imgP : The image for which we want to find motion vectors
@@ -710,10 +694,6 @@ def _3SS(imgP, imgI, mbSize, p):
 def _4SS(imgP, imgI, mbSize, p):
     # Computes motion vectors using Four Step Search method
     #
-    # Based on the paper by Lai-Man Po, and Wing-Chung Ma
-    # IEEE Trans. on Circuits and Systems for Video Technology
-    # Volume 6, Number 3, June 1996 :  Pages 313:317
-    #
     # Input
     #   imgP : The image for which we want to find motion vectors
     #   imgI : The reference image
@@ -902,19 +882,19 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
         A sequence of frames
 
     method : string
-        ES = exhaustive search
+        "ES" --> exhaustive search
 
-        3SS = 3-step search
+        "3SS" --> 3-step search
 
-        N3SS = "new" 3-step search
+        "N3SS" --> "new" 3-step search [#f1]_
 
-        SE3SS = Simple and Efficient 3SS
+        "SE3SS" --> Simple and Efficient 3SS [#f2]_
 
-        4SS = 4-step search
+        "4SS" --> 4-step search [#f3]_
 
-        ARPS = Adaptive Rood Pattern search
+        "ARPS" --> Adaptive Rood Pattern search [#f4]_
 
-        DS = Diamond search
+        "DS" --> Diamond search [#f5]_
 
     mbSize : int
         Macroblock size
@@ -930,15 +910,15 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
 
     References
     ----------
-    N3SS : Renxiang Li, Bing Zeng, and Ming L. Liou, "A new three-step search algorithm for block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 4 (4) 438-442, Aug 1994
+    .. [#f1] Renxiang Li, Bing Zeng, and Ming L. Liou, "A new three-step search algorithm for block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 4 (4) 438-442, Aug 1994
 
-    SE3SS : Jianhua Lu and Ming L. Liou, "A simple and efficient search algorithm for block-matching motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 7 (2) 429-433, Apr 1997
+    .. [#f2] Jianhua Lu and Ming L. Liou, "A simple and efficient search algorithm for block-matching motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 7 (2) 429-433, Apr 1997
 
-    4SS : Lai-Man Po and Wing-Chung Ma, "A novel four-step search algorithm for fast block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 6 (3) 313-317, Jun 1996
+    .. [#f3] Lai-Man Po and Wing-Chung Ma, "A novel four-step search algorithm for fast block motion estimation." IEEE Transactions on Circuits and Systems for Video Technology, 6 (3) 313-317, Jun 1996
 
-    ARPS : Yao Nie and Kai-Kuang Ma, "Adaptive rood pattern search for fast block-matching motion estimation." IEEE Transactions on Image Processing, 11 (12) 1442-1448, Dec 2002
+    .. [#f4] Yao Nie and Kai-Kuang Ma, "Adaptive rood pattern search for fast block-matching motion estimation." IEEE Transactions on Image Processing, 11 (12) 1442-1448, Dec 2002
 
-    DS : Shan Zhu and Kai-Kuang Ma, "A new diamond search algorithm for fast block-matching motion estimation." IEEE Transactions on Image Processing, 9 (2) 287-290, Feb 2000
+    .. [#f5] Shan Zhu and Kai-Kuang Ma, "A new diamond search algorithm for fast block-matching motion estimation." IEEE Transactions on Image Processing, 9 (2) 287-290, Feb 2000
 
     """
 
@@ -993,9 +973,50 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
 
     return motionData
 
+#only handles (M, N) shapes
+def _subcomp2d(frameData, motionVect, mbSize):
+    h, w = frameData.shape
+
+    compImg = np.zeros((h, w))
+
+    for i in xrange(0, h - mbSize + 1, mbSize):
+        for j in xrange(0, w - mbSize + 1, mbSize):
+            dy = motionVect[i / mbSize, j / mbSize, 0]
+            dx = motionVect[i / mbSize, j / mbSize, 1]
+
+            refBlkVer = i + dy
+            refBlkHor = j + dx
+
+            # check bounds
+            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+                continue
+
+            compImg[i:i + mbSize, j:j + mbSize] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize]
+    return compImg
+
+#only handles (M, N, C) shapes
+def _subcomp3d(frameData, motionVect, mbSize):
+    h, w, c = frameData.shape
+
+    compImg = np.zeros((h, w, c))
+
+    for i in xrange(0, h - mbSize + 1, mbSize):
+        for j in xrange(0, w - mbSize + 1, mbSize):
+            dy = motionVect[i / mbSize, j / mbSize, 0]
+            dx = motionVect[i / mbSize, j / mbSize, 1]
+
+            refBlkVer = i + dy
+            refBlkHor = j + dx
+
+            # check bounds
+            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+                continue
+
+            compImg[i:i + mbSize, j:j + mbSize, :] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize, :]
+    return compImg
 
 
-def blockComp(refImg, motionVect, mbSize):
+def blockComp(frameData, motionVect, mbSize=8):
     """Block-based motion compensation
     
     Using the given motion vectors, this function
@@ -1003,43 +1024,63 @@ def blockComp(refImg, motionVect, mbSize):
 
     Parameters
     ----------
-    refImg : ndarray
-        A MxN or MxNx3 ndarray representing an image frame
+    frameData : ndarray
+        an input frame, shape (M, N) or (M, N, C)
 
     motionVect : ndarray
-        An ndarray representing block motion vectors
+        ndarray representing block motion vectors. Expects ndarray, shape (M/mbSize, N/mbSize).
 
     mbSize : int
-        Size of macroblock
+        Size of macroblock in pixels.
 
     Returns
     -------
-    compImg : ndarray, shape same as refImg
+    compImg : ndarray
+	ndarray holding the motion compensated image frame, shape (M, N) or (M, N, C) depending on the shape of frameData
 
     """
 
-    refImg = np.array(refImg)
+    frameData = np.array(frameData)
+    T = 0
+    M = 0
+    N = 0
+    C = 0
+    if len(frameData.shape) == 2: 
+        # convert frameData
+        M, N = frameData.shape
+    elif len(frameData.shape) == 3: 
+        a, b, c = frameData.shape
+        # check the last dimension small
+        # interpret as color channel
+        if c in [1, 2, 3, 4]:
+            h = M
+            w = N
+            C = c
+        else:
+            T = a
+            h = M
+            w = N
+    elif len(frameData.shape) == 4: 
+        T, M, N, C = frameData.shape
+    else:
+        raise ValueError("Improper shape")
 
-    h, w = refImg.shape
+    if T == 0:	# a single frame is passed in
+        if C == 0:
+            return _subcomp2d(frameData, motionVect, mbSize)
+        else:
+            return _subcomp3d(frameData, motionVect, mbSize)
 
-    compImg = np.zeros((h, w))
-
-    # we start off from the top left of the image
-    # we will walk in steps of mbSize
-    # for every marcoblock that we look at we will read the motion vector
-    # and put that macroblock from refernce image in the compensated image
-
-    for i in xrange(0, h - mbSize, mbSize):
-        for j in xrange(0, w - mbSize, mbSize):
-            # dy is row(vertical) index
-            # dx is col(horizontal) index
-            # this means we are scanning in order
-
-            dy = motionVect[0, i / mbSize, j / mbSize]
-            dx = motionVect[1, i / mbSize, j / mbSize]
-
-            refBlkVer = i + dy
-            refBlkHor = j + dx
-            compImg[i:i + mbSize, j:j + mbSize] = refImg[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize]
-
-    return compImg
+    else: # more frames passed in
+        if C == 0:
+            # allocate compensation data
+            compVid = np.zeros((T, M, N))
+            for i in xrange(T-1):
+                compVid[i, :, :] = _subcomp2d(frameData[i], motionVect[i], mbSize)
+            return compVid
+        else:
+            # allocate compensation data
+            compVid = np.zeros((T, M, N, C))
+            for i in xrange(T-1):
+                compVid[i, :, :, :] = _subcomp3d(frameData[i], motionVect[i], mbSize)
+            return compVid
