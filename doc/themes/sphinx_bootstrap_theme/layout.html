@@ -1,5 +1,9 @@
 {% extends "basic/layout.html" %}
 
+{%- if "no title" in title %}
+{% set title = "Home" %}
+{%- endif %}
+
 {% set theme_css_files = [] %}
 {% if theme_bootstrap_version == "3" %}
   {% set bootstrap_version, bootstrap_additional_css, navbar_version = "3.3.4", "theme", "" %}
@@ -104,9 +108,8 @@
 {%- if parents %}
 <a href='{{ parents[0].link }}'>{{ parents[0].title }}</a> >>
 {%- endif %}
-{%- if not "no title" in title %}
-{{ title }}
-{%- endif %}
+{{title}}
+
 </div>
 
 <!-- Github "fork me" ribbon -->
