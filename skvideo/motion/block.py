@@ -973,6 +973,47 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
 
     return motionData
 
+#only handles (M, N) shapes
+def _subcomp2d(frameData, motionVect, mbSize):
+    h, w = frameData.shape
+
+    compImg = np.zeros((h, w))
+
+    for i in xrange(0, h - mbSize + 1, mbSize):
+        for j in xrange(0, w - mbSize + 1, mbSize):
+            dy = motionVect[i / mbSize, j / mbSize, 0]
+            dx = motionVect[i / mbSize, j / mbSize, 1]
+
+            refBlkVer = i + dy
+            refBlkHor = j + dx
+
+            # check bounds
+            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+                continue
+
+            compImg[i:i + mbSize, j:j + mbSize] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize]
+    return compImg
+
+#only handles (M, N, C) shapes
+def _subcomp3d(frameData, motionVect, mbSize):
+    h, w, c = frameData.shape
+
+    compImg = np.zeros((h, w, c))
+
+    for i in xrange(0, h - mbSize + 1, mbSize):
+        for j in xrange(0, w - mbSize + 1, mbSize):
+            dy = motionVect[i / mbSize, j / mbSize, 0]
+            dx = motionVect[i / mbSize, j / mbSize, 1]
+
+            refBlkVer = i + dy
+            refBlkHor = j + dx
+
+            # check bounds
+            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+                continue
+
+            compImg[i:i + mbSize, j:j + mbSize, :] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize, :]
+    return compImg
 
 
 def blockComp(frameData, motionVect, mbSize=8):
@@ -1000,27 +1041,46 @@ def blockComp(frameData, motionVect, mbSize=8):
     """
 
     frameData = np.array(frameData)
+    T = 0
+    M = 0
+    N = 0
+    C = 0
+    if len(frameData.shape) == 2: 
+        # convert frameData
+        M, N = frameData.shape
+    elif len(frameData.shape) == 3: 
+        a, b, c = frameData.shape
+        # check the last dimension small
+        # interpret as color channel
+        if c in [1, 2, 3, 4]:
+            h = M
+            w = N
+            C = c
+        else:
+            T = a
+            h = M
+            w = N
+    elif len(frameData.shape) == 4: 
+        T, M, N, C = frameData.shape
+    else:
+        raise ValueError("Improper shape")
 
-    h, w = frameData.shape
+    if T == 0:	# a single frame is passed in
+        if C == 0:
+            return _subcomp2d(frameData, motionVect, mbSize)
+        else:
+            return _subcomp3d(frameData, motionVect, mbSize)
 
-    compImg = np.zeros((h, w))
-
-    # we start off from the top left of the image
-    # we will walk in steps of mbSize
-    # for every marcoblock that we look at we will read the motion vector
-    # and put that macroblock from refernce image in the compensated image
-
-    for i in xrange(0, h - mbSize, mbSize):
-        for j in xrange(0, w - mbSize, mbSize):
-            # dy is row(vertical) index
-            # dx is col(horizontal) index
-            # this means we are scanning in order
-
-            dy = motionVect[0, i / mbSize, j / mbSize]
-            dx = motionVect[1, i / mbSize, j / mbSize]
-
-            refBlkVer = i + dy
-            refBlkHor = j + dx
-            compImg[i:i + mbSize, j:j + mbSize] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize]
-
-    return compImg
+    else: # more frames passed in
+        if C == 0:
+            # allocate compensation data
+            compVid = np.zeros((T, M, N))
+            for i in xrange(T-1):
+                compVid[i, :, :] = _subcomp2d(frameData[i], motionVect[i], mbSize)
+            return compVid
+        else:
+            # allocate compensation data
+            compVid = np.zeros((T, M, N, C))
+            for i in xrange(T-1):
+                compVid[i, :, :, :] = _subcomp3d(frameData[i], motionVect[i], mbSize)
+            return compVid
