@@ -15,7 +15,7 @@ def vwrite(fname, data, **plugin_args):
         Video file name.
 
     data : ndarray
-        Numpy data of dimension (T, M, N, C), where T
+        ndarray of dimension (T, M, N, C), where T
         is the number of frames, M is the height, N is
         width, and C is depth.
 
@@ -77,12 +77,14 @@ def vread(fname, **plugin_args):
     Parameters
     ----------
     fname : string
-        Video file name, e.g. ``bickbuckbunny.mp4`` or URL.
+        Video file name, e.g. ``bickbuckbunny.mp4``
 
     Returns
     -------
     vid_array : ndarray
-        A TxMxNx3 matrix representing the entire video.
+        ndarray of dimension (T, M, N, 3), where T
+        is the number of frames, M is the height, N is
+        width, and C is depth.
 
     Other parameters
     ----------------
@@ -121,11 +123,17 @@ def vreader(fname, **plugin_args):
     Parameters
     ----------
     fname : string
-        Video file name, e.g. ``bickbuckbunny.mp4`` or URL.
+
+        Video file name, e.g. ``bickbuckbunny.mp4``.
 
     Returns
     -------
-    vid_gen: generator returns image frames Other parameters
+    vid_gen : generator
+
+	returns ndarrays, shape (M, N, C) where 
+	M is frame height, N is frame width, and 
+	C is number of channels per pixel 
+
     ----------------
     plugin_args : keywords
         Passed to the given plugin.
