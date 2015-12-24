@@ -20,10 +20,10 @@ This project is distributed under the 3-clause BSD.
 Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. Listed below are the minimum versions tested:
 
 - ffmpeg (version >= 1.0)
-- mediainfo (version >= 0.7.52)
 - python2 (2.6 or 2.7)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
+- mediainfo (optional)
 
 ##Installation:
 

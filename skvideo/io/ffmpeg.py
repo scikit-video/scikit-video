@@ -237,8 +237,6 @@ class FFmpegReader():
         none
 
         """
-        verbosity = 1
-
         israw = 0
 
         # check for filters in the inputdict
