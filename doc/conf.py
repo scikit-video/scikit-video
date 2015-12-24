@@ -142,7 +142,12 @@ html_static_path = ['images']
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
 	'index': ['mycustomsidebar.html', 'searchbox.html'],
-	'modules/classes': ['home.html', 'searchbox.html'],
+	'io': ['mycustomsidebar.html', 'searchbox.html'],
+	'motion': ['mycustomsidebar.html', 'searchbox.html'],
+	'datasets': ['mycustomsidebar.html', 'searchbox.html'],
+	'examples': ['mycustomsidebar.html', 'searchbox.html'],
+	'benchmarks': ['mycustomsidebar.html', 'searchbox.html'],
+	'faq': ['mycustomsidebar.html', 'searchbox.html'],
 	'**': ['home.html', 'searchbox.html'], # all other pages 
 }
 

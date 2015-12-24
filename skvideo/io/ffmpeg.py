@@ -59,16 +59,34 @@ class FFmpegReader():
         # Output args, for writing to pipe
         self._probe = mprobe(filename)
 
+        # if frame rate not mentioned, throw a warning
+        # set to something static
+        viddict = self._probe["Video"]
+        viddict.setdefault("Frame_rate", [25])
+
+        # if we can't determine frame count and its not supplied,
+        # we could decode each frame for this variable,
+        # or we can re-allocate as we load them. For now,
+        # the former is implemented using flag `self.scanfirst`
+
+        self.scanfirst = 0
+
+        if ("-vframes" in inputdict):
+            self.inputframenum = np.int(inputdict["-vframes"])
+        elif ("Frame_count" in viddict):
+            self.inputframenum = np.int(self._probe["Video"]["Frame_count"])
+        else:
+            self.scanfirst = 1
+            self.inputframenum = -1
+
         # set the width, height, numframes
         self.inputwidth = np.int(self._probe["Video"]["Width"][0])
         self.inputheight = np.int(self._probe["Video"]["Height"][0])
         self.inputfps = np.float(self._probe["Video"]["Frame_rate"][0])
-        self.inputframenum = np.int(self._probe["Video"]["Frame_count"])
         self.inputdepth = np.int(self._probe["Video"]["Bit_depth"][0])
         self.inputdepth = 3
 
         self._filename = filename
-
 
         oargs = ['-f', 'image2pipe',
                  '-pix_fmt', 'rgb24', #self._pix_fmt,
@@ -83,6 +101,12 @@ class FFmpegReader():
         for key in outputdict.keys():
             oargs.append(key)
             oargs.append(outputdict[key])
+
+        if self.scanfirst:
+            # open process with supplied arguments,
+            # grabbing missing parameters using ffprobe
+            probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            self.inputframenum = np.int(check_output(probecmd))
 
         # Create process
         cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
