@@ -3,9 +3,9 @@ a wide range of video formats.
 
 """
 
+# Heavily inspired from Almar Klein's imageio code
 # Copyright (c) 2015, imageio contributors
 # distributed under the terms of the BSD License (included in release).
-# lifted from Almar Klein's imageio code
 
 import sys
 import os
@@ -16,6 +16,7 @@ import threading
 import subprocess as sp
 import logging
 import json
+import warnings
 
 import numpy as np
 
@@ -36,7 +37,13 @@ class FFmpegReader():
 
         During initialization, additional parameters about the video file
         are parsed using :func:`skvideo.io.mprobe`. Then FFmpeg is launched
-        as a subprocess.
+        as a subprocess. Parameters passed into inputdict are parsed and
+        used to set as internal variables about the video. If the parameter,
+        such as "Height" is not found in the inputdict, it is found through
+        scanning the file's header information. If not in the header, ffprobe
+        is used to decode the file to determine the information. In the case
+        that the information is not supplied and connot be inferred from the
+        input file, a ValueError exception is thrown.
 
         Parameters
         ----------
@@ -44,11 +51,11 @@ class FFmpegReader():
             Video file path
 
         inputdict : dict
-            Input dictionary parameters. How to interpret the filename.
+            Input dictionary parameters, i.e. how to interpret the input file.
 
         outputdict : dict
-            Output dictionary parameters. How to provide and interpret 
-            the data during the read.
+            Output dictionary parameters, i.e. how to encode the data 
+            when sending back to the python process.
 
         Returns
         -------
@@ -56,35 +63,67 @@ class FFmpegReader():
 
         """
 
+        # check for filters in the inputdict
+        # if 
+        # self.parsefilters
+
         # Output args, for writing to pipe
         self._probe = mprobe(filename)
 
-        # if frame rate not mentioned, throw a warning
-        # set to something static
-        viddict = self._probe["Video"]
-        viddict.setdefault("Frame_rate", [25])
+        self.size = 0
+        self.extension = ""
+        if "General" in self._probe:
+            self.size = np.int(self._probe["General"]["File_size"][0])
+            self.extension = self._probe["General"]["File_extension"]
 
-        # if we can't determine frame count and its not supplied,
-        # we could decode each frame for this variable,
-        # or we can re-allocate as we load them. For now,
-        # the former is implemented using flag `self.scanfirst`
+        viddict = {}
+        if "Video" in self._probe:
+            viddict = self._probe["Video"]
 
-        self.scanfirst = 0
+        self.inputfps = -1
+        if ("-r" in inputdict):
+            self.inputfps = np.int(inputdict["-r"])
+        elif "Frame_rate" in viddict:
+            self.inputfps = np.int(viddict["Frame_rate"][0])
+        else:
+            # simply default to a common 25 fps and warn
+            self.inputfps = 25
+            warnings.warn("No input frame rate detected. Assuming 25 fps. Consult documentation on I/O if this is not desired.", UserWarning) 
+
+
+        # if we don't have width or height at all, raise exception
+        if ("-s" in inputdict):
+            widthheight = inputdict["-s"].split('x')
+            self.inputwidth = np.int(widthheight[0])
+            self.inputheight = np.int(widthheight[1])
+        elif (("Width" in viddict) and ("Height" in viddict)):
+            self.inputwidth = np.int(self._probe["Video"]["Width"][0])
+            self.inputheight = np.int(self._probe["Video"]["Height"][0])
+        else:
+            raise ValueError("No way to determine width or height from video. Need `-s` in `inputdict`. Consult documentation on I/O.")
+
+        bpp = 0
+        # completely unsure of this:
+        if ("-pix_fmt" in inputdict):
+            # parse this bpp
+            self.inputdepth = 3
+        elif ("Bit_depth" in viddict):
+            self.inputdepth = np.int(self._probe["Video"]["Bit_depth"][0])
+            bpp = 0
+        else:
+            self.inputdepth = 3
+            warnings.warn("No input color space detected. Assuming yuv420.", UserWarning)
 
         if ("-vframes" in inputdict):
             self.inputframenum = np.int(inputdict["-vframes"])
         elif ("Frame_count" in viddict):
             self.inputframenum = np.int(self._probe["Video"]["Frame_count"])
+        elif (self.extension == "yuv"):
+            # we can compute it based on the input size and color space
+            self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * 3.0/2.0))
         else:
-            self.scanfirst = 1
             self.inputframenum = -1
-
-        # set the width, height, numframes
-        self.inputwidth = np.int(self._probe["Video"]["Width"][0])
-        self.inputheight = np.int(self._probe["Video"]["Height"][0])
-        self.inputfps = np.float(self._probe["Video"]["Frame_rate"][0])
-        self.inputdepth = np.int(self._probe["Video"]["Bit_depth"][0])
-        self.inputdepth = 3
+            warnings.warn("Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.", UserWarning) 
 
         self._filename = filename
 
@@ -102,11 +141,16 @@ class FFmpegReader():
             oargs.append(key)
             oargs.append(outputdict[key])
 
-        if self.scanfirst:
+        if self.inputframenum == -1:
             # open process with supplied arguments,
-            # grabbing missing parameters using ffprobe
+            # grabbing number of frames using ffprobe
             probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
-            self.inputframenum = np.int(check_output(probecmd))
+
+            # this may fail if the video is raw
+            try:
+                self.inputframenum = np.int(check_output(probecmd))
+            except:
+                pass
 
         # Create process
         cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
