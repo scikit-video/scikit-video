@@ -2,9 +2,9 @@
     
    .. raw:: html  
 
-	Scikit-video is designed for easy video processing using Python. It is modeled in the spirit of other successful scikits such as scikit-learn and scikit-image. 
+	Scikit-video is designed for easy video processing using Python. It is modeled in the spirit of other successful scikits such as scikit-learn and scikit-image. The developers of scikit-video know other libraries exist to read/write videos such as PyAV, imageIO, and opencv. However, no libraries have been found to provide easy acces to video processing tools. 
 
-	The developers of scikit-video know other libraries exist to read/write videos such as PyAV, imageIO, and opencv. However, none allow low level access to reading and writing videos, nor do these provide the video processing tools that researchers often use. This project aims to make video algorithms easy to access for students, engineers, and instructors. Choose a category below to start learning how to use scikit-video!
+This project aims to make video algorithms easy to access for students, engineers, instructors, and researchers. Choose a category below to start learning how to use scikit-video!
 
         <br/>
         <br/>
