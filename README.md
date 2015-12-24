@@ -11,9 +11,11 @@ scikit-video
 
 Borrowing coding styles and conventions from scikit-image and scikit-learn,
 scikit-video is a Python module for video processing built on top of 
-scipy, numpy, ffmpeg, and mediainfo.
+scipy, numpy, and ffmpeg.
 
 This project is distributed under the 3-clause BSD.
+
+Visit the documentation at http://www.scikit-video.org
 
 ##Dependencies:
 
@@ -34,33 +36,6 @@ Clone the scikit-video repository, run
 then 
 
 `sudo python2 setup.py install`
-
-##Example of reading a video directly into memory:
-
-```python
->>> import skvideo.io
->>> import skvideo.datasets
->>> videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
->>> videodata.shape
-(132, 720, 1280, 3)
-```
-
-##Example of reading a video frame-by-frame:
-
-```python
->>> import skvideo.io
->>> import skvideo.datasets
->>> videogen = skvideo.io.vread_generator(skvideo.datasets.bigbuckbunny())
->>> for frame in videogen:
-...    frame.shape
-(720, 1280, 3)
-(720, 1280, 3)
-     ...
-     ...
-     ...
-(720, 1280, 3)
-```
-
 
 ##TODO:
 - MacOSX and Windows support

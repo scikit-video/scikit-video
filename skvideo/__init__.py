@@ -36,9 +36,6 @@ if ((which("avconv") != None) and (which("avconv") != None)):
 if which("mediainfo") != None:
     _HAS_MEDIAINFO = 1
 
-# check to ensure that the mediainfo tool exists
-assert (_HAS_MEDIAINFO > 0)
-
 # check to ensure that at least one of 
 # avlib or ffmpeg is installed
 assert ((_ENABLE_FFMPEG + _ENABLE_AVCONV) > 0)
