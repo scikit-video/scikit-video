@@ -30,6 +30,7 @@ from github_link import make_linkcode_resolve
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.pngmath',
+              'youtube.youtube',
               #'sphinx.ext.linkcode',
               'numpy_ext.numpydoc']
 
@@ -141,13 +142,13 @@ html_static_path = ['images']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-	'index': ['mycustomsidebar.html', 'searchbox.html'],
-	'io': ['mycustomsidebar.html', 'searchbox.html'],
-	'motion': ['mycustomsidebar.html', 'searchbox.html'],
-	'datasets': ['mycustomsidebar.html', 'searchbox.html'],
-	'examples': ['mycustomsidebar.html', 'searchbox.html'],
-	'benchmarks': ['mycustomsidebar.html', 'searchbox.html'],
-	'faq': ['mycustomsidebar.html', 'searchbox.html'],
+	'index': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'io': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'motion': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'datasets': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'examples': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'benchmarks': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'faq': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'**': ['home.html', 'searchbox.html'], # all other pages 
 }
 
