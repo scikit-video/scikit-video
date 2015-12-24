@@ -98,15 +98,19 @@ def vread(fname, **plugin_args):
         defaultplugin = plugin_args["plugin"]
 
     if defaultplugin == "ffmpeg":
-        width = 0
+        width = -1
         if "width" in plugin_args:
-            width = plugin_args["width"]
+            width = np.int(plugin_args["width"])
 
-        height = 0
+        height = -1
         if "height" in plugin_args:
-            height = plugin_args["height"]
+            height = np.int(plugin_args["height"])
 
-        reader = FFmpegReader(fname)
+        inputdict = {}
+        if ((height != -1) and (width != -1)):
+            inputdict['-s'] = str(width) + 'x' + str(height)
+
+        reader = FFmpegReader(fname, inputdict=inputdict)
         T, M, N, C = reader.getShape()
 
         videodata = np.zeros((T, M, N, C), dtype=np.uint8)
