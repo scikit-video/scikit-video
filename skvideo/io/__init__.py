@@ -13,6 +13,7 @@ __all__ = [
     'vwrite',
     'vwriter',
     'mprobe',
+    'ffprobe',
     'FFmpegReader',
     'FFmpegWriter'
 ]
