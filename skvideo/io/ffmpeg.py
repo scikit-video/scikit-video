@@ -316,9 +316,14 @@ class FFmpegReader():
 
         self._filename = filename
 
-        oargs = ['-f', 'image2pipe',
-                 '-pix_fmt', 'rgb24', #self._pix_fmt,
-                 '-vcodec', 'rawvideo']
+        if '-f' not in outputdict:
+            outputdict['-f'] = "image2pipe"
+
+        if '-pix_fmt' not in outputdict:
+            outputdict['-pix_fmt'] = "rgb24"
+
+        if '-vcodec' not in outputdict:
+            outputdict['-vcodec'] = "rawvideo"
 
         # Create input args
         iargs = []
@@ -326,6 +331,7 @@ class FFmpegReader():
             iargs.append(key)
             iargs.append(inputdict[key])
 
+        oargs = []
         for key in outputdict.keys():
             oargs.append(key)
             oargs.append(outputdict[key])
@@ -334,7 +340,7 @@ class FFmpegReader():
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
             probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
-            self.inputframenum = np.int(check_output(probecmd))
+            self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
