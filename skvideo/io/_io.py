@@ -106,11 +106,17 @@ def vread(fname, **plugin_args):
         if "height" in plugin_args:
             height = np.int(plugin_args["height"])
 
+
         inputdict = {}
         if ((height != -1) and (width != -1)):
             inputdict['-s'] = str(width) + 'x' + str(height)
 
-        reader = FFmpegReader(fname, inputdict=inputdict)
+        outputdict = {}
+        if "num_frames" in plugin_args:
+            num_frames = plugin_args["num_frames"]
+            outputdict['-vframes'] = str(num_frames)
+
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict)
         T, M, N, C = reader.getShape()
 
         videodata = np.zeros((T, M, N, C), dtype=np.uint8)

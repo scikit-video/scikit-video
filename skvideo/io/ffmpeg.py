@@ -246,7 +246,11 @@ class FFmpegReader():
         # General information
         _, self.extension = os.path.splitext(filename)
         self.size = os.path.getsize(filename)
-        self.probeInfo = ffprobe(filename)
+        self.probeInfo = {}
+        try:
+            self.probeInfo = ffprobe(filename)
+        except:
+            pass
 
         viddict = {}
         if "video" in self.probeInfo:
@@ -294,14 +298,14 @@ class FFmpegReader():
         self.inputdepth = np.int(self.bpplut[self.pix_fmt][0])
         self.bpp = np.int(self.bpplut[self.pix_fmt][1])
 
-        if ("-vframes" in inputdict):
-            self.inputframenum = np.int(inputdict["-vframes"])
+        if ("-vframes" in outputdict):
+            self.inputframenum = np.int(outputdict["-vframes"])
         elif ("@nb_frames" in viddict):
             self.inputframenum = np.int(viddict["@nb_frames"])
-        elif (self.extension == "yuv"):
+        elif (self.extension == ".yuv"):
             israw = 1
             # we can compute it based on the input size and color space
-            self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (bpp/8.0)))
+            self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (self.bpp/8.0)))
         else:
             self.inputframenum = -1
             if verbosity != 0:
@@ -333,13 +337,14 @@ class FFmpegReader():
             self.inputframenum = np.int(check_output(probecmd))
 
         # Create process
-        cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
-        print cmd
 
         if verbosity == 0:
+            cmd = ["ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
+            cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
+            print cmd
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
