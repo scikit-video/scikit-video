@@ -118,6 +118,6 @@ def rgb2gray(videodata):
         return videodata
     elif C == 3: # assume RGB
         videodata = videodata[:, :, :, 0]*0.2989 + videodata[:, :, :, 1]*0.5870 + videodata[:, :, :, 2]*0.1140 
-        return vidShape(videodata)
+        return vshape(videodata)
     else:
         raise NotImplemented
