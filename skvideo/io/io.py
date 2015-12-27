@@ -5,7 +5,7 @@ from ..utils import *
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
 
-def vwrite(fname, videodata, inputdict={}, outputdict={}, backend='ffmpeg'):
+def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Save a video to file entirely from memory.
 
     Parameters
@@ -29,18 +29,27 @@ def vwrite(fname, videodata, inputdict={}, outputdict={}, backend='ffmpeg'):
     backend : string
         Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
+    verbosity : int
+        Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
+
     Returns
     -------
     none
 
     """
+    if not inputdict:
+        inputdict = {}
+
+    if not outputdict:
+        outputdict = {}
+
     videodata = vshape(videodata)
 
     # check that the appropriate videodata size was passed
     T, M, N, C = videodata.shape
 
     if backend == "ffmpeg":
-        writer = FFmpegWriter(fname, inputdict={}, outputdict={})
+        writer = FFmpegWriter(fname, inputdict={}, outputdict={}, verbosity=verbosity)
         for t in xrange(T):
             writer.writeFrame(videodata[t])
         writer.close()
@@ -48,7 +57,7 @@ def vwrite(fname, videodata, inputdict={}, outputdict={}, backend='ffmpeg'):
         raise NotImplemented
 
 
-def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, backend='ffmpeg'):
+def vread(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Load a video from file entirely into memory.
 
     Parameters
@@ -76,6 +85,9 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, b
     backend : string
         Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
+    verbosity : int
+        Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
+
     Returns
     -------
     vid_array : ndarray
@@ -84,7 +96,11 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, b
         width, and C is depth.
 
     """
-    global defaultplugin
+    if not inputdict:
+        inputdict = {}
+
+    if not outputdict:
+        outputdict = {}
 
     if backend == "ffmpeg":
         if ((height != 0) and (width != 0)):
@@ -93,7 +109,7 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, b
         if num_frames != 0:
             outputdict['-vframes'] = str(num_frames)
 
-        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict)
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         T, M, N, C = reader.getShape()
 
         videodata = np.zeros((T, M, N, C), dtype=np.uint8)
@@ -104,7 +120,7 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, b
     else:
         raise NotImplemented
 
-def vreader(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, backend='ffmpeg'):
+def vreader(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Load a video through the use of a generator. 
 
     Parameters
@@ -132,6 +148,10 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={},
     backend : string
         Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
+    verbosity : int
+        Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
+
+
     Returns
     -------
     vid_gen : generator
@@ -144,7 +164,11 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={},
         Passed to the given plugin.
 
     """
-    global defaultplugin
+    if not inputdict:
+        inputdict = {}
+
+    if not outputdict:
+        outputdict = {}
 
     if backend == "ffmpeg":
         if ((height != 0) and (width != 0)):
@@ -153,7 +177,7 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={},
         if num_frames != 0:
             outputdict['-vframes'] = str(num_frames)
 
-        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict)
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for frame in reader.nextFrame():
             yield frame
 

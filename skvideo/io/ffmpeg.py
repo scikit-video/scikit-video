@@ -33,7 +33,7 @@ class FFmpegReader():
 
     """
 
-    def __init__(self, filename, inputdict={}, outputdict={}, verbosity=0):
+    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
         """Initializes FFmpeg in reading mode with the given parameters
 
         During initialization, additional parameters about the video file
@@ -65,9 +65,11 @@ class FFmpegReader():
         """
         israw = 0
 
-        # check for filters in the inputdict
-        # if 
-        # self.parsefilters
+        if not inputdict:
+            inputdict = {}
+
+        if not outputdict:
+            outputdict = {}
 
         # General information
         _, self.extension = os.path.splitext(filename)
@@ -259,7 +261,7 @@ class FFmpegWriter():
     Using FFmpeg as a backend, this class
     provides sane initializations for the default case.
     """
-    def __init__(self, filename, inputdict={}, outputdict={}, verbosity=0):
+    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
         """Prepares parameters for FFmpeg
     
         Does not instantiate the an FFmpeg subprocess, but simply
@@ -282,6 +284,12 @@ class FFmpegWriter():
         none
 
         """
+
+        if not inputdict:
+            inputdict = {}
+
+        if not outputdict:
+            outputdict = {}
 
         self._filename = filename
         _, self.extension = os.path.splitext(self._filename)
