@@ -71,13 +71,33 @@ def vwrite(fname, data, **plugin_args):
         raise ValueError, "Passed data does not have sensible dimensions..."
 
 
-def vread(fname, **plugin_args):
+def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, backend='ffmpeg'):
     """Load a video from file entirely into memory.
 
     Parameters
     ----------
     fname : string
         Video file name, e.g. ``bickbuckbunny.mp4``
+
+    height : int
+        Set the source video height used for decoding. Useful for raw inputs when video header does not exist.
+
+    width : int
+        Set the source video width used for decoding. Useful for raw inputs when video header does not exist.
+
+    num_frames : int
+        Only read the first the first `num_frames` number of frames from video. Setting `num_frames` to 
+        small numbers can significantly speed up video loading times.
+
+    inputdict : dict
+        Input dictionary parameters, i.e. how to interpret the input file.
+
+    outputdict : dict
+        Output dictionary parameters, i.e. how to encode the data 
+        when sending back to the python process.
+
+    backend : string
+        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
     Returns
     -------
@@ -86,34 +106,14 @@ def vread(fname, **plugin_args):
         is the number of frames, M is the height, N is
         width, and C is depth.
 
-    Other parameters
-    ----------------
-    plugin_args : keywords
-        Passed to the given plugin.
-
     """
     global defaultplugin
 
-    if "plugin" in plugin_args:
-        defaultplugin = plugin_args["plugin"]
-
-    if defaultplugin == "ffmpeg":
-        width = -1
-        if "width" in plugin_args:
-            width = np.int(plugin_args["width"])
-
-        height = -1
-        if "height" in plugin_args:
-            height = np.int(plugin_args["height"])
-
-
-        inputdict = {}
-        if ((height != -1) and (width != -1)):
+    if backend == "ffmpeg":
+        if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
 
-        outputdict = {}
-        if "num_frames" in plugin_args:
-            num_frames = plugin_args["num_frames"]
+        if num_frames != 0:
             outputdict['-vframes'] = str(num_frames)
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict)
@@ -127,19 +127,37 @@ def vread(fname, **plugin_args):
     else:
         raise NotImplemented
 
-def vreader(fname, **plugin_args):
+def vreader(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, backend='ffmpeg'):
     """Load a video through the use of a generator. 
 
     Parameters
     ----------
     fname : string
+        Video file name, e.g. ``bickbuckbunny.mp4``
 
-        Video file name, e.g. ``bickbuckbunny.mp4``.
+    height : int
+        Set the source video height used for decoding. Useful for raw inputs when video header does not exist.
+
+    width : int
+        Set the source video width used for decoding. Useful for raw inputs when video header does not exist.
+
+    num_frames : int
+        Only read the first the first `num_frames` number of frames from video. Setting `num_frames` to 
+        small numbers can significantly speed up video loading times.
+
+    inputdict : dict
+        Input dictionary parameters, i.e. how to interpret the input file.
+
+    outputdict : dict
+        Output dictionary parameters, i.e. how to encode the data 
+        when sending back to the python process.
+
+    backend : string
+        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
     Returns
     -------
     vid_gen : generator
-
 	returns ndarrays, shape (M, N, C) where 
 	M is frame height, N is frame width, and 
 	C is number of channels per pixel 
@@ -151,19 +169,14 @@ def vreader(fname, **plugin_args):
     """
     global defaultplugin
 
-    if "plugin" in plugin_args:
-        defaultplugin = plugin_args["plugin"]
+    if backend == "ffmpeg":
+        if ((height != 0) and (width != 0)):
+            inputdict['-s'] = str(width) + 'x' + str(height)
 
-    if defaultplugin == "ffmpeg":
-        width = 0
-        if "width" in plugin_args:
-            width = plugin_args["width"]
+        if num_frames != 0:
+            outputdict['-vframes'] = str(num_frames)
 
-        height = 0
-        if "height" in plugin_args:
-            height = plugin_args["height"]
-
-        reader = FFmpegReader(fname)
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict)
         for frame in reader.nextFrame():
             yield frame
 
