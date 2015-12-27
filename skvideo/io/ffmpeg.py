@@ -118,8 +118,9 @@ class FFmpegReader():
             # parse this bpp
             self.pix_fmt = viddict["@pix_fmt"]
         else:
-            self.pix_fmt = "yuv420p"
-            warnings.warn("No input color space detected. Assuming yuv420.", UserWarning)
+            self.pix_fmt = "yuvj420p"
+            if verbosity != 0:
+                warnings.warn("No input color space detected. Assuming yuvj420p.", UserWarning)
 
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
