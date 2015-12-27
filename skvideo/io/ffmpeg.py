@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 
 from ffprobe import ffprobe
-from .._utils import *
+from ..utils import *
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():

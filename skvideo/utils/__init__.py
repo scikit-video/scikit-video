@@ -25,9 +25,22 @@ def check_dict(dic, key, valueifnot):
 
 # patch for python 2.6
 def check_output(*popenargs, **kwargs):
-    process = sp.Popen(stdout=sp.PIPE, *popenargs, **kwargs)
+    closeNULL = 0
+    try:
+        from subprocess import DEVNULL
+        closeNULL = 0
+    except ImportError:
+        import os
+        DEVNULL = open(os.devnull, 'wb')
+        closeNULL = 1
+
+    process = sp.Popen(stdout=sp.PIPE, stderr=DEVNULL, *popenargs, **kwargs)
     output, unused_err = process.communicate()
     retcode = process.poll()
+
+    if closeNULL:
+        DEVNULL.close()
+
     if retcode:
         cmd = kwargs.get("args")
         if cmd is None:

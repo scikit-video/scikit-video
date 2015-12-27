@@ -5,7 +5,7 @@
 
 from .ffmpeg import *
 from .mprobe import *
-from ._io import *
+from .io import *
 
 __all__ = [
     'vread',

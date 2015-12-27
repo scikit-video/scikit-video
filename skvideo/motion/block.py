@@ -2,7 +2,7 @@ import numpy as np
 import os
 import time
 
-from .._utils import *
+from ..utils import *
 
 
 def _costMAD(block1, block2):
