@@ -145,6 +145,7 @@ html_sidebars = {
 	'index': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'io': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'motion': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+	'utilities': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'datasets': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'examples': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
 	'benchmarks': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],

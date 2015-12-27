@@ -1,6 +1,6 @@
 import subprocess as sp
 
-from .._utils import *
+from ..utils import *
 
 def mprobe(filename):
     """get metadata by using mediainfo

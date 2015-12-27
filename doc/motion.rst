@@ -6,7 +6,7 @@ Motion
 
 .. currentmodule:: skvideo.motion
 
-`skvideo.motion` is a module currently supporting block motion estimation and compensation routines.
+:mod:`skvideo.motion` is a module currently supporting block motion estimation and compensation routines.
 
 
 Block motion

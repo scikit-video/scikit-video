@@ -2,7 +2,7 @@ import numpy as np
 import os
 import time
 
-from .._utils import *
+from ..utils import *
 
 
 def _costMAD(block1, block2):
@@ -870,7 +870,7 @@ def _ES(imgP, imgI, mbSize, p):
     return vectors, computations / ((h * w) / mbSize**2)
 
 
-def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
+def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
     """Block-based motion estimation
     
     Given a sequence of frames, this function
@@ -878,7 +878,7 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
 
     Parameters
     ----------
-    frameSequence : ndarray, shape (numFrames, height, width, channel)
+    videodata : ndarray, shape (numFrames, height, width, channel)
         A sequence of frames
 
     method : string
@@ -906,7 +906,7 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
     ----------
     motionData : ndarray, shape (numFrames - 1, height/mbSize, width/mbSize, 2)
 
-        The motion vectors computed from frameSequence. The first element of the last axis contains the y motion component, and second element contains the x motion component.
+        The motion vectors computed from videodata. The first element of the last axis contains the y motion component, and second element contains the x motion component.
 
     References
     ----------
@@ -921,87 +921,60 @@ def blockMotion(frameSequence, method='DS', mbSize=8, p=2, **plugin_args):
     .. [#f5] Shan Zhu and Kai-Kuang Ma, "A new diamond search algorithm for fast block-matching motion estimation." IEEE Transactions on Image Processing, 9 (2) 287-290, Feb 2000
 
     """
+    videodata = vshape(videodata)
 
-    numFrames, height, width, channels = frameSequence.shape
+    # grayscale
+    luminancedata = rgb2gray(videodata)
+
+    numFrames, height, width, channels = luminancedata.shape
+    assert numFrames > 1, "Must have more than 1 frame for motion estimation!"
+
+    # luminance is 1 channel, so flatten for computation
+    luminancedata = luminancedata.reshape((numFrames, height, width))
 
     motionData = np.zeros((numFrames - 1, height / mbSize, width / mbSize, 2), np.int8)
 
     if method == "ES":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _ES(frame_current, frame_next, mbSize, p)
+            motion, comps = _ES(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "4SS":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _4SS(frame_current, frame_next, mbSize, p)
+            motion, comps = _4SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "3SS":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _3SS(frame_current, frame_next, mbSize, p)
+            motion, comps = _3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "N3SS":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _N3SS(frame_current, frame_next, mbSize, p)
+            motion, comps = _N3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "SE3SS":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _SE3SS(frame_current, frame_next, mbSize, p)
+            motion, comps = _SE3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "ARPS":  # BROKEN, check this
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _ARPS(frame_current, frame_next, mbSize, p)
+            motion, comps = _ARPS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "DS":
         for i in xrange(numFrames - 1):
-            frame_current = rgb2gray(frameSequence[i, :, :])
-            frame_next = rgb2gray(frameSequence[i + 1, :, :])
-            motion, comps = _DS(frame_current, frame_next, mbSize, p)
+            motion, comps = _DS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     else:
         raise NotImplementedError
 
     return motionData
 
-#only handles (M, N) shapes
-def _subcomp2d(frameData, motionVect, mbSize):
-    h, w = frameData.shape
-
-    compImg = np.zeros((h, w))
-
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
-            dy = motionVect[i / mbSize, j / mbSize, 0]
-            dx = motionVect[i / mbSize, j / mbSize, 1]
-
-            refBlkVer = i + dy
-            refBlkHor = j + dx
-
-            # check bounds
-            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
-                continue
-
-            compImg[i:i + mbSize, j:j + mbSize] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize]
-    return compImg
-
 #only handles (M, N, C) shapes
-def _subcomp3d(frameData, motionVect, mbSize):
-    h, w, c = frameData.shape
+def _subcomp(framedata, motionVect, mbSize):
+    M, N, C = framedata.shape
 
-    compImg = np.zeros((h, w, c))
+    compImg = np.zeros((M, N, C))
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in xrange(0, M - mbSize + 1, mbSize):
+        for j in xrange(0, N - mbSize + 1, mbSize):
             dy = motionVect[i / mbSize, j / mbSize, 0]
             dx = motionVect[i / mbSize, j / mbSize, 1]
 
@@ -1009,26 +982,26 @@ def _subcomp3d(frameData, motionVect, mbSize):
             refBlkHor = j + dx
 
             # check bounds
-            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+            if not _checkBounded(refBlkHor, refBlkVer, N, M, mbSize):
                 continue
 
-            compImg[i:i + mbSize, j:j + mbSize, :] = frameData[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize, :]
+            compImg[i:i + mbSize, j:j + mbSize, :] = framedata[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize, :]
     return compImg
 
 
-def blockComp(frameData, motionVect, mbSize=8):
+def blockComp(videodata, motionVect, mbSize=8):
     """Block-based motion compensation
     
     Using the given motion vectors, this function
-    returns the motion-compensated image.
+    returns the motion-compensated video data.
 
     Parameters
     ----------
-    frameData : ndarray
-        an input frame, shape (M, N) or (M, N, C)
+    videodata : ndarray
+        an input frame sequence, shape (T, M, N, C), (T, M, N), (M, N, C) or (M, N)
 
     motionVect : ndarray
-        ndarray representing block motion vectors. Expects ndarray, shape (M/mbSize, N/mbSize).
+        ndarray representing block motion vectors. Expects ndarray, shape (T-1, M/mbSize, N/mbSize) or (M/mbSize, N/mbSize).
 
     mbSize : int
         Size of macroblock in pixels.
@@ -1036,51 +1009,21 @@ def blockComp(frameData, motionVect, mbSize=8):
     Returns
     -------
     compImg : ndarray
-	ndarray holding the motion compensated image frame, shape (M, N) or (M, N, C) depending on the shape of frameData
+        ndarray holding the motion compensated image frame, shape (T, M, N, C)
 
     """
 
-    frameData = np.array(frameData)
-    T = 0
-    M = 0
-    N = 0
-    C = 0
-    if len(frameData.shape) == 2: 
-        # convert frameData
-        M, N = frameData.shape
-    elif len(frameData.shape) == 3: 
-        a, b, c = frameData.shape
-        # check the last dimension small
-        # interpret as color channel
-        if c in [1, 2, 3, 4]:
-            h = M
-            w = N
-            C = c
-        else:
-            T = a
-            h = M
-            w = N
-    elif len(frameData.shape) == 4: 
-        T, M, N, C = frameData.shape
-    else:
-        raise ValueError("Improper shape")
+    videodata = vshape(videodata)
+    T, M, N, C = videodata.shape
 
-    if T == 0:	# a single frame is passed in
-        if C == 0:
-            return _subcomp2d(frameData, motionVect, mbSize)
-        else:
-            return _subcomp3d(frameData, motionVect, mbSize)
+    if T == 1:	# a single frame is passed in
+        return _subcomp(videodata, motionVect, mbSize)
 
     else: # more frames passed in
-        if C == 0:
-            # allocate compensation data
-            compVid = np.zeros((T, M, N))
-            for i in xrange(T-1):
-                compVid[i, :, :] = _subcomp2d(frameData[i], motionVect[i], mbSize)
-            return compVid
-        else:
-            # allocate compensation data
-            compVid = np.zeros((T, M, N, C))
-            for i in xrange(T-1):
-                compVid[i, :, :, :] = _subcomp3d(frameData[i], motionVect[i], mbSize)
-            return compVid
+        # allocate compensation data
+        compVid = np.zeros((T, M, N, C))
+        # pass the first frame uncorrected
+        compVid[0, :, :, :] = videodata[0]
+        for i in xrange(1, T):
+            compVid[i, :, :, :] = _subcomp(videodata[i], motionVect[i-1], mbSize)
+        return compVid
