@@ -21,7 +21,7 @@ Visit the documentation at http://www.scikit-video.org
 
 Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. Listed below are the minimum versions tested:
 
-- ffmpeg (version >= 1.0)
+- ffmpeg (version >= 2.1)
 - python2 (2.6 or 2.7)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
