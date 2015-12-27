@@ -21,20 +21,21 @@
 	</div>
 	<div class="container">
 		<div class="col-md-4">
+		<a href='utilities.html'>Utilities</a>
+		</div>
+		<div class="col-md-4">
 		<a href='examples.html'>Examples</a>
 		</div>
 		<div class="col-md-4">
 		<a href='benchmarks.html'>Benchmarks</a>
 		</div>
-		<div class="col-md-4">
-		<a href='faq.html'>FAQ</a>
-		</div>
 	</div>
 	<div class="container">
 		<div class="col-md-4">
-		<a href='classes.html'>API Reference</a>
+		<a href='faq.html'>FAQ</a>
 		</div>
 		<div class="col-md-4">
+		<a href='classes.html'>API Reference</a>
 		</div>
 		<div class="col-md-4">
 		</div>
@@ -50,6 +51,7 @@
    io
    motion
    datasets
+   utilities
    examples
    benchmarks
    faq

@@ -1,7 +1,7 @@
-.. _datasets:
+.. _utilities:
 
 ===========================
-Test Datasets
+Utility functions
 ===========================
 
 .. currentmodule:: skvideo.utils
