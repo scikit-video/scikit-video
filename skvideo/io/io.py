@@ -49,7 +49,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
     T, M, N, C = videodata.shape
 
     if backend == "ffmpeg":
-        writer = FFmpegWriter(fname, inputdict={}, outputdict={}, verbosity=verbosity)
+        writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for t in xrange(T):
             writer.writeFrame(videodata[t])
         writer.close()

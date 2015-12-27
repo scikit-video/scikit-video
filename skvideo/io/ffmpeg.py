@@ -120,7 +120,7 @@ class FFmpegReader():
             # parse this bpp
             self.pix_fmt = viddict["@pix_fmt"]
         else:
-            self.pix_fmt = "yuvj420p"
+            self.pix_fmt = "yuvj444p"
             if verbosity != 0:
                 warnings.warn("No input color space detected. Assuming yuvj420p.", UserWarning)
 
@@ -338,7 +338,7 @@ class FFmpegWriter():
         # prepare output parameters, if raw
         if self.extension == ".yuv":
             if "-pix_fmt" not in self.outputdict:
-                self.outputdict["-pix_fmt"] = "yuvj420p"
+                self.outputdict["-pix_fmt"] = "yuvj444p"
                 if self.verbosity != 0:
                     warnings.warn("No output color space provided. Assuming yuvj420p.", UserWarning)
 

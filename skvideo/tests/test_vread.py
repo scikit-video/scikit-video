@@ -1,7 +1,9 @@
 from numpy.testing import assert_equal
 import numpy as np
 import skvideo.io
+import skvideo.utils
 import skvideo.datasets
+import os
 
 # test read twice
 def test_vread2x():
@@ -29,7 +31,7 @@ def test_vread():
 def test_vread_raw():
     # reading first time
     bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
-    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, outputdict={'-pix_fmt': "yuv420p"})
+    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1)
 
     # testing pipeline
     bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1)
@@ -53,7 +55,7 @@ def test_vread_raw():
     assert t < 1, "Unacceptable precision loss (mse=%f) performing vwrite (mp4 data) -> vread (raw data)." % (t,)
 
     t = np.mean((bunnyYUVVideoData1 - bunnyYUVVideoData2)**2)
-    assert t < 1, "Unacceptable precision loss (mse=%f) performing vwrite (raw data) -> vread (raw data)." % (t,)
+    assert t < 0.001, "Unacceptable precision loss (mse=%f) performing vwrite (raw data) -> vread (raw data)." % (t,)
 
     os.remove("bunnyMP4VideoData_vwrite.yuv")
     os.remove("bunnyYUVVideoData_vwrite.yuv")
