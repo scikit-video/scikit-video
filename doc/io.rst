@@ -4,9 +4,9 @@
 Reading and Writing Videos
 ===========================
 
-.. currentmodule:: sklearn.io
+.. currentmodule:: skvideo.io
 
-`sklearn.io` is a module created for using the FFmpeg 
+:mod:`skvideo.io` is a module created for using the FFmpeg 
 backend to read and write videos. The mediainfo tool is used
 for parsing metadata from videos, since it provides a universal 
 format. In time, other backends are planned, but for now only FFmpeg
