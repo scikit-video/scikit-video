@@ -38,7 +38,7 @@ def test_FFmpegWriter():
     outputdata = np.random.random(size=(5, 480, 640, 3)) * 255
     outputdata = outputdata.astype(np.uint8)
 
-    writer = skvideo.io.FFmpegWriter(outputfile, (5, 480, 640, 3))
+    writer = skvideo.io.FFmpegWriter(outputfile)
     for i in xrange(5):
         writer.writeFrame(outputdata[i, :, :, :])
     writer.close()

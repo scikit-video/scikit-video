@@ -1,12 +1,11 @@
 import numpy as np
 import subprocess
 import os
+from ..utils import *
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
 
-defaultplugin = "ffmpeg"
-
-def vwrite(fname, data, **plugin_args):
+def vwrite(fname, videodata, inputdict={}, outputdict={}, backend='ffmpeg'):
     """Save a video to file entirely from memory.
 
     Parameters
@@ -14,61 +13,39 @@ def vwrite(fname, data, **plugin_args):
     fname : string
         Video file name.
 
-    data : ndarray
-        ndarray of dimension (T, M, N, C), where T
-        is the number of frames, M is the height, N is
-        width, and C is depth.
+    videodata : ndarray
+        ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N), 
+        where T is the number of frames, M is the height, N is width, 
+        and C is number of channels.
+
+    inputdict : dict
+        Input dictionary parameters, i.e. how to interpret the piped datastream
+        coming from python to the subprocess.
+
+    outputdict : dict
+        Output dictionary parameters, i.e. how to encode the data to
+        disk.
+
+    backend : string
+        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
 
     Returns
     -------
     none
 
-    Other parameters
-    ----------------
-    plugin_args : keywords
-        Passed to the given plugin.
-
     """
-    global defaultplugin
+    videodata = vshape(videodata)
 
-    data = np.array(data)
-    # check that the appropriate data size was passed
-    if len(data.shape) == 4:
-        T, M, N, C = data.shape
-        fps = 30
+    # check that the appropriate videodata size was passed
+    T, M, N, C = videodata.shape
 
-        if "plugin" in plugin_args:
-            defaultplugin = plugin_args["plugin"]
-
-        if "fps" in plugin_args:
-            fps = plugin_args["fps"]
-
-        if defaultplugin == "ffmpeg":
-            writer = FFmpegWriter(fname, (T, M, N, C))
-            for t in xrange(T):
-                writer.writeFrame(data[t, :, :, :])
-            writer.close()
-        else:
-            raise NotImplemented
-    elif len(data.shape) == 3:
-        T, M, N = data.shape
-        fps = 30
-
-        if "plugin" in plugin_args:
-            defaultplugin = plugin_args["plugin"]
-
-        if "fps" in plugin_args:
-            fps = plugin_args["fps"]
-
-        if defaultplugin == "ffmpeg":
-            writer = FFmpegWriter(fname, (T, M, N), pix_fmt='gray')
-            for t in xrange(T):
-                writer.writeFrame(data[t, :, :])
-            writer.close()
-        else:
-            raise NotImplemented
+    if backend == "ffmpeg":
+        writer = FFmpegWriter(fname, inputdict={}, outputdict={})
+        for t in xrange(T):
+            writer.writeFrame(videodata[t])
+        writer.close()
     else:
-        raise ValueError, "Passed data does not have sensible dimensions..."
+        raise NotImplemented
 
 
 def vread(fname, height=0, width=0, num_frames=0, inputdict={}, outputdict={}, backend='ffmpeg'):

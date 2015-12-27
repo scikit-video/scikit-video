@@ -4,7 +4,7 @@ import skvideo.io
 import skvideo.datasets
 
 
-def test_vreader():
+def test_vreader_default():
     reader = skvideo.io.vreader(skvideo.datasets.bigbuckbunny())
 
     t = 0
