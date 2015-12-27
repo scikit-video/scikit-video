@@ -982,7 +982,7 @@ def _subcomp(framedata, motionVect, mbSize):
             refBlkHor = j + dx
 
             # check bounds
-            if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
+            if not _checkBounded(refBlkHor, refBlkVer, N, M, mbSize):
                 continue
 
             compImg[i:i + mbSize, j:j + mbSize, :] = framedata[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize, :]
@@ -1025,5 +1025,5 @@ def blockComp(videodata, motionVect, mbSize=8):
         # pass the first frame uncorrected
         compVid[0, :, :, :] = videodata[0]
         for i in xrange(1, T):
-            compVid[i, :, :, :] = _subcomp(videodata[i], motionVect[i], mbSize)
+            compVid[i, :, :, :] = _subcomp(videodata[i], motionVect[i-1], mbSize)
         return compVid
