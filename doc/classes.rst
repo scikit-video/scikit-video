@@ -7,3 +7,4 @@ API Reference
    modules/io
    modules/motion
    modules/datasets
+   modules/utils
