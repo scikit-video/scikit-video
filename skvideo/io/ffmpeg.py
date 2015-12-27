@@ -153,6 +153,18 @@ class FFmpegReader():
         if '-pix_fmt' not in outputdict:
             outputdict['-pix_fmt'] = "rgb24"
 
+        if '-s' in outputdict:
+            widthheight = outputdict["-s"].split('x')
+            self.outputwidth = np.int(widthheight[0])
+            self.outputheight = np.int(widthheight[1])
+        else:
+            self.outputwidth = self.inputwidth
+            self.outputheight = self.inputheight
+
+
+        self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
+        self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
+
         if '-vcodec' not in outputdict:
             outputdict['-vcodec'] = "rawvideo"
 
@@ -217,7 +229,7 @@ class FFmpegReader():
 
     def _read_frame_data(self):
         # Init and check
-        framesize = self.inputdepth * self.inputwidth * self.inputheight
+        framesize = self.outputdepth * self.outputwidth * self.outputheight
         assert self._proc is not None
 
         try:
@@ -236,7 +248,7 @@ class FFmpegReader():
         # t0 = time.time()
         s = self._read_frame_data()
         result = np.fromstring(s, dtype='uint8')
-        result = result.reshape((self.inputheight, self.inputwidth, self.inputdepth))
+        result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
         # t1 = time.time()
         # print('etime', t1-t0)
 
