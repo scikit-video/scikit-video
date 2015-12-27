@@ -22,7 +22,6 @@ def test_vread():
 
 def make_raw_videos():
     videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
-    print videodata.shape
     skvideo.io.vwrite("bunnytest.yuv", videodata)
 
 def delete_raw_videos():

@@ -125,12 +125,14 @@ class FFmpegReader():
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
 
+        if (self.extension == ".yuv"):
+            israw = 1
+
         if ("-vframes" in outputdict):
             self.inputframenum = np.int(outputdict["-vframes"])
         elif ("@nb_frames" in viddict):
             self.inputframenum = np.int(viddict["@nb_frames"])
-        elif (self.extension == ".yuv"):
-            israw = 1
+        elif israw == 1:
             # we can compute it based on the input size and color space
             self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (self.bpp/8.0)))
         else:
@@ -329,6 +331,8 @@ class FFmpegWriter():
         if self.extension == ".yuv":
             if "-pix_fmt" not in self.outputdict:
                 self.outputdict["-pix_fmt"] = "yuvj420p"
+                if self.verbosity != 0:
+                    warnings.warn("No output color space provided. Assuming yuvj420p.", UserWarning)
 
         # Create input args
         iargs = []
@@ -378,6 +382,8 @@ class FFmpegWriter():
             self._warmStart(M, N, C)
 
         # Ensure that ndarray image is in uint8
+        vid[vid > 255] = 255
+        vid[vid < 0] = 0
         vid = vid.astype(np.uint8)
 
         # Check size of image
