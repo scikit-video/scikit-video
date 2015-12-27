@@ -26,9 +26,7 @@ env:
     - COVERAGE="true"
   matrix:
     # Primary targets.
-    - FFMPEG=1.0
-    - FFMPEG=1.2
-    - FFMPEG=2.0
+    - FFMPEG=2.1
     - FFMPEG=2.2
     - FFMPEG=2.4
     - FFMPEG=2.6
