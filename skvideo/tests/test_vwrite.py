@@ -12,7 +12,7 @@ def hashfile(afile, hasher, blocksize=65536):
         buf = afile.read(blocksize)
     return hasher.hexdigest()
 
-def test_vwrite():
+def _vwrite(backend):
     outputfile = sys._getframe().f_code.co_name + ".mp4"
 
     np.random.seed(0)
@@ -22,7 +22,7 @@ def test_vwrite():
     outputdata = outputdata.astype(np.uint8)
 
     # save it out
-    skvideo.io.vwrite(outputfile, outputdata)
+    skvideo.io.vwrite(outputfile, outputdata, backend=backend)
 
     # check a hash of the output file
     h = hashfile(open(outputfile, 'rb'), hashlib.sha256())
@@ -32,3 +32,10 @@ def test_vwrite():
 
     # remove test file
     os.remove(outputfile)
+
+def test_vreader_ffmpeg():
+    _vwrite("ffmpeg")
+
+def test_vreader_libav():
+    _vwrite("libav")
+

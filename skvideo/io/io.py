@@ -4,7 +4,10 @@ import os
 from ..utils import *
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
+from .avconv import LibAVReader
+from .avconv import LibAVWriter
 from .. import _HAS_FFMPEG
+from .. import _HAS_AVCONV
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Save a video to file entirely from memory.
@@ -28,7 +31,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         disk.
 
     backend : string
-        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
+        Program to use for handling video data. Only 'ffmpeg' and 'libav' are supported at this time.
 
     verbosity : int
         Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
@@ -54,6 +57,13 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
         writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        for t in xrange(T):
+            writer.writeFrame(videodata[t])
+        writer.close()
+    elif backend == "libav":
+        # check if FFMPEG exists in the path
+        assert _HAS_AVCONV, "Cannot find installation of libav."
+        writer = LibAVWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for t in xrange(T):
             writer.writeFrame(videodata[t])
         writer.close()
@@ -87,7 +97,7 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=Non
         when sending back to the python process.
 
     backend : string
-        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
+        Program to use for handling video data. Only 'ffmpeg' and 'libav' are supported at this time.
 
     verbosity : int
         Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
@@ -117,6 +127,23 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=Non
             outputdict['-vframes'] = str(num_frames)
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        T, M, N, C = reader.getShape()
+
+        videodata = np.zeros((T, M, N, C), dtype=np.uint8)
+        for idx, frame in enumerate(reader.nextFrame()):
+            videodata[idx, :, :, :] = frame 
+        return videodata
+    elif backend == "libav":
+        # check if FFMPEG exists in the path
+        assert _HAS_AVCONV, "Cannot find installation of libav."
+
+        if ((height != 0) and (width != 0)):
+            inputdict['-s'] = str(width) + 'x' + str(height)
+
+        if num_frames != 0:
+            outputdict['-vframes'] = str(num_frames)
+
+        reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         T, M, N, C = reader.getShape()
 
         videodata = np.zeros((T, M, N, C), dtype=np.uint8)
@@ -153,7 +180,7 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=N
         when sending back to the python process.
 
     backend : string
-        Program to use for handling video data. Only 'ffmpeg' is supported at this time.
+        Program to use for handling video data. Only 'ffmpeg' and 'libav' are supported at this time.
 
     verbosity : int
         Setting to 0 (default) disables all debugging output. Setting to 1 enables all debugging output. Useful to see if the backend is behaving properly. 
@@ -188,6 +215,19 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=N
             outputdict['-vframes'] = str(num_frames)
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        for frame in reader.nextFrame():
+            yield frame
+    elif backend == "libav":
+        # check if FFMPEG exists in the path
+        assert _HAS_AVCONV, "Cannot find installation of libav."
+
+        if ((height != 0) and (width != 0)):
+            inputdict['-s'] = str(width) + 'x' + str(height)
+
+        if num_frames != 0:
+            outputdict['-vframes'] = str(num_frames)
+
+        reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for frame in reader.nextFrame():
             yield frame
 

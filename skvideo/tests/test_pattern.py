@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-def test_sinusoid():
+def pattern_sinusoid(backend):
     # write out a sine wave
     sinusoid1d = np.zeros((100, 100))
 
@@ -36,17 +36,17 @@ def test_sinusoid():
     os.remove("sinusoid1d_resaved.yuv")
 
 
-def test_randompattern():
+def pattern_noise(backend):
     # write out random data
     randomNoiseData = np.random.random((100, 100))*255
 
-    skvideo.io.vwrite("randomNoisePattern.yuv", randomNoiseData)
+    skvideo.io.vwrite("randomNoisePattern.yuv", randomNoiseData, backend=backend)
 
     # load it and resave it to check the pipeline for drift
-    videoData1 = skvideo.io.vread("randomNoisePattern.yuv", width=100, height=100)
+    videoData1 = skvideo.io.vread("randomNoisePattern.yuv", width=100, height=100, backend=backend)
 
-    skvideo.io.vwrite("randomNoisePattern_resaved.yuv", videoData1)
-    videoData2 = skvideo.io.vread("randomNoisePattern_resaved.yuv", width=100, height=100)
+    skvideo.io.vwrite("randomNoisePattern_resaved.yuv", videoData1, backend=backend)
+    videoData2 = skvideo.io.vread("randomNoisePattern_resaved.yuv", width=100, height=100, backend=backend)
 
     # check slices
     randomDataOriginal = np.array(randomNoiseData)
@@ -63,3 +63,16 @@ def test_randompattern():
 
     os.remove("randomNoisePattern.yuv")
     os.remove("randomNoisePattern_resaved.yuv")
+
+
+def test_sinusoid_ffmpeg():
+    pattern_sinusoid('ffmpeg')
+
+def test_sinusoid_libav():
+    pattern_sinusoid('libav')
+
+def test_noisepattern_ffmpeg():
+    pattern_noise('ffmpeg')
+
+def test_noisepattern_libav():
+    pattern_noise('libav')

@@ -28,18 +28,18 @@ def test_vread():
 
 
 # reading/writing consistency checks using yuv420 
-def test_vread_raw():
+def _rawhelper1(backend):
     # reading first time
-    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
-    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1)
+    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, backend=backend)
+    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, backend=backend)
 
     # testing pipeline
-    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1)
-    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1)
-    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1)
+    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, backend=backend)
+    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, backend=backend)
+    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, backend=backend)
 
     # reading second time, to test whether mutable defaults are set correctly
-    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
+    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, backend=backend)
 
     # check the dimensions of the videos
 
@@ -64,20 +64,20 @@ def test_vread_raw():
 
 
 # reading/writing consistency check using real input data and yuv444
-def test_vread_raw2():
+def _rawhelper2(backend):
     pipingDict = {"-pix_fmt": "yuvj444p"}
 
     # reading first time
-    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy())
-    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, inputdict=pipingDict.copy())
+    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy(), backend=backend)
+    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, inputdict=pipingDict.copy(), backend=backend)
 
     # testing pipeline
-    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy())
-    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, inputdict=pipingDict.copy())
-    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy())
+    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy(), backend=backend)
+    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, inputdict=pipingDict.copy(), backend=backend)
+    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy(), backend=backend)
 
     # reading second time, to test whether mutable defaults are set correctly
-    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy())
+    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy(), backend=backend)
 
     # check the dimensions of the videos
 
@@ -99,3 +99,15 @@ def test_vread_raw2():
 
     os.remove("bunnyMP4VideoData_vwrite.yuv")
     os.remove("bunnyYUVVideoData_vwrite.yuv")
+
+def test_vread_raw1_ffmpeg():
+    _rawhelper1("ffmpeg")
+
+def test_vread_raw1_libav():
+    _rawhelper1("libav")
+
+def test_vread_raw2_ffmpeg():
+    _rawhelper2("ffmpeg")
+
+def test_vread_raw2_libav():
+    _rawhelper2("libav")
