@@ -4,7 +4,10 @@
 
 
 from .ffmpeg import *
+from .avconv import *
 from .mprobe import *
+from .ffprobe import *
+from .avprobe import *
 from .io import *
 
 __all__ = [
@@ -14,6 +17,9 @@ __all__ = [
     'vwriter',
     'mprobe',
     'ffprobe',
+    'avprobe',
     'FFmpegReader',
-    'FFmpegWriter'
+    'FFmpegWriter',
+    'LibAVReader',
+    'LibAVWriter'
 ]

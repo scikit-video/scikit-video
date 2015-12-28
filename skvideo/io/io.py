@@ -4,6 +4,7 @@ import os
 from ..utils import *
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
+from .. import _HAS_FFMPEG
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Save a video to file entirely from memory.
@@ -49,6 +50,9 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
     T, M, N, C = videodata.shape
 
     if backend == "ffmpeg":
+        # check if FFMPEG exists in the path
+        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+
         writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for t in xrange(T):
             writer.writeFrame(videodata[t])
@@ -103,6 +107,9 @@ def vread(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=Non
         outputdict = {}
 
     if backend == "ffmpeg":
+        # check if FFMPEG exists in the path
+        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
 
@@ -171,6 +178,9 @@ def vreader(fname, height=0, width=0, num_frames=0, inputdict=None, outputdict=N
         outputdict = {}
 
     if backend == "ffmpeg":
+        # check if FFMPEG exists in the path
+        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
 

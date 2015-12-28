@@ -1,4 +1,4 @@
-""" Plugin that uses ffmpeg to read and write series of images to
+""" Plugin that uses Libav to read and write series of images to
 a wide range of video formats.
 
 """
@@ -20,29 +20,29 @@ import warnings
 
 import numpy as np
 
-from ffprobe import ffprobe
+from avprobe import avprobe
 from ..utils import *
-from .. import _HAS_FFMPEG
+from .. import _HAS_AVCONV 
 
-# uses FFmpeg to read the given file with parameters
-class FFmpegReader():
-    """Reads frames using FFmpeg
+# uses libav to read the given file with parameters
+class LibAVReader():
+    """Reads frames using Libav
 
-    Using FFmpeg as a backend, this class
+    Using libav as a backend, this class
     provides sane initializations meant to
     handle the default case well.
 
     """
 
     def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
-        """Initializes FFmpeg in reading mode with the given parameters
+        """Initializes libav in reading mode with the given parameters
 
         During initialization, additional parameters about the video file
-        are parsed using :func:`skvideo.io.ffprobe`. Then FFmpeg is launched
+        are parsed using :func:`skvideo.io.avprobe`. Then avconv is launched
         as a subprocess. Parameters passed into inputdict are parsed and
         used to set as internal variables about the video. If the parameter,
         such as "Height" is not found in the inputdict, it is found through
-        scanning the file's header information. If not in the header, ffprobe
+        scanning the file's header information. If not in the header, avprobe
         is used to decode the file to determine the information. In the case
         that the information is not supplied and connot be inferred from the
         input file, a ValueError exception is thrown.
@@ -64,8 +64,8 @@ class FFmpegReader():
         none
 
         """
-        # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        # check if avconv exists in the path
+        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
 
         israw = 0
 
@@ -80,7 +80,7 @@ class FFmpegReader():
         self.size = os.path.getsize(filename)
         self.probeInfo = {}
         try:
-            self.probeInfo = ffprobe(filename)
+            self.probeInfo = avprobe(filename)
         except:
             pass
 
@@ -91,9 +91,9 @@ class FFmpegReader():
         self.inputfps = -1
         if ("-r" in inputdict):
             self.inputfps = np.int(inputdict["-r"])
-        elif "@r_frame_rate" in viddict:
+        elif "avg_frame_rate" in viddict:
             # check for the slash
-            frtxt = viddict["@r_frame_rate"]
+            frtxt = viddict["avg_frame_rate"]
             parts = frtxt.split('/') 
             if len(parts) > 1:
                 self.inputfps = np.float(parts[0])/np.float(parts[1])
@@ -109,9 +109,9 @@ class FFmpegReader():
             widthheight = inputdict["-s"].split('x')
             self.inputwidth = np.int(widthheight[0])
             self.inputheight = np.int(widthheight[1])
-        elif (("@width" in viddict) and ("@height" in viddict)):
-            self.inputwidth = np.int(viddict["@width"])
-            self.inputheight = np.int(viddict["@height"])
+        elif (("width" in viddict) and ("height" in viddict)):
+            self.inputwidth = np.int(viddict["width"])
+            self.inputheight = np.int(viddict["height"])
         else:
             raise ValueError("No way to determine width or height from video. Need `-s` in `inputdict`. Consult documentation on I/O.")
 
@@ -120,9 +120,9 @@ class FFmpegReader():
         # completely unsure of this:
         if ("-pix_fmt" in inputdict):
             self.pix_fmt = inputdict["-pix_fmt"]
-        elif ("@pix_fmt" in viddict):
+        elif ("pix_fmt" in viddict):
             # parse this bpp
-            self.pix_fmt = viddict["@pix_fmt"]
+            self.pix_fmt = viddict["pix_fmt"]
         else:
             self.pix_fmt = "yuvj444p"
             if verbosity != 0:
@@ -136,8 +136,8 @@ class FFmpegReader():
 
         if ("-vframes" in outputdict):
             self.inputframenum = np.int(outputdict["-vframes"])
-        elif ("@nb_frames" in viddict):
-            self.inputframenum = np.int(viddict["@nb_frames"])
+        elif ("nb_frames" in viddict):
+            self.inputframenum = np.int(viddict["nb_frames"])
         elif israw == 1:
             # we can compute it based on the input size and color space
             self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (self.bpp/8.0)))
@@ -152,7 +152,7 @@ class FFmpegReader():
         self._filename = filename
 
         if '-f' not in outputdict:
-            outputdict['-f'] = "image2pipe"
+            outputdict['-f'] = "rawvideo"
 
         if '-pix_fmt' not in outputdict:
             outputdict['-pix_fmt'] = "rgb24"
@@ -165,12 +165,8 @@ class FFmpegReader():
             self.outputwidth = self.inputwidth
             self.outputheight = self.inputheight
 
-
         self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
-
-        if '-vcodec' not in outputdict:
-            outputdict['-vcodec'] = "rawvideo"
 
         # Create input args
         iargs = []
@@ -186,17 +182,17 @@ class FFmpegReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = ["avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
         if verbosity == 0:
-            cmd = ["ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = ["avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = ["avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             print cmd
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
@@ -271,16 +267,16 @@ class FFmpegReader():
             yield self._readFrame()
 
 
-class FFmpegWriter():
-    """Writes frames using FFmpeg
+class LibAVWriter():
+    """Writes frames using libav
 
-    Using FFmpeg as a backend, this class
+    Using libav as a backend, this class
     provides sane initializations for the default case.
     """
     def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
-        """Prepares parameters for FFmpeg
+        """Prepares parameters for avconv
     
-        Does not instantiate the an FFmpeg subprocess, but simply
+        Does not instantiate the avconv subprocess, but simply
         prepares the required parameters.
 
         Parameters
@@ -369,7 +365,7 @@ class FFmpegWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = ["avconv", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 
@@ -397,7 +393,7 @@ class FFmpegWriter():
 
 
     def writeFrame(self, im):
-	"""Sends ndarray frames to FFmpeg
+	"""Sends ndarray frames to avconv
 
 	"""
         vid = vshape(im)
@@ -424,6 +420,6 @@ class FFmpegWriter():
             self._proc.stdin.write(vid.tostring())
         except IOError as e:
             # Show the command and stderr from pipe
-            msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
+            msg = '{0:}\n\navconv COMMAND:\n{1:}\n\navconv STDERR ' \
                   'OUTPUT:\n'.format(e, self._cmd)
             raise IOError(msg)

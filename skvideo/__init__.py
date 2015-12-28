@@ -23,19 +23,15 @@ def which(program):
 
     return None
 
-_ENABLE_FFMPEG = 0
-_ENABLE_AVCONV = 0
+_HAS_FFMPEG = 0
+_HAS_AVCONV = 0
 _HAS_MEDIAINFO = 0
 
 if ((which("ffmpeg") != None) and (which("ffprobe") != None)):
-    _ENABLE_FFMPEG = 1
+    _HAS_FFMPEG = 1
 
-if ((which("avconv") != None) and (which("avconv") != None)):
-    _ENABLE_AVCONV = 1
+if ((which("avconv") != None) and (which("avprobe") != None)):
+    _HAS_AVCONV = 1
 
 if which("mediainfo") != None:
     _HAS_MEDIAINFO = 1
-
-# check to ensure that at least one of 
-# avlib or ffmpeg is installed
-assert ((_ENABLE_FFMPEG + _ENABLE_AVCONV) > 0)

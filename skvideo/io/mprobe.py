@@ -1,6 +1,7 @@
 import subprocess as sp
 
 from ..utils import *
+from .. import _HAS_MEDIAINFO
 
 def mprobe(filename):
     """get metadata by using mediainfo
@@ -22,6 +23,8 @@ def mprobe(filename):
        about the passed-in source video.
 
     """
+    assert _HAS_MEDIAINFO, "`mediainfo` not found in path. Is it installed?"
+
     # '-f' gets full output, and --Output=XML is xml formatted output
     command = ["mediainfo", "-f", "--Output=XML", filename]
 

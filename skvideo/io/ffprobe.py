@@ -1,6 +1,7 @@
 import subprocess as sp
 
 from ..utils import *
+from .. import _HAS_FFMPEG
 
 def ffprobe(filename):
     """get metadata by using ffprobe
@@ -20,6 +21,8 @@ def ffprobe(filename):
        about the passed-in source video.
 
     """
+    # check if FFMPEG exists in the path
+    assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
     command = ["ffprobe", "-v", "error", "-show_streams", "-print_format", "xml", filename]
 
