@@ -300,6 +300,8 @@ class LibAVWriter():
 
         """
 
+        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+
         if not inputdict:
             inputdict = {}
 
