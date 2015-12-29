@@ -67,6 +67,9 @@ class LibAVReader():
         # check if avconv exists in the path
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
 
+        # complain about the use of avconv :(
+        warnings.warn("avconv corrupts video data between reading and writing. Search for \"drift\" in the test script test_vread.py for proof. Please consider using FFMPEG.", UserWarning)
+
         israw = 0
 
         if not inputdict:
