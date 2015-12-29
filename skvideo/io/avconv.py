@@ -126,7 +126,7 @@ class LibAVReader():
         else:
             self.pix_fmt = "yuvj444p"
             if verbosity != 0:
-                warnings.warn("No input color space detected. Assuming yuvj420p.", UserWarning)
+                warnings.warn("No input color space detected. Assuming yuvj444p.", UserWarning)
 
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
@@ -317,13 +317,20 @@ class LibAVWriter():
             self.inputdict["-f"] = "rawvideo"
         self.warmStarted = 0
 
+        self.rgb2grayhack = 0
+
     def _warmStart(self, M, N, C):
         self.warmStarted = 1
 
         if "-pix_fmt" not in self.inputdict:
             # check the number channels to guess 
             if C == 1:
+                # unfortunately, 'gray' has a bug for avconv
+                # enable gray -> rgb hack
                 self.inputdict["-pix_fmt"] = "gray"
+                self.inputdict["-pix_fmt"] = "rgb24"
+                self.rgb2grayhack = 1
+                C = 3
             elif C == 2:
                 self.inputdict["-pix_fmt"] = "ya8"
             elif C == 3:
@@ -352,7 +359,7 @@ class LibAVWriter():
             if "-pix_fmt" not in self.outputdict:
                 self.outputdict["-pix_fmt"] = "yuvj444p"
                 if self.verbosity != 0:
-                    warnings.warn("No output color space provided. Assuming yuvj420p.", UserWarning)
+                    warnings.warn("No output color space provided. Assuming yuvj444p.", UserWarning)
 
         # Create input args
         iargs = []
@@ -365,7 +372,8 @@ class LibAVWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["avconv", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = ["avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
+        print cmd
 
         self._cmd = " ".join(cmd)
 
@@ -405,6 +413,15 @@ class LibAVWriter():
         vid[vid > 255] = 255
         vid[vid < 0] = 0
         vid = vid.astype(np.uint8)
+
+        if self.rgb2grayhack:
+            # convert grayscale vid to 3 channel
+            vid2 = np.zeros((T, M, N, 3), dtype=np.uint8)
+            vid2[:, :, :, 0] = vid[:, :, :, 0]
+            vid2[:, :, :, 1] = vid[:, :, :, 0]
+            vid2[:, :, :, 2] = vid[:, :, :, 0]
+            vid = vid2
+            T, M, N, C = vid.shape
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:

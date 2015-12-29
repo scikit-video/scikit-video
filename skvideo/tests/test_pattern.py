@@ -10,7 +10,7 @@ def pattern_sinusoid(backend):
     sinusoid1d = np.zeros((100, 100))
 
     for i in xrange(100):
-        sinusoid1d[i, :] = 128*np.sin(2 * np.pi * i / 100) + 128
+        sinusoid1d[i, :] = 127*np.sin(2 * np.pi * i / 100) + 128
 
     skvideo.io.vwrite("sinusoid1d.yuv", sinusoid1d)
 
@@ -27,7 +27,7 @@ def pattern_sinusoid(backend):
 
     # check that the mean squared error is within 1 pixel
     floattopixel_mse = np.mean((sinusoidDataOriginal-sinusoidDataVideo1)**2)
-    assert floattopixel_mse < 1, "Possible conversion error between floating point and raw video."
+    assert floattopixel_mse < 1, "Possible conversion error between floating point and raw video. MSE=%f" % (floattopixel_mse,)
 
     # check that saving and loading a loaded file is identical
     pixeltopixel_mse = np.mean((sinusoidDataVideo1-sinusoidDataVideo2)**2)
@@ -37,8 +37,12 @@ def pattern_sinusoid(backend):
 
 
 def pattern_noise(backend):
+    np.random.seed(1)
     # write out random data
     randomNoiseData = np.random.random((100, 100))*255
+    randomNoiseData[0, 0] = 0
+    randomNoiseData[0, 1] = 1
+    randomNoiseData[0, 2] = 255
 
     skvideo.io.vwrite("randomNoisePattern.yuv", randomNoiseData, backend=backend)
 
@@ -55,7 +59,7 @@ def pattern_noise(backend):
 
     # check that the mean squared error is within 1 pixel
     floattopixel_mse = np.mean((randomDataOriginal-randomDataVideo1)**2)
-    assert floattopixel_mse < 1, "Possible conversion error between floating point and raw video."
+    assert floattopixel_mse < 1, "Possible conversion error between floating point and raw video. MSE=%f" % (floattopixel_mse,)
 
     # check that saving and loading a loaded file is identical
     pixeltopixel_mse = np.mean((randomDataVideo1-randomDataVideo2)**2)
