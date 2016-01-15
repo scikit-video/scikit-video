@@ -18,6 +18,19 @@
   color: #FFF;
 }
 
+.container div a {
+  color: #8888aa;
+  font-weight: bold;
+}
+
+.menuitem:hover {
+    background: #FFFFFF; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(left, #FFFFFF, #FFEEEE); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(right, #FFFFFF, #FFEEEE); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(right, #FFFFFF, #FFEEEE); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to right, #FFFFFF, #FFEEEE); /* Standard syntax */
+}
+
 /*
  * Reset navbar styles from overrides in:
  * https://bitbucket.org/birkenfeld/sphinx/commits/78d8ebf76b630ab4073a7328af9d91e8123b8d96
