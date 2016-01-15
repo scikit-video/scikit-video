@@ -21,8 +21,6 @@
         </div>
         </a>
 	</div>
-	<div style='height:10px' class="container">
-	</div>
 	<div class="container">
         <a href='datasets.html'>
         <div class="col-md-5 menuitem">
@@ -37,8 +35,6 @@
 		</div>
         </a>
 	</div>
-	<div style='height:10px' class="container">
-	</div>
 	<div class="container">
         <a href='examples.html'>
 		<div class="col-md-5 menuitem">
@@ -52,8 +48,6 @@
             Benchmarks
 		</div>
         </a>
-	</div>
-	<div style='height:10px' class="container">
 	</div>
 	<div class="container">
         <a href='faq.html'>
