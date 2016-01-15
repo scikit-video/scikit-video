@@ -297,3 +297,8 @@ def rgb2gray(videodata):
         return vshape(videodata)
     else:
         raise NotImplemented
+
+__all__ = [
+    'rgb2gray',
+    'vshape',
+]
