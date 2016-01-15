@@ -13,6 +13,9 @@ export LD_LIBRARY_PATH="$HOME/builds/lib:$LD_LIBRARY_PATH"
 echo "which ffmpeg is used:"
 which ffmpeg
 
+echo "which libav version is installed:"
+avconv -version
+
 set -e
 
 # Get into a temp directory to run test from the installed scikit learn and
