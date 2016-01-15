@@ -238,14 +238,13 @@ class FFmpegReader():
 
         try:
             # Read framesize bytes
-            s = read_n_bytes(self._proc.stdout, framesize)
-            # Check
-            assert len(s) == framesize
+            arr = np.fromstring(self._proc.stdout.read(framesize), dtype=np.uint8)
+            assert len(arr) == framesize
         except Exception as err:
             self._terminate()
             err1 = str(err)
             raise RuntimeError("%s" % (err1,))
-        return s
+        return arr
 
     def _readFrame(self):
         # Read and convert to numpy array
