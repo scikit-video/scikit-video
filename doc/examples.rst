@@ -6,7 +6,7 @@ Examples
 
 .. currentmodule:: skvideo
 
-Loading videos efficiently
+Video loading
 ----------------------------------------------
 
 
@@ -20,6 +20,12 @@ Also, for testing a piece of code quickly, the whole video isn't usually require
 
 .. literalinclude:: examples/lumasnippet_trunc.py
    :linenos:
+
+If you would like to read a raw format like yuv, you must specify the width, height, and pixel type. By default, scikit-video assumes that your pix_fmt is yuvj444p. This assumption is to provide consistent saving and loading of video content while maintaining signal fidelity.
+
+.. literalinclude:: examples/rawsnippet.py
+   :linenos:
+
 
 
 .. toctree::

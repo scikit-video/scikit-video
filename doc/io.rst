@@ -6,12 +6,10 @@ Reading and Writing Videos
 
 .. currentmodule:: skvideo.io
 
-:mod:`skvideo.io` is a module created for using the FFmpeg 
-backend to read and write videos. The mediainfo tool is used
-for parsing metadata from videos, since it provides a universal 
-format. In time, other backends are planned, but for now only FFmpeg
-is officially supported.
-
+:mod:`skvideo.io` is a module created for using a FFmpeg/LibAV 
+backend to read and write videos. Depending on the available backend, the 
+appropriate probing tool (ffprobe, avprobe, or even mediainfo) will be
+used to parse metadata from videos.
 
 Reading
 -----------------------
@@ -37,7 +35,7 @@ Use :func:`skvideo.io.vreader` to load any video (here `bigbuckbunny`) frame-by-
 
 	import skvideo.io
 	import skvideo.datasets
-	videogen = skvideo.io.vread_generator(skvideo.datasets.bigbuckbunny())
+	videogen = skvideo.io.vreader(skvideo.datasets.bigbuckbunny())
 	for frame in videogen:
 		print(frame.shape)
 
