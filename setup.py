@@ -5,8 +5,8 @@ state-of-the-art video processing routines.
 
 """
 
-DISTNAME            = 'scikit-video'
-DESCRIPTION         = 'Scientific Video Processing Toolkit'
+DISTNAME            = 'scikit-video2'
+DESCRIPTION         = 'Video Processing in Python'
 LONG_DESCRIPTION    = descr
 MAINTAINER          = 'Todd Goodall',
 MAINTAINER_EMAIL    = 'info@scikit-video.org',
@@ -23,8 +23,8 @@ EXTRA_INFO          = dict(
                  'Operating System :: POSIX :: Linux',
                  'Operating System :: MacOS',
                  'Operating System :: Microsoft :: Windows',
-                 'Programming Language :: Python :: 2.6'
-                 'Programming Language :: Python :: 2.7'
+                 'Programming Language :: Python :: 2.6',
+                 'Programming Language :: Python :: 2.7',
                  'Topic :: Multimedia :: Video',
                  'Topic :: Scientific/Engineering']
 )

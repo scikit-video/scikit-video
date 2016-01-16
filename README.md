@@ -29,6 +29,12 @@ Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. L
 
 ##Installation:
 
+### First method:
+
+pip install scikit-video2
+
+### Second method:
+
 Clone the scikit-video repository, run
 
 `python2 setup.py build`
