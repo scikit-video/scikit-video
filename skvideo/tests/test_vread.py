@@ -1,5 +1,6 @@
 from numpy.testing import assert_equal
 import numpy as np
+import skvideo
 import skvideo.io
 import skvideo.utils
 import skvideo.datasets
@@ -118,7 +119,11 @@ def test_vread_raw1_ffmpeg():
 
 # disabled test for now since libav has a pixel-drift issue
 @nose.tools.nottest
-def test_vread_raw1_libav():
+def test_vread_raw1_libav_version12():
+    if not skvideo._HAS_AVCONV:
+        return 0
+    if skvideo._LIBAV_MAJOR_VERSION < 12:
+        return 0
     _rawhelper1("libav")
 
 
@@ -126,5 +131,11 @@ def test_vread_raw2_ffmpeg():
     _rawhelper2("ffmpeg")
 
 
-def test_vread_raw2_libav():
+def test_vread_raw2_libav_version12():
+    # skip if libav not installed or of the proper version
+    if not skvideo._HAS_AVCONV:
+        return 0
+    if skvideo._LIBAV_MAJOR_VERSION < 12:
+        return 0
+
     _rawhelper2("libav")

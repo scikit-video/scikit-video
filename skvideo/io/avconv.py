@@ -81,11 +81,7 @@ class LibAVReader():
         # General information
         _, self.extension = os.path.splitext(filename)
         self.size = os.path.getsize(filename)
-        self.probeInfo = {}
-        try:
-            self.probeInfo = avprobe(filename)
-        except:
-            pass
+        self.probeInfo = avprobe(filename)
 
         viddict = {}
         if "video" in self.probeInfo:

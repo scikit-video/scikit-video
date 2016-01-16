@@ -25,34 +25,37 @@ def mprobe(filename):
     """
     assert _HAS_MEDIAINFO, "`mediainfo` not found in path. Is it installed?"
 
-    # '-f' gets full output, and --Output=XML is xml formatted output
-    command = ["mediainfo", "-f", "--Output=XML", filename]
+    try:
+        # '-f' gets full output, and --Output=XML is xml formatted output
+        command = ["mediainfo", "-f", "--Output=XML", filename]
 
-    # simply get std output
-    xml = check_output(command)
+        # simply get std output
+        xml = check_output(command)
 
-    d = xmltodictparser(xml)
+        d = xmltodictparser(xml)
 
-    assert "Mediainfo" in d
-    d = d["Mediainfo"]
+        assert "Mediainfo" in d
+        d = d["Mediainfo"]
 
-    assert "File" in d
-    d = d["File"]
+        assert "File" in d
+        d = d["File"]
 
-    assert "track" in d
-    unorderedtracks = d["track"]
+        assert "track" in d
+        unorderedtracks = d["track"]
 
-    # tracksbytype normalizes the input by key
-    tracksbytype = {}
-    if type(unorderedtracks) is list:
-        for d in unorderedtracks:
-            assert "@type" in d
-            # can't have more than 1 key. If this case arises
-            # an issue should be made in the tracker for a fix.
-            assert d["@type"] not in tracksbytype 
-            tracksbytype[d["@type"]] = d
-    else: # not list
-        assert "@type" in unorderedtracks
-        tracksbytype[unorderedtracks["@type"]] = unorderedtracks
+        # tracksbytype normalizes the input by key
+        tracksbytype = {}
+        if type(unorderedtracks) is list:
+            for d in unorderedtracks:
+                assert "@type" in d
+                # can't have more than 1 key. If this case arises
+                # an issue should be made in the tracker for a fix.
+                assert d["@type"] not in tracksbytype 
+                tracksbytype[d["@type"]] = d
+        else: # not list
+            assert "@type" in unorderedtracks
+            tracksbytype[unorderedtracks["@type"]] = unorderedtracks
 
-    return tracksbytype
+        return tracksbytype
+    except:
+        return {}

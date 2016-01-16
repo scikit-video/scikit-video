@@ -24,26 +24,29 @@ def ffprobe(filename):
     # check if FFMPEG exists in the path
     assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
-    command = ["ffprobe", "-v", "error", "-show_streams", "-print_format", "xml", filename]
+    try:
+        command = ["ffprobe", "-v", "error", "-show_streams", "-print_format", "xml", filename]
 
-    # simply get std output
-    xml = check_output(command)
+        # simply get std output
+        xml = check_output(command)
 
-    d = xmltodictparser(xml)["ffprobe"]
+        d = xmltodictparser(xml)["ffprobe"]
 
-    d = d["streams"]
+        d = d["streams"]
 
-    #import json
-    #print json.dumps(d, indent = 4)
-    #exit(0)
+        #import json
+        #print json.dumps(d, indent = 4)
+        #exit(0)
 
-    # check type
-    streamsbytype = {}
-    if type(d["stream"]) is list:
-        # go through streams
-        for stream in d["stream"]:
-            streamsbytype[stream["@codec_type"].lower()] = stream
-    else:
-        streamsbytype[d["stream"]["@codec_type"].lower()] = d["stream"]
+        # check type
+        streamsbytype = {}
+        if type(d["stream"]) is list:
+            # go through streams
+            for stream in d["stream"]:
+                streamsbytype[stream["@codec_type"].lower()] = stream
+        else:
+            streamsbytype[d["stream"]["@codec_type"].lower()] = d["stream"]
 
-    return streamsbytype
+        return streamsbytype
+    except:
+        return {}

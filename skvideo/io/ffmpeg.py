@@ -78,11 +78,7 @@ class FFmpegReader():
         # General information
         _, self.extension = os.path.splitext(filename)
         self.size = os.path.getsize(filename)
-        self.probeInfo = {}
-        try:
-            self.probeInfo = ffprobe(filename)
-        except:
-            pass
+        self.probeInfo = ffprobe(filename)
 
         viddict = {}
         if "video" in self.probeInfo:

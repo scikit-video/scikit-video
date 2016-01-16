@@ -1,7 +1,7 @@
 import subprocess as sp
 
 from ..utils import *
-from .. import _HAS_AVCONV
+from .. import _HAS_AVCONV, _LIBAV_MAJOR_VERSION
 import json
 
 def avprobe(filename):
@@ -24,22 +24,26 @@ def avprobe(filename):
     """
     # check if FFMPEG exists in the path
     assert _HAS_AVCONV, "Cannot find installation of avprobe."
+    assert _LIBAV_MAJOR_VERSION >= 11, "Version of libav < 11. Please update or use ffmpeg."
 
-    command = ["avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
+    try:
+        command = ["avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
 
-    # simply get std output
-    jsonstr = check_output(command)
-    probedict = json.loads(jsonstr)
+        # simply get std output
+        jsonstr = check_output(command)
+        probedict = json.loads(jsonstr)
 
-    d = probedict["streams"]
+        d = probedict["streams"]
 
-    # check type
-    streamsbytype = {}
-    if type(d) is list:
-        # go through streams
-        for stream in d:
-            streamsbytype[stream["codec_type"].lower()] = stream
-    else:
-        streamsbytype[d["codec_type"].lower()] = d
+        # check type
+        streamsbytype = {}
+        if type(d) is list:
+            # go through streams
+            for stream in d:
+                streamsbytype[stream["codec_type"].lower()] = stream
+        else:
+            streamsbytype[d["codec_type"].lower()] = d
 
-    return streamsbytype
+        return streamsbytype
+    except:
+        return {}
