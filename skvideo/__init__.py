@@ -48,7 +48,8 @@ if ((which("ffmpeg") != None) and (which("ffprobe") != None)):
     versionparts = version.split('.')
     _FFMPEG_MAJOR_VERSION = int(versionparts[0])
     _FFMPEG_MINOR_VERSION = int(versionparts[1])
-    _FFMPEG_PATCH_VERSION = int(versionparts[2])
+    if len(versionparts) > 2:
+        _FFMPEG_PATCH_VERSION = int(versionparts[2])
 
 if ((which("avconv") != None) and (which("avprobe") != None)):
     _HAS_AVCONV = 1

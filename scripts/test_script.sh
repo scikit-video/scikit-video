@@ -15,6 +15,7 @@ which ffmpeg
 
 echo "which libav version is installed:"
 avconv -version
+ffmpeg -version
 
 set -e
 
