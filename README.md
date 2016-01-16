@@ -21,13 +21,19 @@ Visit the documentation at http://www.scikit-video.org
 
 Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. Listed below are the minimum versions tested:
 
-- ffmpeg (version >= 2.1)
+- Either ffmpeg (version >= 2.1) or libav (version >= 11.4)
 - python2 (2.6 or 2.7)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
 - mediainfo (optional)
 
 ##Installation:
+
+### First method:
+
+pip install scikit-video2
+
+### Second method:
 
 Clone the scikit-video repository, run
 
@@ -40,7 +46,6 @@ then
 ##TODO:
 - MacOSX and Windows support
 - Python 3 support
-- Libav support
 - Video Quality Assessment metrics
 - Temporal filtering helper functions
 

@@ -1,6 +1,7 @@
 import subprocess as sp
 
 from ..utils import *
+from .. import _HAS_MEDIAINFO
 
 def mprobe(filename):
     """get metadata by using mediainfo
@@ -22,34 +23,39 @@ def mprobe(filename):
        about the passed-in source video.
 
     """
-    # '-f' gets full output, and --Output=XML is xml formatted output
-    command = ["mediainfo", "-f", "--Output=XML", filename]
+    assert _HAS_MEDIAINFO, "`mediainfo` not found in path. Is it installed?"
 
-    # simply get std output
-    xml = check_output(command)
+    try:
+        # '-f' gets full output, and --Output=XML is xml formatted output
+        command = ["mediainfo", "-f", "--Output=XML", filename]
 
-    d = xmltodictparser(xml)
+        # simply get std output
+        xml = check_output(command)
 
-    assert "Mediainfo" in d
-    d = d["Mediainfo"]
+        d = xmltodictparser(xml)
 
-    assert "File" in d
-    d = d["File"]
+        assert "Mediainfo" in d
+        d = d["Mediainfo"]
 
-    assert "track" in d
-    unorderedtracks = d["track"]
+        assert "File" in d
+        d = d["File"]
 
-    # tracksbytype normalizes the input by key
-    tracksbytype = {}
-    if type(unorderedtracks) is list:
-        for d in unorderedtracks:
-            assert "@type" in d
-            # can't have more than 1 key. If this case arises
-            # an issue should be made in the tracker for a fix.
-            assert d["@type"] not in tracksbytype 
-            tracksbytype[d["@type"]] = d
-    else: # not list
-        assert "@type" in unorderedtracks
-        tracksbytype[unorderedtracks["@type"]] = unorderedtracks
+        assert "track" in d
+        unorderedtracks = d["track"]
 
-    return tracksbytype
+        # tracksbytype normalizes the input by key
+        tracksbytype = {}
+        if type(unorderedtracks) is list:
+            for d in unorderedtracks:
+                assert "@type" in d
+                # can't have more than 1 key. If this case arises
+                # an issue should be made in the tracker for a fix.
+                assert d["@type"] not in tracksbytype 
+                tracksbytype[d["@type"]] = d
+        else: # not list
+            assert "@type" in unorderedtracks
+            tracksbytype[unorderedtracks["@type"]] = unorderedtracks
+
+        return tracksbytype
+    except:
+        return {}

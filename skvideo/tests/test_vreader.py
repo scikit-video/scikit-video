@@ -4,8 +4,8 @@ import skvideo.io
 import skvideo.datasets
 
 
-def test_vreader_default():
-    reader = skvideo.io.vreader(skvideo.datasets.bigbuckbunny())
+def _vreader(backend):
+    reader = skvideo.io.vreader(skvideo.datasets.bigbuckbunny(), backend=backend)
 
     T = 0
     M = 0
@@ -27,3 +27,16 @@ def test_vreader_default():
     # check the numbers
 
     assert_equal(109.28332841215979, accumulation / (T * M * N * C))
+
+
+def test_vreader_ffmpeg():
+    _vreader("ffmpeg")
+
+def test_vreader_libav_version12():
+    # simply return if libav not installed or of the proper version
+    if not skvideo._HAS_AVCONV:
+        return 0
+    if skvideo._LIBAV_MAJOR_VERSION < 12:
+        return 0
+    _vreader("libav")
+

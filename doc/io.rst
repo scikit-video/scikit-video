@@ -6,12 +6,10 @@ Reading and Writing Videos
 
 .. currentmodule:: skvideo.io
 
-:mod:`skvideo.io` is a module created for using the FFmpeg 
-backend to read and write videos. The mediainfo tool is used
-for parsing metadata from videos, since it provides a universal 
-format. In time, other backends are planned, but for now only FFmpeg
-is officially supported.
-
+:mod:`skvideo.io` is a module created for using a FFmpeg/LibAV 
+backend to read and write videos. Depending on the available backend, the 
+appropriate probing tool (ffprobe, avprobe, or even mediainfo) will be
+used to parse metadata from videos.
 
 Reading
 -----------------------
@@ -37,7 +35,7 @@ Use :func:`skvideo.io.vreader` to load any video (here `bigbuckbunny`) frame-by-
 
 	import skvideo.io
 	import skvideo.datasets
-	videogen = skvideo.io.vread_generator(skvideo.datasets.bigbuckbunny())
+	videogen = skvideo.io.vreader(skvideo.datasets.bigbuckbunny())
 	for frame in videogen:
 		print(frame.shape)
 
@@ -108,141 +106,85 @@ Often, writing videos requires fine tuning FFmpeg's writing parameters to select
 	writer.close()
 
 
-Probing
+Reading Video Metadata
 -----------------------
 
-Use :func:`skvideo.io.mprobe` to probe videos about their metadata. As below:
+Use :func:`skvideo.io.ffprobe` to find video metadata. As below:
 
 .. code-block:: python
 
 	import skvideo.io
 	import skvideo.datasets
 	import json
-	metadata = skvideo.io.mprobe(skvideo.datasets.bigbuckbunny())
+	metadata = skvideo.io.ffprobe(skvideo.datasets.bigbuckbunny())
 	print(metadata.keys())
-	print(json.parse(metadata["Video"], indent=4))
+	print(json.dumps(metadata["video"], indent=4))
 
-:func:`skvideo.io.mprobe` returns a dictionary, which can be passed into json.parse for pretty printing. See the below output:
+:func:`skvideo.io.ffprobe` returns a dictionary, which can be passed into json.dumps for pretty printing. See the below output:
 
 .. code-block:: python
 
-	[u'Audio', u'Video', u'General']
-	{
-	    "@type": "Video", 
-	    "Count": "323", 
-	    "Count_of_stream_of_this_kind": "1", 
-	    "Kind_of_stream": [
-		"Video", 
-		"Video"
-	    ], 
-	    "Stream_identifier": "0", 
-	    "StreamOrder": "0", 
-	    "ID": [
-		"1", 
-		"1"
-	    ], 
-	    "Format": "AVC", 
-	    "Format_Info": "Advanced Video Codec", 
-	    "Format_Url": "http://developers.videolan.org/x264.html", 
-	    "Commercial_name": "AVC", 
-	    "Format_profile": "Main@L3.1", 
-	    "Format_settings": "CABAC / 1 Ref Frames", 
-	    "Format_settings__CABAC": [
-		"Yes", 
-		"Yes"
-	    ], 
-	    "Format_settings__ReFrames": [
-		"1", 
-		"1 frame"
-	    ], 
-	    "Internet_media_type": "video/H264", 
-	    "Codec_ID": "avc1", 
-	    "Codec_ID_Info": "Advanced Video Coding", 
-	    "Codec_ID_Url": "http://www.apple.com/quicktime/download/standalone.html", 
-	    "Codec": [
-		"AVC", 
-		"AVC"
-	    ], 
-	    "Codec_Family": "AVC", 
-	    "Codec_Info": "Advanced Video Codec", 
-	    "Codec_Url": "http://developers.videolan.org/x264.html", 
-	    "Codec_CC": "avc1", 
-	    "Codec_profile": "Main@L3.1", 
-	    "Codec_settings": "CABAC / 1 Ref Frames", 
-	    "Codec_settings__CABAC": "Yes", 
-	    "Codec_Settings_RefFrames": "1", 
-	    "Duration": [
-		"5280", 
-		"5s 280ms", 
-		"5s 280ms", 
-		"5s 280ms", 
-		"00:00:05.280", 
-		"00:00:05:07", 
-		"00:00:05.280 (00:00:05:07)"
-	    ], 
-	    "Bit_rate": [
-		"1205959", 
-		"1 206 Kbps"
-	    ], 
-	    "Width": [
-		"1280", 
-		"1 280 pixels"
-	    ], 
-	    "Height": [
-		"720", 
-		"720 pixels"
-	    ], 
-	    "Sampled_Width": "1280", 
-	    "Sampled_Height": "720", 
-	    "Pixel_aspect_ratio": "1.000", 
-	    "Display_aspect_ratio": [
-		"1.778", 
-		"16:9"
-	    ], 
-	    "Rotation": "0.000", 
-	    "Frame_rate_mode": [
-		"CFR", 
-		"Constant"
-	    ], 
-	    "FrameRate_Mode_Original": "VFR", 
-	    "Frame_rate": [
-		"25.000", 
-		"25.000 fps"
-	    ], 
-	    "Frame_count": "132", 
-	    "Resolution": [
-		"8", 
-		"8 bits"
-	    ], 
-	    "Colorimetry": "4:2:0", 
-	    "Color_space": "YUV", 
-	    "Chroma_subsampling": "4:2:0", 
-	    "Bit_depth": [
-		"8", 
-		"8 bits"
-	    ], 
-	    "Scan_type": [
-		"Progressive", 
-		"Progressive"
-	    ], 
-	    "Interlacement": [
-		"PPF", 
-		"Progressive"
-	    ], 
-	    "Bits__Pixel_Frame_": "0.052", 
-	    "Stream_size": [
-		"795933", 
-		"777 KiB (75%)", 
-		"777 KiB", 
-		"777 KiB", 
-		"777 KiB", 
-		"777.3 KiB", 
-		"777 KiB (75%)"
-	    ], 
-	    "Proportion_of_this_stream": "0.75391", 
-	    "Encoded_date": "UTC 1970-01-01 00:00:00", 
-	    "Tagged_date": "UTC 1970-01-01 00:00:00"
-	}
+    [u'audio', u'video']
+    {
+        "@index": "0", 
+        "@codec_name": "h264", 
+        "@codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10", 
+        "@profile": "Main", 
+        "@codec_type": "video", 
+        "@codec_time_base": "1/50", 
+        "@codec_tag_string": "avc1", 
+        "@codec_tag": "0x31637661", 
+        "@width": "1280", 
+        "@height": "720", 
+        "@coded_width": "1280", 
+        "@coded_height": "720", 
+        "@has_b_frames": "0", 
+        "@sample_aspect_ratio": "1:1", 
+        "@display_aspect_ratio": "16:9", 
+        "@pix_fmt": "yuv420p", 
+        "@level": "31", 
+        "@chroma_location": "left", 
+        "@refs": "1", 
+        "@is_avc": "1", 
+        "@nal_length_size": "4", 
+        "@r_frame_rate": "25/1", 
+        "@avg_frame_rate": "25/1", 
+        "@time_base": "1/12800", 
+        "@start_pts": "0", 
+        "@start_time": "0.000000", 
+        "@duration_ts": "67584", 
+        "@duration": "5.280000", 
+        "@bit_rate": "1205959", 
+        "@bits_per_raw_sample": "8", 
+        "@nb_frames": "132", 
+        "disposition": {
+            "@default": "1", 
+            "@dub": "0", 
+            "@original": "0", 
+            "@comment": "0", 
+            "@lyrics": "0", 
+            "@karaoke": "0", 
+            "@forced": "0", 
+            "@hearing_impaired": "0", 
+            "@visual_impaired": "0", 
+            "@clean_effects": "0", 
+            "@attached_pic": "0"
+        }, 
+        "tag": [
+            {
+                "@key": "creation_time", 
+                "@value": "1970-01-01 00:00:00"
+            }, 
+            {
+                "@key": "language", 
+                "@value": "und"
+            }, 
+            {
+                "@key": "handler_name", 
+                "@value": "VideoHandler"
+            }
+        ]
+    }
 
 .. toctree::
     :hidden:

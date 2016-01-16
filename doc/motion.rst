@@ -38,7 +38,7 @@ By default, :func:`skvideo.motion.blockMotion` uses 8x8 pixel macroblocks and th
 
 
 Block motion compensation
------------------------
+-------------------------
 
 Use :func:`skvideo.motion.blockComp` to use the computed block motion vectors for motion compensation
 

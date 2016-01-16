@@ -1,14 +1,18 @@
 from numpy.testing import assert_equal
 import numpy as np
+import skvideo
 import skvideo.io
 import skvideo.utils
 import skvideo.datasets
 import os
+import nose
+
 
 # test read twice
 def test_vread2x():
     for i in xrange(2):
         videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
+
 
 def test_vread():
     videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
@@ -28,18 +32,17 @@ def test_vread():
 
 
 # reading/writing consistency checks using yuv420 
-def test_vread_raw():
+def _rawhelper1(backend):
     # reading first time
-    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
-    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1)
+    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, backend=backend)
+    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, backend=backend)
+    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, backend=backend)
 
-    # testing pipeline
-    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1)
-    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1)
-    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1)
+    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, backend=backend)
+    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, backend=backend)
 
     # reading second time, to test whether mutable defaults are set correctly
-    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
+    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, backend=backend)
 
     # check the dimensions of the videos
 
@@ -51,33 +54,42 @@ def test_vread_raw():
     t = np.mean((bunnyMP4VideoData1 - bunnyMP4VideoData2)**2)
     assert t == 0, "Possible mutable default error in vread. MSE=%f between consecutive reads." % (t,)
 
+
     # here, we have yuv->rgb->yuv->rgb causing 1/3 pixel deviation
+    error_threshold = 1
+
+
+    # the avconv program has major drift :(
+
     t = np.mean((bunnyMP4VideoData1 - bunnyYUVVideoData1)**2)
-    assert t < 1, "Unacceptable precision loss (mse=%f) performing vwrite (mp4 data) -> vread (raw data)." % (t,)
+    assert t < error_threshold, "Unacceptable precision loss (mse=%f) performing vwrite (mp4 data) -> vread (raw data)." % (t,)
+
+    error_threshold = 0.001
+    # the avconv program has major drift :(
 
     # this actually has loss due to rgb->yuv420->rgb conversion
     t = np.mean((bunnyYUVVideoData1 - bunnyYUVVideoData2)**2)
-    assert t < 0.001, "Unacceptable precision loss (mse=%f) performing vwrite (raw data) -> vread (raw data)." % (t,)
+    assert t < error_threshold, "Unacceptable precision loss (mse=%f) performing vwrite (raw data) -> vread (raw data)." % (t,)
 
     os.remove("bunnyMP4VideoData_vwrite.yuv")
     os.remove("bunnyYUVVideoData_vwrite.yuv")
 
 
 # reading/writing consistency check using real input data and yuv444
-def test_vread_raw2():
+def _rawhelper2(backend):
     pipingDict = {"-pix_fmt": "yuvj444p"}
 
     # reading first time
-    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy())
-    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, inputdict=pipingDict.copy())
+    bunnyMP4VideoData1 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy(), backend=backend)
+    skvideo.io.vwrite("bunnyMP4VideoData_vwrite.yuv", bunnyMP4VideoData1, inputdict=pipingDict.copy(), backend=backend)
 
     # testing pipeline
-    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy())
-    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, inputdict=pipingDict.copy())
-    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy())
+    bunnyYUVVideoData1 = skvideo.io.vread("bunnyMP4VideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy(), backend=backend)
+    skvideo.io.vwrite("bunnyYUVVideoData_vwrite.yuv", bunnyYUVVideoData1, inputdict=pipingDict.copy(), backend=backend)
+    bunnyYUVVideoData2 = skvideo.io.vread("bunnyYUVVideoData_vwrite.yuv", width=1280, height=720, num_frames=1, outputdict=pipingDict.copy(), backend=backend)
 
     # reading second time, to test whether mutable defaults are set correctly
-    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy())
+    bunnyMP4VideoData2 = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1, outputdict=pipingDict.copy(), backend=backend)
 
     # check the dimensions of the videos
 
@@ -99,3 +111,31 @@ def test_vread_raw2():
 
     os.remove("bunnyMP4VideoData_vwrite.yuv")
     os.remove("bunnyYUVVideoData_vwrite.yuv")
+
+
+def test_vread_raw1_ffmpeg():
+    _rawhelper1("ffmpeg")
+
+
+# disabled test for now since libav has a pixel-drift issue
+@nose.tools.nottest
+def test_vread_raw1_libav_version12():
+    if not skvideo._HAS_AVCONV:
+        return 0
+    if skvideo._LIBAV_MAJOR_VERSION < 12:
+        return 0
+    _rawhelper1("libav")
+
+
+def test_vread_raw2_ffmpeg():
+    _rawhelper2("ffmpeg")
+
+
+def test_vread_raw2_libav_version12():
+    # skip if libav not installed or of the proper version
+    if not skvideo._HAS_AVCONV:
+        return 0
+    if skvideo._LIBAV_MAJOR_VERSION < 12:
+        return 0
+
+    _rawhelper2("libav")

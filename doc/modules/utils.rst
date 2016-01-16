@@ -1,11 +1,11 @@
-=============
+==================
 Utility functions
-=============
+==================
 
 .. _utility_ref:
 
 :mod:`skvideo.utils`: Utility functions
-==================================
+=======================================
 
 .. automodule:: skvideo.utils
    :no-members:
