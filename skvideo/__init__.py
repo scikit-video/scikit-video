@@ -60,7 +60,6 @@ if ((which("avconv") != None) and (which("avprobe") != None)):
     try:
         # grab program version string
         version = check_output(["avconv",  "-version"])
-        print version
         # only parse the first line returned
         firstline = version.split('\n')[0]
 
