@@ -5,7 +5,7 @@ state-of-the-art video processing routines.
 
 """
 
-DISTNAME            = 'scikit-video2'
+DISTNAME            = 'scikit-video'
 DESCRIPTION         = 'Video Processing in Python'
 LONG_DESCRIPTION    = descr
 MAINTAINER          = 'Todd Goodall',
