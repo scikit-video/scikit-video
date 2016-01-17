@@ -131,6 +131,19 @@ def getFFmpegVersion():
 
 def setFFmpegPath(path):
     """ Sets up the path to the directory containing both FFmpeg and FFprobe
+
+        Use this function for to specify specific system installs of FFmpeg. All
+        calls to FFmpeg and FFprobe will use this path as a prefix.
+
+        Parameters
+        ----------
+        path : string
+            Path to directory containing FFmpeg and FFprobe
+
+        Returns
+        -------
+        none
+
     """ 
     global _FFMPEG_PATH
     global _FFPROBE_PATH
