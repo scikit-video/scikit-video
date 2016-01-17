@@ -283,7 +283,7 @@ class FFmpegWriter():
         Parameters
         ----------
         filename : string
-            Video file path
+            Video file path for writing
 
         inputdict : dict
             Input dictionary parameters, i.e. how to interpret the data coming from python.
@@ -297,6 +297,13 @@ class FFmpegWriter():
         none
 
         """
+        filename = os.path.abspath(filename)
+
+        basepath, _ = os.path.split(filename)
+
+        # check to see if filename is a valid file location
+        assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+
 
         if not inputdict:
             inputdict = {}
