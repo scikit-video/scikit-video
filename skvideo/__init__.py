@@ -100,9 +100,9 @@ def scan_libav():
 
 
 if ((_FFMPEG_PATH is not None) and (_FFPROBE_PATH is not None)):
-    if _FFMPEG_PATH is not _FPROBE_PATH:
+    if _FFMPEG_PATH != _FFPROBE_PATH:
         # FFmpeg path does not match the FFprobe path
-        warnings.warn("FFmpeg path does not match the FFprobe path. This is suspicious. Please check your FFmpeg install.", UserWarning)
+        warnings.warn("FFmpeg path, " + _FFMPEG_PATH + ", does not match the FFprobe path, " + _FFPROBE_PATH + ". This is suspicious. Please check your FFmpeg install.", UserWarning)
 
     _HAS_FFMPEG = 1
     scan_ffmpeg()
