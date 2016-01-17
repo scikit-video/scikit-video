@@ -22,7 +22,9 @@ import numpy as np
 
 from avprobe import avprobe
 from ..utils import *
-from .. import _HAS_AVCONV 
+from .. import _HAS_AVCONV
+from .. import _AVCONV_PATH
+from .. import _AVPROBE_PATH
 
 # uses libav to read the given file with parameters
 class LibAVReader():
@@ -181,17 +183,17 @@ class LibAVReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = ["avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_AVPROBE_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
         if verbosity == 0:
-            cmd = ["avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            cmd = [_AVCONV_PATH + "/avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = ["avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            cmd = [_AVCONV_PATH + "/avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             print cmd
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
@@ -372,7 +374,7 @@ class LibAVWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
+        cmd = [_AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
         print cmd
 
         self._cmd = " ".join(cmd)

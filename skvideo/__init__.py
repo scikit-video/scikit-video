@@ -1,6 +1,7 @@
 __version__ = "1.0.0"
 
 from .utils import check_output
+import os
 
 # Run a program-based check to see if all install
 # requirements have been met. 
@@ -25,6 +26,12 @@ def which(program):
 
     return None
 
+_FFMPEG_PATH = os.path.split(which("ffmpeg"))[0]
+_FFPROBE_PATH = os.path.split(which("ffprobe"))[0]
+_AVCONV_PATH = os.path.split(which("avconv"))[0]
+_AVPROBE_PATH = os.path.split(which("avprobe"))[0]
+_MEDIAINFO_PATH = os.path.split(which("mediainfo"))[0]
+
 _HAS_FFMPEG = 0
 _HAS_AVCONV = 0
 _HAS_MEDIAINFO = 0
@@ -36,12 +43,16 @@ _FFMPEG_MAJOR_VERSION = 0
 _FFMPEG_MINOR_VERSION = 0
 _FFMPEG_PATCH_VERSION = 0
 
-
-if ((which("ffmpeg") != None) and (which("ffprobe") != None)):
-    _HAS_FFMPEG = 1
+def scan_ffmpeg():
+    global _FFMPEG_MAJOR_VERSION
+    global _FFMPEG_MINOR_VERSION
+    global _FFMPEG_PATCH_VERSION
+    _FFMPEG_MAJOR_VERSION = 0
+    _FFMPEG_MINOR_VERSION = 0
+    _FFMPEG_PATCH_VERSION = 0
     try:
         # grab program version string
-        version = check_output(["ffmpeg",  "-version"])
+        version = check_output([_FFMPEG_PATH + "/ffmpeg", "-version"])
         # only parse the first line returned
         firstline = version.split('\n')[0]
         # the 3rd element in this line is the version number
@@ -54,12 +65,16 @@ if ((which("ffmpeg") != None) and (which("ffprobe") != None)):
     except:
         pass
 
-if ((which("avconv") != None) and (which("avprobe") != None)):
-    _HAS_AVCONV = 1
-
+def scan_libav():
+    global _LIBAV_MAJOR_VERSION
+    global _LIBAV_MINOR_VERSION
+    global _LIBAV_PATCH_VERSION
+    _LIBAV_MAJOR_VERSION = 0
+    _LIBAV_MINOR_VERSION = 0
+    _LIBAV_PATCH_VERSION = 0
     try:
         # grab program version string
-        #version = check_output(["avconv",  "-version"])
+        version = check_output([_AVCONV_PATH + "/avconv", "-version"])
         # only parse the first line returned
         firstline = version.split('\n')[0]
 
@@ -82,5 +97,61 @@ if ((which("avconv") != None) and (which("avprobe") != None)):
     except:
         pass
 
-if which("mediainfo") != None:
+
+if ((_FFMPEG_PATH is not None) and (_FFPROBE_PATH is not None)):
+    _HAS_FFMPEG = 1
+    scan_ffmpeg()
+
+if ((_AVCONV_PATH is not None) and (_AVPROBE_PATH is not None)):
+    _HAS_AVCONV = 1
+    scan_libav()
+
+
+if _MEDIAINFO_PATH is not None:
     _HAS_MEDIAINFO = 1
+
+
+# allow library configuration checking
+def getFFmpegPath():
+    return _FFMPEG_PATH
+
+
+def getFFmpegVersion():
+    return "%d.%d.%d" % (_FFMPEG_MAJOR_VERSION, _FFMPEG_MINOR_VERSION, _FFMPEG_PATCH_VERSION)
+
+
+def setFFmpegPath(path):
+    global _FFMPEG_PATH
+    global _FFPROBE_PATH
+    _FFMPEG_PATH = path
+    _FFPROBE_PATH = path
+
+    # reload version from new path
+    scan_ffmpeg()
+
+
+def getLibAVPath():
+    return _FFMPEG_PATH
+
+
+def getLibAVVersion():
+    return "%d.%d" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
+
+
+def setLibAVPath(path):
+    global _AVCONV_PATH
+    global _AVPROBE_PATH
+    _AVCONV_PATH = path
+    _AVPROBE_PATH = path
+    scan_libav()
+
+
+__all__ = [
+    getFFmpegPath,
+    getFFmpegVersion,
+    setFFmpegPath,
+    getLibAVPath,
+    getLibAVVersion,
+    setLibAVPath,
+]
+

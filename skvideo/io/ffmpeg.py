@@ -23,6 +23,8 @@ import numpy as np
 from ffprobe import ffprobe
 from ..utils import *
 from .. import _HAS_FFMPEG
+from .. import _FFMPEG_PATH
+from .. import _FFPROBE_PATH
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -182,17 +184,17 @@ class FFmpegReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_FFPROBE_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
         if verbosity == 0:
-            cmd = ["ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [_FFMPEG_PATH + "/ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [_FFMPEG_PATH + "/ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
             print cmd
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
@@ -364,7 +366,7 @@ class FFmpegWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = [_FFMPEG_PATH + "/ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 
