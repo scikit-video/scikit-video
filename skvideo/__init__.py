@@ -1,7 +1,8 @@
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 from .utils import check_output
 import os
+import warnings
 
 # Run a program-based check to see if all install
 # requirements have been met. 
@@ -99,6 +100,10 @@ def scan_libav():
 
 
 if ((_FFMPEG_PATH is not None) and (_FFPROBE_PATH is not None)):
+    if _FFMPEG_PATH is not _FPROBE_PATH:
+        # FFmpeg path does not match the FFprobe path
+        warnings.warn("FFmpeg path does not match the FFprobe path. This is suspicious. Please check your FFmpeg install.", UserWarning)
+
     _HAS_FFMPEG = 1
     scan_ffmpeg()
 
@@ -113,14 +118,20 @@ if _MEDIAINFO_PATH is not None:
 
 # allow library configuration checking
 def getFFmpegPath():
+    """ Returns the path to the directory containing both FFmpeg and FFprobe 
+    """
     return _FFMPEG_PATH
 
 
 def getFFmpegVersion():
+    """ Returns the version of FFmpeg that currently being used
+    """ 
     return "%d.%d.%d" % (_FFMPEG_MAJOR_VERSION, _FFMPEG_MINOR_VERSION, _FFMPEG_PATCH_VERSION)
 
 
 def setFFmpegPath(path):
+    """ Sets up the path to the directory containing both FFmpeg and FFprobe
+    """ 
     global _FFMPEG_PATH
     global _FFPROBE_PATH
     _FFMPEG_PATH = path
