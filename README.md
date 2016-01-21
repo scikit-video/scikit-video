@@ -14,7 +14,7 @@ scikit-video v1.0.1
 
 Borrowing coding styles and conventions from scikit-image and scikit-learn,
 scikit-video is a Python module for video processing built on top of 
-scipy, numpy, and ffmpeg.
+scipy, numpy, and ffmpeg/libav.
 
 This project is distributed under the 3-clause BSD.
 
