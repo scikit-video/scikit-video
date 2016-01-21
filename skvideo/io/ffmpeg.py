@@ -205,7 +205,7 @@ class FFmpegReader():
         Returns the video shape in number of frames, height, width, and channels per pixel.
         """
            
-        return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
+        return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
 
     def _close(self):
