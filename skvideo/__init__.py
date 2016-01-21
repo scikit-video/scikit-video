@@ -46,14 +46,22 @@ _FFMPEG_MAJOR_VERSION = "0"
 _FFMPEG_MINOR_VERSION = "0"
 _FFMPEG_PATCH_VERSION = "0"
 
+_FFMPEG_SUPPORTED_DECODERS = []
+_FFMPEG_SUPPORTED_ENCODERS = []
+_LIBAV_SUPPORTED_EXT = []
+
 
 def scan_ffmpeg():
     global _FFMPEG_MAJOR_VERSION
     global _FFMPEG_MINOR_VERSION
     global _FFMPEG_PATCH_VERSION
+    global _FFMPEG_SUPPORTED_DECODERS
+    global _FFMPEG_SUPPORTED_ENCODERS
     _FFMPEG_MAJOR_VERSION = "0"
     _FFMPEG_MINOR_VERSION = "0"
     _FFMPEG_PATCH_VERSION = "0"
+    _FFMPEG_SUPPORTED_DECODERS = []
+    _FFMPEG_SUPPORTED_ENCODERS = []
     try:
         # grab program version string
         version = check_output([_FFMPEG_PATH + "/ffmpeg", "-version"])
@@ -71,6 +79,24 @@ def scan_ffmpeg():
             _FFMPEG_MINOR_VERSION = versionparts[1]
             if len(versionparts) > 2:
                 _FFMPEG_PATCH_VERSION = versionparts[2]
+    except:
+        pass
+
+    try:
+        extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-formats"])
+        extension_lst = extension_lst.split(b'\n')
+        # skip first line
+        for item in extension_lst[4:]:
+            parts = [x.strip() for x in item.split(b' ') if x]
+            rule = parts[0]
+            extension = parts[1]
+            if 'D' in rule:
+                for item in extension.split(b","):
+                    _FFMPEG_SUPPORTED_DECODERS.append("." + item)
+            if 'E' in rule:
+                for item in extension.split(b","):
+                    _FFMPEG_SUPPORTED_ENCODERS.append("." + item)
+
     except:
         pass
 

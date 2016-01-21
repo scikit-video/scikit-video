@@ -24,6 +24,8 @@ from .ffprobe import ffprobe
 from ..utils import *
 from .. import _HAS_FFMPEG
 from .. import _FFMPEG_PATH
+from .. import _FFMPEG_SUPPORTED_DECODERS
+from .. import _FFMPEG_SUPPORTED_ENCODERS
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -78,6 +80,8 @@ class FFmpegReader():
 
         # General information
         _, self.extension = os.path.splitext(filename)
+
+
         self.size = os.path.getsize(filename)
         self.probeInfo = ffprobe(filename)
 
@@ -128,7 +132,7 @@ class FFmpegReader():
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
 
-        if (self.extension == ".yuv"):
+        if (self.extension in [".raw", ".yuv"]):
             israw = 1
 
         if ("-vframes" in outputdict):
@@ -145,6 +149,9 @@ class FFmpegReader():
 
         if israw != 0:
             inputdict['-pix_fmt'] = self.pix_fmt
+        else:
+            # check that the extension makes sense
+            assert self.extension in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension
 
         self._filename = filename
 
@@ -297,6 +304,12 @@ class FFmpegWriter():
 
         """
         filename = os.path.abspath(filename)
+
+        _, self.extension = os.path.splitext(filename)
+
+        if self.extension not in [".raw", ".yuv"]:
+            # check that the extension makes sense
+            assert self.extension in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension
 
         basepath, _ = os.path.split(filename)
 
