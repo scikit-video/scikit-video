@@ -27,30 +27,33 @@ def which(program):
 
     return None
 
-_FFMPEG_PATH = os.path.split(which("ffmpeg"))[0]
-_FFPROBE_PATH = os.path.split(which("ffprobe"))[0]
-_AVCONV_PATH = os.path.split(which("avconv"))[0]
-_AVPROBE_PATH = os.path.split(which("avprobe"))[0]
+# only ffprobe exists with ffmpeg
+_FFMPEG_PATH = os.path.split(which("ffprobe"))[0]
+
+# only avprobe exists with libav
+_AVCONV_PATH = os.path.split(which("avprobe"))[0]
+
 _MEDIAINFO_PATH = os.path.split(which("mediainfo"))[0]
 
 _HAS_FFMPEG = 0
 _HAS_AVCONV = 0
 _HAS_MEDIAINFO = 0
 
-_LIBAV_MAJOR_VERSION = 0
-_LIBAV_MINOR_VERSION = 0
-_LIBAV_PATCH_VERSION = 0
-_FFMPEG_MAJOR_VERSION = 0
-_FFMPEG_MINOR_VERSION = 0
-_FFMPEG_PATCH_VERSION = 0
+_LIBAV_MAJOR_VERSION = "0"
+_LIBAV_MINOR_VERSION = "0"
+_LIBAV_PATCH_VERSION = "0"
+_FFMPEG_MAJOR_VERSION = "0"
+_FFMPEG_MINOR_VERSION = "0"
+_FFMPEG_PATCH_VERSION = "0"
+
 
 def scan_ffmpeg():
     global _FFMPEG_MAJOR_VERSION
     global _FFMPEG_MINOR_VERSION
     global _FFMPEG_PATCH_VERSION
-    _FFMPEG_MAJOR_VERSION = 0
-    _FFMPEG_MINOR_VERSION = 0
-    _FFMPEG_PATCH_VERSION = 0
+    _FFMPEG_MAJOR_VERSION = "0"
+    _FFMPEG_MINOR_VERSION = "0"
+    _FFMPEG_PATCH_VERSION = "0"
     try:
         # grab program version string
         version = check_output([_FFMPEG_PATH + "/ffmpeg", "-version"])
@@ -59,23 +62,25 @@ def scan_ffmpeg():
         # the 3rd element in this line is the version number
         version = firstline.split(' ')[2].strip()
         versionparts = version.split('.')
-        if len(versionparts) < 2:
+        if version[0] == 'N':
+            # this is the 'git' version of FFmpeg
             _FFMPEG_MAJOR_VERSION = version
         else:
-            _FFMPEG_MAJOR_VERSION = int(versionparts[0])
-            _FFMPEG_MINOR_VERSION = int(versionparts[1])
+            _FFMPEG_MAJOR_VERSION = versionparts[0]
+            _FFMPEG_MINOR_VERSION = versionparts[1]
             if len(versionparts) > 2:
-                _FFMPEG_PATCH_VERSION = int(versionparts[2])
+                _FFMPEG_PATCH_VERSION = versionparts[2]
     except:
         pass
+
 
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
     global _LIBAV_MINOR_VERSION
     global _LIBAV_PATCH_VERSION
-    _LIBAV_MAJOR_VERSION = 0
-    _LIBAV_MINOR_VERSION = 0
-    _LIBAV_PATCH_VERSION = 0
+    _LIBAV_MAJOR_VERSION = "0"
+    _LIBAV_MINOR_VERSION = "0"
+    _LIBAV_PATCH_VERSION = "0"
     try:
         # grab program version string
         version = check_output([_AVCONV_PATH + "/avconv", "-version"])
@@ -102,17 +107,6 @@ def scan_libav():
         pass
 
 
-if ((_FFMPEG_PATH is not None) and (_FFPROBE_PATH is not None)):
-    if _FFMPEG_PATH != _FFPROBE_PATH:
-        # FFmpeg path does not match the FFprobe path
-        warnings.warn("FFmpeg path, " + _FFMPEG_PATH + ", does not match the FFprobe path, " + _FFPROBE_PATH + ". This is suspicious. Please check your FFmpeg install.", UserWarning)
-
-    _HAS_FFMPEG = 1
-    scan_ffmpeg()
-
-if ((_AVCONV_PATH is not None) and (_AVPROBE_PATH is not None)):
-    _HAS_AVCONV = 1
-    scan_libav()
 
 
 if _MEDIAINFO_PATH is not None:
@@ -129,7 +123,10 @@ def getFFmpegPath():
 def getFFmpegVersion():
     """ Returns the version of FFmpeg that currently being used
     """ 
-    return "%d.%d.%d" % (_FFMPEG_MAJOR_VERSION, _FFMPEG_MINOR_VERSION, _FFMPEG_PATCH_VERSION)
+    if _FFMPEG_MAJOR_VERSION[0] == 'N':
+        return "%s" % (_FFMPEG_MAJOR_VERSION, )
+    else:
+        return "%s.%s.%s" % (_FFMPEG_MAJOR_VERSION, _FFMPEG_MINOR_VERSION, _FFMPEG_PATCH_VERSION)
 
 
 def setFFmpegPath(path):
@@ -149,16 +146,29 @@ def setFFmpegPath(path):
 
     """ 
     global _FFMPEG_PATH
-    global _FFPROBE_PATH
+    global _HAS_FFMPEG
     _FFMPEG_PATH = path
-    _FFPROBE_PATH = path
+
+    # check to see if the executables actually exist on these paths
+    if os.path.isfile(_FFMPEG_PATH + "/ffmpeg") and os.path.isfile(_FFMPEG_PATH + "/ffprobe"):
+        _HAS_FFMPEG = 1
+    else:
+        warnings.warn("ffmpeg/ffprobe not found in path: " + str(path), UserWarning)
+        _HAS_FFMPEG = 0
+        global _FFMPEG_MAJOR_VERSION
+        global _FFMPEG_MINOR_VERSION
+        global _FFMPEG_PATCH_VERSION
+        _FFMPEG_MAJOR_VERSION = "0"
+        _FFMPEG_MINOR_VERSION = "0"
+        _FFMPEG_PATCH_VERSION = "0"
+        return
 
     # reload version from new path
     scan_ffmpeg()
 
 
 def getLibAVPath():
-    return _FFMPEG_PATH
+    return _AVCONV_PATH
 
 
 def getLibAVVersion():
@@ -166,11 +176,49 @@ def getLibAVVersion():
 
 
 def setLibAVPath(path):
+    """ Sets up the path to the directory containing both avconv and avprobe
+
+        Use this function for to specify specific system installs of libav. All
+        calls to avconv and avprobe will use this path as a prefix.
+
+        Parameters
+        ----------
+        path : string
+            Path to directory containing avconv and avprobe
+
+        Returns
+        -------
+        none
+
+    """ 
     global _AVCONV_PATH
-    global _AVPROBE_PATH
-    _AVCONV_PATH = path
-    _AVPROBE_PATH = path
+    global _HAS_AVCONV
+    _FFMPEG_PATH = path
+
+    # check to see if the executables actually exist on these paths
+    if os.path.isfile(_FFMPEG_PATH + "/avconv") and os.path.isfile(_FFMPEG_PATH + "/avprobe"):
+        _HAS_AVCONV = 1
+    else:
+        warnings.warn("avconv/avprobe not found in path: " + str(path), UserWarning)
+        _HAS_AVCONV = 0
+        global _LIBAV_MAJOR_VERSION
+        global _LIBAV_MINOR_VERSION
+        global _LIBAV_PATCH_VERSION
+        _LIBAV_MAJOR_VERSION = "0"
+        _LIBAV_MINOR_VERSION = "0"
+        _LIBAV_PATCH_VERSION = "0"
+        return
+
+    # reload version from new path
     scan_libav()
+
+if (_FFMPEG_PATH is not None):
+    setFFmpegPath(_FFMPEG_PATH)
+
+
+if (_AVCONV_PATH is not None):
+    _HAS_AVCONV = 1
+    setLibAVPath(_AVCONV_PATH)
 
 
 __all__ = [

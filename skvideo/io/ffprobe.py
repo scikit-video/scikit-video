@@ -2,7 +2,7 @@ import subprocess as sp
 
 from ..utils import *
 from .. import _HAS_FFMPEG
-from .. import _FFPROBE_PATH
+from .. import _FFMPEG_PATH
 
 def ffprobe(filename):
     """get metadata by using ffprobe
@@ -26,7 +26,7 @@ def ffprobe(filename):
     assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
     try:
-        command = [_FFPROBE_PATH + "/ffprobe", "-v", "error", "-show_streams", "-print_format", "xml", filename]
+        command = [_FFMPEG_PATH + "/ffprobe", "-v", "error", "-show_streams", "-print_format", "xml", filename]
 
         # simply get std output
         xml = check_output(command)

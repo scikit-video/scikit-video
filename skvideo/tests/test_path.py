@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+
 from numpy.testing import assert_equal
 import os
 import sys
@@ -12,6 +15,7 @@ def test_FFmpeg_paths():
 
     # check that version is not the default 0.0.0
     assert current_version != "0.0.0", "FFmpeg version not parsed."
+
 
     skvideo.setFFmpegPath("/")
     assert skvideo.getFFmpegVersion() == "0.0.0", "FFmpeg version is not zeroed out properly."

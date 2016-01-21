@@ -24,7 +24,6 @@ from avprobe import avprobe
 from ..utils import *
 from .. import _HAS_AVCONV
 from .. import _AVCONV_PATH
-from .. import _AVPROBE_PATH
 
 # uses libav to read the given file with parameters
 class LibAVReader():
@@ -183,7 +182,7 @@ class LibAVReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = [_AVPROBE_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_AVCONV_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process

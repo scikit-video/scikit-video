@@ -24,7 +24,6 @@ from ffprobe import ffprobe
 from ..utils import *
 from .. import _HAS_FFMPEG
 from .. import _FFMPEG_PATH
-from .. import _FFPROBE_PATH
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -184,7 +183,7 @@ class FFmpegReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = [_FFPROBE_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process

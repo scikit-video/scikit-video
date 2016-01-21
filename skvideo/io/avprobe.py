@@ -2,7 +2,7 @@ import subprocess as sp
 
 from ..utils import *
 from .. import _HAS_AVCONV, _LIBAV_MAJOR_VERSION
-from .. import _AVPROBE_PATH
+from .. import _AVCONV_PATH
 import json
 
 def avprobe(filename):
@@ -28,7 +28,7 @@ def avprobe(filename):
     assert _LIBAV_MAJOR_VERSION >= 11, "Version of libav < 11. Please update or use ffmpeg."
 
     try:
-        command = [_AVPROBE_PATH + "/avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
+        command = [_AVCONV_PATH + "/avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
 
         # simply get std output
         jsonstr = check_output(command)
