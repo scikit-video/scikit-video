@@ -28,3 +28,22 @@ def test_FFmpeg_paths():
     # check that it worked
     assert current_path == skvideo.getFFmpegPath(), "FFmpeg path did not update correctly"
     assert skvideo.getFFmpegVersion() == current_version, "FFmpeg version is not loaded properly from valid FFmpeg."
+
+
+def test_LibAV_paths():
+    current_path = skvideo.getLibAVPath()
+    current_version = skvideo.getLibAVVersion()
+
+    # check that version is not the default 0.0
+    assert current_version != "0.0", "LibAV version not parsed."
+
+    skvideo.setLibAVPath("/")
+    assert skvideo.getLibAVVersion() == "0.0", "LibAV version is not zeroed out properly."
+    assert current_path != skvideo.getLibAVPath(), "LibAV path did not update correctly"
+
+    # change path back
+    skvideo.setLibAVPath(current_path)
+
+    # check that it worked
+    assert current_path == skvideo.getLibAVPath(), "LibAV path did not update correctly"
+    assert skvideo.getLibAVVersion() == current_version, "LibAV version is not loaded properly from valid FFmpeg."

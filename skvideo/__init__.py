@@ -41,7 +41,6 @@ _HAS_MEDIAINFO = 0
 
 _LIBAV_MAJOR_VERSION = "0"
 _LIBAV_MINOR_VERSION = "0"
-_LIBAV_PATCH_VERSION = "0"
 _FFMPEG_MAJOR_VERSION = "0"
 _FFMPEG_MINOR_VERSION = "0"
 _FFMPEG_PATCH_VERSION = "0"
@@ -106,10 +105,8 @@ def scan_ffmpeg():
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
     global _LIBAV_MINOR_VERSION
-    global _LIBAV_PATCH_VERSION
     _LIBAV_MAJOR_VERSION = "0"
     _LIBAV_MINOR_VERSION = "0"
-    _LIBAV_PATCH_VERSION = "0"
     try:
         # grab program version string
         version = check_output([_AVCONV_PATH + "/avconv", "-version"])
@@ -130,10 +127,10 @@ def scan_libav():
         version = version.split(b'_')[0]
         versionparts = version.split(b'.')
         if versionparts[0][0] == 'v':
-            _LIBAV_MAJOR_VERSION = int(versionparts[0][1:])
+            _LIBAV_MAJOR_VERSION = str(versionparts[0][1:])
         else:
-            _LIBAV_MAJOR_VERSION = int(versionparts[0])
-            _LIBAV_MINOR_VERSION = int(versionparts[1])
+            _LIBAV_MAJOR_VERSION = str(versionparts[0])
+            _LIBAV_MINOR_VERSION = str(versionparts[1])
     except:
         pass
 
@@ -203,7 +200,7 @@ def getLibAVPath():
 
 
 def getLibAVVersion():
-    return "%d.%d" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
+    return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
 
 
 def setLibAVPath(path):
@@ -224,20 +221,18 @@ def setLibAVPath(path):
     """ 
     global _AVCONV_PATH
     global _HAS_AVCONV
-    _FFMPEG_PATH = path
+    _AVCONV_PATH = path
 
     # check to see if the executables actually exist on these paths
-    if os.path.isfile(_FFMPEG_PATH + "/avconv") and os.path.isfile(_FFMPEG_PATH + "/avprobe"):
+    if os.path.isfile(_AVCONV_PATH + "/avconv") and os.path.isfile(_AVCONV_PATH + "/avprobe"):
         _HAS_AVCONV = 1
     else:
         warnings.warn("avconv/avprobe not found in path: " + str(path), UserWarning)
         _HAS_AVCONV = 0
         global _LIBAV_MAJOR_VERSION
         global _LIBAV_MINOR_VERSION
-        global _LIBAV_PATCH_VERSION
         _LIBAV_MAJOR_VERSION = "0"
         _LIBAV_MINOR_VERSION = "0"
-        _LIBAV_PATCH_VERSION = "0"
         return
 
     # reload version from new path
