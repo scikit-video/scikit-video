@@ -59,10 +59,13 @@ def scan_ffmpeg():
         # the 3rd element in this line is the version number
         version = firstline.split(' ')[2].strip()
         versionparts = version.split('.')
-        _FFMPEG_MAJOR_VERSION = int(versionparts[0])
-        _FFMPEG_MINOR_VERSION = int(versionparts[1])
-        if len(versionparts) > 2:
-            _FFMPEG_PATCH_VERSION = int(versionparts[2])
+        if len(versionparts) < 2:
+            _FFMPEG_MAJOR_VERSION = version
+        else:
+            _FFMPEG_MAJOR_VERSION = int(versionparts[0])
+            _FFMPEG_MINOR_VERSION = int(versionparts[1])
+            if len(versionparts) > 2:
+                _FFMPEG_PATCH_VERSION = int(versionparts[2])
     except:
         pass
 
