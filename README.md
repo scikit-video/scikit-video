@@ -22,7 +22,7 @@ Visit the documentation at http://www.scikit-video.org
 Integration testing performed using an Ubuntu 12.04 LTS and anaconda packages. Listed below are the minimum versions tested:
 
 - Either ffmpeg (version >= 2.1) or libav (version >= 11.4)
-- python2 (2.6 or 2.7)
+- python (2.6, 2.7, 3.5)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
 - mediainfo (optional)
@@ -39,9 +39,8 @@ then
 
 ##TODO:
 - MacOSX and Windows support
-- Python 3 support
 - Video Quality Assessment metrics
-- Temporal filtering helper functions
+- Spatial-Temporal filtering helper functions
 
 
 ##For Contributors:
@@ -50,8 +49,9 @@ Quick tutorial on how to go about setting up your environment to contribute to s
 
 ##Testing
 
-After installation, you can launch the test suite from outside the source directory (you will need to have the nose package installed):
+After installation, you can launch the test suite from outside the source directory (you will need to have the nose package installed). To ensure that both python2 and python3 versions pass:
 
 $ nosetests2 -v skvideo
+$ nosetests3 -v skvideo
 
 Copyright &copy; 2015 scikit-video team. Special thanks to Martín Blech for xmltodict, the authors of pymediaprobe, and the developers behind imageio and pyav for releasing under BSD licenses.

@@ -1,6 +1,5 @@
 import skvideo.io
 import skvideo.utils
-import pylab as py
 import numpy as np
 import os
 
@@ -9,7 +8,7 @@ def pattern_sinusoid(backend):
     # write out a sine wave
     sinusoid1d = np.zeros((100, 100))
 
-    for i in xrange(100):
+    for i in range(100):
         sinusoid1d[i, :] = 127*np.sin(2 * np.pi * i / 100) + 128
 
     skvideo.io.vwrite("sinusoid1d.yuv", sinusoid1d)
@@ -75,7 +74,10 @@ def test_sinusoid_ffmpeg():
 def test_sinusoid_libav_version12():
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
     pattern_sinusoid('libav')
 
@@ -85,6 +87,9 @@ def test_noisepattern_ffmpeg():
 def test_noisepattern_libav_version12():
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
     pattern_noise('libav')

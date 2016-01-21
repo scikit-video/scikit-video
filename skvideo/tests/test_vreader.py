@@ -36,7 +36,11 @@ def test_vreader_libav_version12():
     # simply return if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
+
     _vreader("libav")
 

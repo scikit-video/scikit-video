@@ -11,7 +11,10 @@ def test_LibAVReader_version12():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
 
     reader = skvideo.io.LibAVReader(skvideo.datasets.bigbuckbunny(), verbosity=0)
@@ -42,7 +45,10 @@ def test_LibAVWriter_version12():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
 
     # generate random data for 5 frames
@@ -52,7 +58,7 @@ def test_LibAVWriter_version12():
     outputdata = outputdata.astype(np.uint8)
 
     writer = skvideo.io.LibAVWriter(outputfile)
-    for i in xrange(5):
+    for i in range(5):
         writer.writeFrame(outputdata[i])
     writer.close()
     os.remove(outputfile)

@@ -20,7 +20,7 @@ import warnings
 
 import numpy as np
 
-from avprobe import avprobe
+from .avprobe import avprobe
 from ..utils import *
 from .. import _HAS_AVCONV
 from .. import _AVCONV_PATH
@@ -193,7 +193,7 @@ class LibAVReader():
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
             cmd = [_AVCONV_PATH + "/avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
-            print cmd
+            print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
@@ -262,7 +262,7 @@ class LibAVReader():
         M is height, N is width, and C is number of channels per pixel.
 
         """
-        for i in xrange(self.inputframenum):
+        for i in range(self.inputframenum):
             yield self._readFrame()
 
 
@@ -374,7 +374,7 @@ class LibAVWriter():
             oargs.append(self.outputdict[key])
 
         cmd = [_AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
-        print cmd
+        print(cmd)
 
         self._cmd = " ".join(cmd)
 
@@ -388,9 +388,9 @@ class LibAVWriter():
 
 
     def close(self):
-	"""Closes the video and terminates FFmpeg process
+        """Closes the video and terminates avconv process
 
-	"""
+        """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
@@ -402,9 +402,9 @@ class LibAVWriter():
 
 
     def writeFrame(self, im):
-	"""Sends ndarray frames to avconv
+        """Sends ndarray frames to avconv
 
-	"""
+        """
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:

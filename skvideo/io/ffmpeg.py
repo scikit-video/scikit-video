@@ -20,7 +20,7 @@ import warnings
 
 import numpy as np
 
-from ffprobe import ffprobe
+from .ffprobe import ffprobe
 from ..utils import *
 from .. import _HAS_FFMPEG
 from .. import _FFMPEG_PATH
@@ -194,7 +194,7 @@ class FFmpegReader():
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
             cmd = [_FFMPEG_PATH + "/ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
-            print cmd
+            print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
@@ -263,7 +263,7 @@ class FFmpegReader():
         M is height, N is width, and C is number of channels per pixel.
 
         """
-        for i in xrange(self.inputframenum):
+        for i in range(self.inputframenum):
             yield self._readFrame()
 
 
@@ -386,9 +386,9 @@ class FFmpegWriter():
 
 
     def close(self):
-	"""Closes the video and terminates FFmpeg process
+        """Closes the video and terminates FFmpeg process
 
-	"""
+        """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
@@ -400,9 +400,9 @@ class FFmpegWriter():
 
 
     def writeFrame(self, im):
-	"""Sends ndarray frames to FFmpeg
+        """Sends ndarray frames to FFmpeg
 
-	"""
+        """
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:

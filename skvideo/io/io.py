@@ -57,14 +57,14 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
         writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        for t in xrange(T):
+        for t in range(T):
             writer.writeFrame(videodata[t])
         writer.close()
     elif backend == "libav":
         # check if FFMPEG exists in the path
         assert _HAS_AVCONV, "Cannot find installation of libav."
         writer = LibAVWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        for t in xrange(T):
+        for t in range(T):
             writer.writeFrame(videodata[t])
         writer.close()
     else:

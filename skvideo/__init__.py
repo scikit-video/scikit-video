@@ -58,10 +58,11 @@ def scan_ffmpeg():
         # grab program version string
         version = check_output([_FFMPEG_PATH + "/ffmpeg", "-version"])
         # only parse the first line returned
-        firstline = version.split('\n')[0]
+        firstline = version.split(b'\n')[0]
+
         # the 3rd element in this line is the version number
-        version = firstline.split(' ')[2].strip()
-        versionparts = version.split('.')
+        version = firstline.split(b' ')[2].strip()
+        versionparts = version.split(b'.')
         if version[0] == 'N':
             # this is the 'git' version of FFmpeg
             _FFMPEG_MAJOR_VERSION = version

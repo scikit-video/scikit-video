@@ -5,6 +5,7 @@ from .. import _HAS_AVCONV, _LIBAV_MAJOR_VERSION
 from .. import _AVCONV_PATH
 import json
 
+
 def avprobe(filename):
     """get metadata by using avprobe
 

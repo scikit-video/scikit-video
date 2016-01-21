@@ -10,7 +10,7 @@ import nose
 
 # test read twice
 def test_vread2x():
-    for i in xrange(2):
+    for i in range(2):
         videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
 
 
@@ -135,7 +135,10 @@ def test_vread_raw2_libav_version12():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if skvideo._LIBAV_MAJOR_VERSION < 12:
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
         return 0
 
     _rawhelper2("libav")
