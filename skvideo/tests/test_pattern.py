@@ -71,25 +71,24 @@ def pattern_noise(backend):
 def test_sinusoid_ffmpeg():
     pattern_sinusoid('ffmpeg')
 
+
 def test_sinusoid_libav_version12():
     if not skvideo._HAS_AVCONV:
         return 0
-    try:
-        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+    if 0:
+        try:
+            if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+                return 0
+        except:
             return 0
-    except:
-        return 0
     pattern_sinusoid('libav')
+
 
 def test_noisepattern_ffmpeg():
     pattern_noise('ffmpeg')
 
+
 def test_noisepattern_libav_version12():
     if not skvideo._HAS_AVCONV:
-        return 0
-    try:
-        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
-            return 0
-    except:
         return 0
     pattern_noise('libav')

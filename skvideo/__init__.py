@@ -114,24 +114,26 @@ def scan_libav():
         # grab program version string
         version = check_output([_AVCONV_PATH + "/avconv", "-version"])
         # only parse the first line returned
-        firstline = version.split('\n')[0]
+        firstline = version.split(b'\n')[0]
 
-        firstlineparts = firstline.split(' ')
+        firstlineparts = firstline.split(b' ')
 
-        # in older versions, the second word is "version", 
+        # in older versions, the second word is "version",
         # else the version number starts with "v"
-        if firstlineparts[1].strip() == "version":
-            version = firstlineparts[2].split('-')[0]
+        version = ""
+        if firstlineparts[1].strip() == b"version":
+            version = firstlineparts[2].split('.')[0]
         else:
-            version = firstlineparts[1].split('-')[0]
-            # check for underscore
-            version = version.split('_')[0]
-            versionparts = version.split('.')
-            if versionparts[0][0] == 'v':
-                _LIBAV_MAJOR_VERSION = int(versionparts[0][1:])
-            else:
-                _LIBAV_MAJOR_VERSION = int(versionparts[0])
-                _LIBAV_MINOR_VERSION = int(versionparts[1])
+            version = firstlineparts[1].split(b'-')[0]
+
+        # check for underscore
+        version = version.split(b'_')[0]
+        versionparts = version.split(b'.')
+        if versionparts[0][0] == 'v':
+            _LIBAV_MAJOR_VERSION = int(versionparts[0][1:])
+        else:
+            _LIBAV_MAJOR_VERSION = int(versionparts[0])
+            _LIBAV_MINOR_VERSION = int(versionparts[1])
     except:
         pass
 

@@ -24,7 +24,7 @@ Visit the documentation at http://www.scikit-video.org
 
 Here are the requirements needed to use scikit-video.
 
-- Either ffmpeg (version >= 2.1) or libav (version >= 11.4)
+- Either ffmpeg (version >= 2.1) or libav (version >= 9.18)
 - python (2.6, 2.7, 3.3, and 3.5)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
