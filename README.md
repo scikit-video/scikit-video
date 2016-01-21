@@ -42,10 +42,10 @@ then
 
 ##TODO/Roadmap:
 - MacOSX and Windows support
-- Video Quality Assessment metrics
+- Video quality assessment metrics
 - Spatial-Temporal filtering helper functions
 - Speedup motion estimation routines
-- More Interfacing with backend ffmpeg/avconv to take advantage of filter routines
+- More ffmpeg/avconv interfacing
 
 
 ##For Contributors:

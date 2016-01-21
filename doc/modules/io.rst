@@ -21,6 +21,8 @@ Classes
 
    io.FFmpegWriter
    io.FFmpegReader
+   io.LibAVWriter
+   io.LibAVReader
 
 
 Functions
@@ -34,3 +36,4 @@ Functions
    io.vwrite
    io.mprobe
    io.ffprobe
+   io.avprobe
