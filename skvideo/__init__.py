@@ -1,4 +1,4 @@
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 from .utils import check_output
 import os
@@ -71,7 +71,7 @@ def scan_ffmpeg():
         # the 3rd element in this line is the version number
         version = firstline.split(b' ')[2].strip()
         versionparts = version.split(b'.')
-        if version[0] == 'N':
+        if version[0] == b'N':
             # this is the 'git' version of FFmpeg
             _FFMPEG_MAJOR_VERSION = version
         else:
@@ -88,14 +88,16 @@ def scan_ffmpeg():
         # skip first line
         for item in extension_lst[4:]:
             parts = [x.strip() for x in item.split(b' ') if x]
+            if len(parts) < 2:
+                continue
             rule = parts[0]
             extension = parts[1]
-            if 'D' in rule:
+            if b'D' in rule:
                 for item in extension.split(b","):
-                    _FFMPEG_SUPPORTED_DECODERS.append("." + item)
-            if 'E' in rule:
+                    _FFMPEG_SUPPORTED_DECODERS.append(b"." + item)
+            if b'E' in rule:
                 for item in extension.split(b","):
-                    _FFMPEG_SUPPORTED_ENCODERS.append("." + item)
+                    _FFMPEG_SUPPORTED_ENCODERS.append(b"." + item)
 
     except:
         pass

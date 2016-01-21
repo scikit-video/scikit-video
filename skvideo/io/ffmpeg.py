@@ -95,7 +95,7 @@ class FFmpegReader():
         elif "@r_frame_rate" in viddict:
             # check for the slash
             frtxt = viddict["@r_frame_rate"]
-            parts = frtxt.split('/') 
+            parts = frtxt.split('/')
             if len(parts) > 1:
                 self.inputfps = np.float(parts[0])/np.float(parts[1])
             else:
@@ -132,7 +132,7 @@ class FFmpegReader():
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
 
-        if (self.extension in [".raw", ".yuv"]):
+        if (str.encode(self.extension) in [b".raw", b".yuv"]):
             israw = 1
 
         if ("-vframes" in outputdict):
@@ -151,7 +151,7 @@ class FFmpegReader():
             inputdict['-pix_fmt'] = self.pix_fmt
         else:
             # check that the extension makes sense
-            assert self.extension in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension
+            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension
 
         self._filename = filename
 
@@ -307,9 +307,10 @@ class FFmpegWriter():
 
         _, self.extension = os.path.splitext(filename)
 
-        if self.extension not in [".raw", ".yuv"]:
+        print(self.extension)
+        if str.encode(self.extension) not in [b".raw", b".yuv"]:
             # check that the extension makes sense
-            assert self.extension in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension
+            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension
 
         basepath, _ = os.path.split(filename)
 
