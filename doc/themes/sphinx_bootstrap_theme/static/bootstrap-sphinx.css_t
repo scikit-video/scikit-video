@@ -9,6 +9,21 @@
     color: #777;
 }
 
+h1 {
+    padding-top: 10px;
+    background: #EF5350;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    border-radius: 5px 25px;
+    color: #FFFFFF;
+    font-size: 25pt;
+    text-align: center;
+}
+
+h2 {
+    font-size: 20pt;
+}
+
 .navbar-version-div {
     width: 100%;
     padding-top: 0px;

@@ -7,7 +7,7 @@ Frequently Asked Questions
 How do I tell scikit-video to use different FFmpeg installs?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use the function :ref:`skvideo.setFFmpegPath`.
+You can use the function :mod:`skvideo.setFFmpegPath`.
 
 Loading videos using vread is sooooo slow!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
