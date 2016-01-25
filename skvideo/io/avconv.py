@@ -20,9 +20,10 @@ import warnings
 
 import numpy as np
 
-from avprobe import avprobe
+from .avprobe import avprobe
 from ..utils import *
-from .. import _HAS_AVCONV 
+from .. import _HAS_AVCONV
+from .. import _AVCONV_PATH
 
 # uses libav to read the given file with parameters
 class LibAVReader():
@@ -67,8 +68,6 @@ class LibAVReader():
         # check if avconv exists in the path
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
 
-        # complain about the use of avconv :(
-        warnings.warn("avconv corrupts video data between reading and writing. Search for \"drift\" in the test script test_vread.py for proof. Please consider using FFMPEG.", UserWarning)
 
         israw = 0
 
@@ -167,6 +166,7 @@ class LibAVReader():
         self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
 
+
         # Create input args
         iargs = []
         for key in inputdict.keys():
@@ -181,18 +181,18 @@ class LibAVReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = ["avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_AVCONV_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
         if verbosity == 0:
-            cmd = ["avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            cmd = [_AVCONV_PATH + "/avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = ["avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
-            print cmd
+            cmd = [_AVCONV_PATH + "/avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
@@ -261,7 +261,7 @@ class LibAVReader():
         M is height, N is width, and C is number of channels per pixel.
 
         """
-        for i in xrange(self.inputframenum):
+        for i in range(self.inputframenum):
             yield self._readFrame()
 
 
@@ -296,6 +296,9 @@ class LibAVWriter():
         """
 
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+
+        # complain about the use of avconv :(
+        warnings.warn("avconv corrupts video data between reading and writing. Search for \"drift\" in the test script test_vread.py for proof. Please consider using FFMPEG.", UserWarning)
 
         if not inputdict:
             inputdict = {}
@@ -354,6 +357,8 @@ class LibAVWriter():
             self.inputwidth = N
             self.inputheight = M
 
+        self.outputdict["-sws_flags"] = "bitexact"
+
         # prepare output parameters, if raw
         if self.extension == ".yuv":
             if "-pix_fmt" not in self.outputdict:
@@ -372,8 +377,8 @@ class LibAVWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
-        print cmd
+        cmd = [_AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
+        print(cmd)
 
         self._cmd = " ".join(cmd)
 
@@ -387,9 +392,9 @@ class LibAVWriter():
 
 
     def close(self):
-	"""Closes the video and terminates FFmpeg process
+        """Closes the video and terminates avconv process
 
-	"""
+        """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
@@ -401,9 +406,9 @@ class LibAVWriter():
 
 
     def writeFrame(self, im):
-	"""Sends ndarray frames to avconv
+        """Sends ndarray frames to avconv
 
-	"""
+        """
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:

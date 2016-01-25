@@ -4,7 +4,7 @@ language: python
 python:
   - 2.7
   - 2.6
-    #  - 3.3
+  - 3.3
 
 notifications:
   email: true
@@ -27,9 +27,6 @@ env:
   matrix:
     # Primary targets.
     - FFMPEG=2.1
-    - FFMPEG=2.2
-    - FFMPEG=2.4
-    - FFMPEG=2.6
     - FFMPEG=2.8
     - FFMPEG=snapshot
 
@@ -37,7 +34,8 @@ before_install:
   - mkdir $HOME/skvideo_build_ubuntu || echo "Already exists."
   - mkdir $HOME/.cache/pip || echo "Already exists."
   - mkdir $HOME/download || echo "Already exists."
-  - mkdir $HOME/builds || echo "Already exists."
+  - mkdir $HOME/build_ffmpeg || echo "Already exists."
+  - mkdir $HOME/build_libav || echo "Already exists."
   - cd $HOME/download
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh

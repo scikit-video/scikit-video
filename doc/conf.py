@@ -30,6 +30,7 @@ from github_link import make_linkcode_resolve
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.pngmath',
+              'sphinx.ext.viewcode',
               'youtube.youtube',
               #'sphinx.ext.linkcode',
               'numpy_ext.numpydoc']
@@ -125,7 +126,7 @@ html_logo = 'images/scikit-video.svg'
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = 'images/scikit-video-favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -142,15 +143,15 @@ html_static_path = ['images']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-	'index': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'io': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'motion': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'utilities': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'datasets': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'examples': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'benchmarks': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'faq': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
-	'**': ['home.html', 'searchbox.html'], # all other pages 
+    'index': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'io': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'motion': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'utilities': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'datasets': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'examples': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'benchmarks': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'faq': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    '**': ['home.html', 'searchbox.html'], # all other pages
 }
 
 # Additional templates that should be rendered to pages, maps page names to

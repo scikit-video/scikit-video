@@ -20,9 +20,12 @@ import warnings
 
 import numpy as np
 
-from ffprobe import ffprobe
+from .ffprobe import ffprobe
 from ..utils import *
 from .. import _HAS_FFMPEG
+from .. import _FFMPEG_PATH
+from .. import _FFMPEG_SUPPORTED_DECODERS
+from .. import _FFMPEG_SUPPORTED_ENCODERS
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -77,6 +80,8 @@ class FFmpegReader():
 
         # General information
         _, self.extension = os.path.splitext(filename)
+
+
         self.size = os.path.getsize(filename)
         self.probeInfo = ffprobe(filename)
 
@@ -90,7 +95,7 @@ class FFmpegReader():
         elif "@r_frame_rate" in viddict:
             # check for the slash
             frtxt = viddict["@r_frame_rate"]
-            parts = frtxt.split('/') 
+            parts = frtxt.split('/')
             if len(parts) > 1:
                 self.inputfps = np.float(parts[0])/np.float(parts[1])
             else:
@@ -127,7 +132,7 @@ class FFmpegReader():
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
 
-        if (self.extension == ".yuv"):
+        if (str.encode(self.extension) in [b".raw", b".yuv"]):
             israw = 1
 
         if ("-vframes" in outputdict):
@@ -144,6 +149,9 @@ class FFmpegReader():
 
         if israw != 0:
             inputdict['-pix_fmt'] = self.pix_fmt
+        else:
+            # check that the extension makes sense
+            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension
 
         self._filename = filename
 
@@ -182,18 +190,18 @@ class FFmpegReader():
         if self.inputframenum == -1:
             # open process with supplied arguments,
             # grabbing number of frames using ffprobe
-            probecmd = ["ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
+            probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1", self._filename]
             self.inputframenum = np.int(check_output(probecmd).split('\n')[0])
 
         # Create process
 
         if verbosity == 0:
-            cmd = ["ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [_FFMPEG_PATH + "/ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = ["ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
-            print cmd
+            cmd = [_FFMPEG_PATH + "/ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
+            print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
@@ -203,7 +211,7 @@ class FFmpegReader():
         Returns the video shape in number of frames, height, width, and channels per pixel.
         """
            
-        return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
+        return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
 
     def _close(self):
@@ -262,7 +270,7 @@ class FFmpegReader():
         M is height, N is width, and C is number of channels per pixel.
 
         """
-        for i in xrange(self.inputframenum):
+        for i in range(self.inputframenum):
             yield self._readFrame()
 
 
@@ -281,7 +289,7 @@ class FFmpegWriter():
         Parameters
         ----------
         filename : string
-            Video file path
+            Video file path for writing
 
         inputdict : dict
             Input dictionary parameters, i.e. how to interpret the data coming from python.
@@ -295,6 +303,20 @@ class FFmpegWriter():
         none
 
         """
+        filename = os.path.abspath(filename)
+
+        _, self.extension = os.path.splitext(filename)
+
+        print(self.extension)
+        if str.encode(self.extension) not in [b".raw", b".yuv"]:
+            # check that the extension makes sense
+            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension
+
+        basepath, _ = os.path.split(filename)
+
+        # check to see if filename is a valid file location
+        assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+
 
         if not inputdict:
             inputdict = {}
@@ -364,7 +386,7 @@ class FFmpegWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = ["ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = [_FFMPEG_PATH + "/ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 
@@ -378,9 +400,9 @@ class FFmpegWriter():
 
 
     def close(self):
-	"""Closes the video and terminates FFmpeg process
+        """Closes the video and terminates FFmpeg process
 
-	"""
+        """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
@@ -392,9 +414,9 @@ class FFmpegWriter():
 
 
     def writeFrame(self, im):
-	"""Sends ndarray frames to FFmpeg
+        """Sends ndarray frames to FFmpeg
 
-	"""
+        """
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:

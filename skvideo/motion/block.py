@@ -12,9 +12,9 @@ def _costMAD(block1, block2):
 def _minCost(costs):
     h, w = costs.shape
     if costs[h/2, w/2] == 0:
-        return h/2, w/2, 0
+        return np.int((h-1)/2), np.int((w-1)/2), 0
     idx = np.unravel_index(np.argmin(costs), costs.shape)
-    return idx[0], idx[1], costs[idx]
+    return np.int(idx[0]), np.int(idx[1]), costs[idx]
 
 
 def _checkBounded(xval, yval, w, h, mbSize):
@@ -67,8 +67,8 @@ def _DS(imgP, imgI, mbSize, p):
 
     computations = 0
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             x = j
             y = i
             costs[4] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[i:i + mbSize, j:j + mbSize])
@@ -76,7 +76,7 @@ def _DS(imgP, imgI, mbSize, p):
             point = 4
             if costs[4] != 0:
                 computations += 1
-                for k in xrange(9):
+                for k in range(9):
                     refBlkVer = y + LDSP[k][1]
                     refBlkHor = x + LDSP[k][0]
                     if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
@@ -104,7 +104,7 @@ def _DS(imgP, imgI, mbSize, p):
 
             while SDSPFlag == 0:
                 if cornerFlag == 1:
-                    for k in xrange(9):
+                    for k in range(9):
                         refBlkVer = y + LDSP[k][1]
                         refBlkHor = x + LDSP[k][0]
                         if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
@@ -168,7 +168,7 @@ def _DS(imgP, imgI, mbSize, p):
             costs[:] = 65537
             costs[2] = cost
 
-            for k in xrange(5):
+            for k in range(5):
                 refBlkVer = y + SDSP[k][1]
                 refBlkHor = x + SDSP[k][0]
 
@@ -233,8 +233,8 @@ def _ARPS(imgP, imgI, mbSize, p):
 
     computations = 0
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             x = j
             y = i
 
@@ -265,7 +265,7 @@ def _ARPS(imgP, imgI, mbSize, p):
             LDSP[3] = [stepSize, 0]
             LDSP[4] = [0, stepSize]
 
-            for k in xrange(maxIndex):
+            for k in range(maxIndex):
                 refBlkVer = y + LDSP[k][1]
                 refBlkHor = x + LDSP[k][0]
 
@@ -293,7 +293,7 @@ def _ARPS(imgP, imgI, mbSize, p):
 
             doneFlag = 0
             while (doneFlag == 0):
-                for k in xrange(5):
+                for k in range(5):
                     refBlkVer = y + SDSP[k][1]
                     refBlkHor = x + SDSP[k][0]
 
@@ -361,8 +361,8 @@ def _SE3SS(imgP, imgI, mbSize, p):
 
     computations = 0
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
 
             stepSize = stepMax
             x = j
@@ -502,15 +502,15 @@ def _N3SS(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.zeros((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float)*65537
 
     computations = 0
 
     L = np.floor(np.log2(p + 1))
     stepMax = np.int(2**(L - 1))
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             x = j
             y = i
 
@@ -519,8 +519,8 @@ def _N3SS(imgP, imgI, mbSize, p):
 
             stepSize = stepMax
 
-            for m in xrange(-stepSize, stepSize + 1, stepSize):
-                for n in xrange(-stepSize, stepSize + 1, stepSize):
+            for m in range(-stepSize, stepSize + 1, stepSize):
+                for n in range(-stepSize, stepSize + 1, stepSize):
                     refBlkVer = y + m
                     refBlkHor = x + n
                     if ((refBlkVer < 0) or
@@ -541,8 +541,8 @@ def _N3SS(imgP, imgI, mbSize, p):
             y1 = y + (dy - 1) * stepSize
 
             stepSize = 1
-            for m in xrange(-stepSize, stepSize + 1, stepSize):
-                for n in xrange(-stepSize, stepSize + 1, stepSize):
+            for m in range(-stepSize, stepSize + 1, stepSize):
+                for n in range(-stepSize, stepSize + 1, stepSize):
                     refBlkVer = y + m
                     refBlkHor = x + n
                     if ((refBlkVer < 0) or
@@ -579,8 +579,8 @@ def _N3SS(imgP, imgI, mbSize, p):
                 costs[:, :] = 65537
                 #costs[1, 1] = min2
                 stepSize = 1
-                for m in xrange(-stepSize, stepSize + 1, stepSize):
-                    for n in xrange(-stepSize, stepSize + 1, stepSize):
+                for m in range(-stepSize, stepSize + 1, stepSize):
+                    for n in range(-stepSize, stepSize + 1, stepSize):
                         refBlkVer = y + m
                         refBlkHor = x + n
                         if ((refBlkVer < 0) or
@@ -611,8 +611,8 @@ def _N3SS(imgP, imgI, mbSize, p):
                 costs[1, 1] = min1
                 stepSize = stepMax / 2
                 while(stepSize >= 1):
-                    for m in xrange(-stepSize, stepSize+1, stepSize):
-                        for n in xrange(-stepSize, stepSize+1, stepSize):
+                    for m in range(-stepSize, stepSize+1, stepSize):
+                        for n in range(-stepSize, stepSize+1, stepSize):
                             refBlkVer = y + m
                             refBlkHor = x + n
                             if ((refBlkVer < 0) or
@@ -646,15 +646,15 @@ def _3SS(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.zeros((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float)*65537
 
     computations = 0
 
     L = np.floor(np.log2(p + 1))
     stepMax = np.int(2**(L - 1))
 
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             x = j
             y = i
 
@@ -664,8 +664,8 @@ def _3SS(imgP, imgI, mbSize, p):
             stepSize = stepMax
 
             while(stepSize >= 1):
-                for m in xrange(-stepSize, stepSize+1, stepSize):
-                    for n in xrange(-stepSize, stepSize+1, stepSize):
+                for m in range(-stepSize, stepSize+1, stepSize):
+                    for n in range(-stepSize, stepSize+1, stepSize):
                         refBlkVer = y + m
                         refBlkHor = x + n
                         if ((refBlkVer < 0) or
@@ -706,27 +706,27 @@ def _4SS(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.zeros((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float)*65537
 
     computations = 0
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             x = j
             y = i
 
             costs[1, 1] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[i:i + mbSize, j:j + mbSize])
             computations += 1
 
-            for m in xrange(-2, 3, 2):
-                for n in xrange(-2, 3, 2):
+            for m in range(-2, 3, 2):
+                for n in range(-2, 3, 2):
                     refBlkVer = y + m   # row/Vert co-ordinate for ref block
                     refBlkHor = x + n   # col/Horizontal co-ordinate
 
                     if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
                         continue
 
-                    costRow = m/2 + 1
-                    costCol = n/2 + 1
+                    costRow = np.int(m/2 + 1)
+                    costCol = np.int(n/2 + 1)
                     if ((costRow == 1) and (costCol == 1)):
                         continue
                     costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
@@ -748,8 +748,8 @@ def _4SS(imgP, imgI, mbSize, p):
             stage = 1
 
             while (flag_4ss == 0 and stage <= 2):
-                for m in xrange(-2, 3, 2):
-                    for n in xrange(-2, 3, 2):
+                for m in range(-2, 3, 2):
+                    for n in range(-2, 3, 2):
                         refBlkVer = y + m
                         refBlkHor = x + n
                         if not _checkBounded(refBlkHor, refBlkVer, w, h, mbSize):
@@ -785,8 +785,8 @@ def _4SS(imgP, imgI, mbSize, p):
                 costs[1, 1] = mi
                 stage += 1
 
-            for m in xrange(-1, 2):
-                for n in xrange(-1, 2):
+            for m in range(-1, 2):
+                for n in range(-1, 2):
                     refBlkVer = y + m
                     refBlkHor = x + n
 
@@ -817,7 +817,7 @@ def _ES(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.zeros((2 * p + 1, 2 * p + 1), dtype=np.float)*65537
+    costs = np.ones((2 * p + 1, 2 * p + 1), dtype=np.float)*65537
 
     computations = 0
 
@@ -825,8 +825,8 @@ def _ES(imgP, imgI, mbSize, p):
     # we will walk in steps of mbSize
     # for every marcoblock that we look at we will look for
     # a close match p pixels on the left, right, top and bottom of it
-    for i in xrange(0, h - mbSize + 1, mbSize):
-        for j in xrange(0, w - mbSize + 1, mbSize):
+    for i in range(0, h - mbSize + 1, mbSize):
+        for j in range(0, w - mbSize + 1, mbSize):
             # the exhaustive search starts here
             # we will evaluate cost for  (2p + 1) blocks vertically
             # and (2p + 1) blocks horizontaly
@@ -838,8 +838,8 @@ def _ES(imgP, imgI, mbSize, p):
                 (j - p < 0) or
                 (i - p < 0) or
                 (i + p + mbSize >= h)):
-                for m in xrange(-p, p + 1):
-                    for n in xrange(-p, p + 1):
+                for m in range(-p, p + 1):
+                    for n in range(-p, p + 1):
                         refBlkVer = i + m   # row/Vert co-ordinate for ref block
                         refBlkHor = j + n   # col/Horizontal co-ordinate
                         if ((refBlkVer < 0) or
@@ -852,8 +852,8 @@ def _ES(imgP, imgI, mbSize, p):
                         computations += 1
 
             else:
-                for m in xrange(-p, p + 1):
-                    for n in xrange(-p, p + 1):
+                for m in range(-p, p + 1):
+                    for n in range(-p, p + 1):
                         refBlkVer = i + m   # row/Vert co-ordinate for ref block
                         refBlkHor = j + n   # col/Horizontal co-ordinate
                         costs[m + p, n + p] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
@@ -935,31 +935,31 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
     motionData = np.zeros((numFrames - 1, height / mbSize, width / mbSize, 2), np.int8)
 
     if method == "ES":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _ES(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "4SS":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _4SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "3SS":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "N3SS":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _N3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "SE3SS":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _SE3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "ARPS":  # BROKEN, check this
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _ARPS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "DS":
-        for i in xrange(numFrames - 1):
+        for i in range(numFrames - 1):
             motion, comps = _DS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     else:
@@ -973,8 +973,8 @@ def _subcomp(framedata, motionVect, mbSize):
 
     compImg = np.zeros((M, N, C))
 
-    for i in xrange(0, M - mbSize + 1, mbSize):
-        for j in xrange(0, N - mbSize + 1, mbSize):
+    for i in range(0, M - mbSize + 1, mbSize):
+        for j in range(0, N - mbSize + 1, mbSize):
             dy = motionVect[i / mbSize, j / mbSize, 0]
             dx = motionVect[i / mbSize, j / mbSize, 1]
 
@@ -1024,6 +1024,6 @@ def blockComp(videodata, motionVect, mbSize=8):
         compVid = np.zeros((T, M, N, C))
         # pass the first frame uncorrected
         compVid[0, :, :, :] = videodata[0]
-        for i in xrange(1, T):
+        for i in range(1, T):
             compVid[i, :, :, :] = _subcomp(videodata[i], motionVect[i-1], mbSize)
         return compVid

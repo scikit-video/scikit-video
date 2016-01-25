@@ -4,8 +4,8 @@ Motion
 
 .. _motion_ref:
 
-:mod:`skvideo.motion`: Motion
-==================================
+:mod:`skvideo.motion`: Motion estimation routines and utilties
+==============================================================
 
 .. automodule:: skvideo.motion
    :no-members:
@@ -13,11 +13,11 @@ Motion
 
 Functions
 ---------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.motion
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   motion.blockMotion
-   motion.blockComp
+   blockMotion
+   blockComp

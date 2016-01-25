@@ -39,7 +39,7 @@ def test_FFmpegWriter():
     outputdata = outputdata.astype(np.uint8)
 
     writer = skvideo.io.FFmpegWriter(outputfile)
-    for i in xrange(5):
+    for i in range(5):
         writer.writeFrame(outputdata[i])
     writer.close()
     os.remove(outputfile)

@@ -9,8 +9,8 @@ import skvideo.datasets
 # gaussian ball
 def gauss(cx, cy, sigma, sz):
     data = np.zeros((sz, sz, 3), dtype=np.float)
-    for y in xrange(-sigma*3, sigma*3+1, 1):
-        for x in xrange(-sigma*3, sigma*3+1, 1):
+    for y in range(-sigma*3, sigma*3+1, 1):
+        for x in range(-sigma*3, sigma*3+1, 1):
             magnitude = np.exp(-0.5 * (x**2 + y**2)/(sigma**2))
             if ((x + cx < 0) or (x + cx > sz) or (y + cy < 0) or (y + cy > sz)):
                 continue
@@ -45,6 +45,7 @@ def test_4SS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
+    print(xmean, ymean)
     assert_equal(xmean, 0.5625)
     assert_equal(ymean, -0.125)
 

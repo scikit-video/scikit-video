@@ -4,8 +4,8 @@ I/O
 
 .. _io_ref:
 
-:mod:`skvideo.io`: I/O
-==================================
+:mod:`skvideo.io`: Video input and output utilities
+===================================================
 
 .. automodule:: skvideo.io
    :no-members:
@@ -13,14 +13,16 @@ I/O
 
 Classes
 -------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.io
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
-   io.FFmpegWriter
-   io.FFmpegReader
+   FFmpegWriter
+   FFmpegReader
+   LibAVWriter
+   LibAVReader
 
 
 Functions
@@ -29,8 +31,9 @@ Functions
    :toctree: generated/
    :template: function.rst
 
-   io.vread
-   io.vreader
-   io.vwrite
-   io.mprobe
-   io.ffprobe
+   vread
+   vreader
+   vwrite
+   mprobe
+   ffprobe
+   avprobe

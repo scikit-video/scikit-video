@@ -4,8 +4,8 @@ Test Data
 
 .. _datasets_ref:
 
-:mod:`skvideo.datasets`: Test Data
-==================================
+:mod:`skvideo.datasets`: Data and data generation routines
+==========================================================
 
 .. automodule:: skvideo.datasets
    :no-members:
@@ -13,11 +13,11 @@ Test Data
 
 Functions
 ---------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.datasets
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   datasets.bigbuckbunny
-   datasets.fullreferencepair
+   bigbuckbunny
+   fullreferencepair
