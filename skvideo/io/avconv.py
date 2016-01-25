@@ -68,8 +68,6 @@ class LibAVReader():
         # check if avconv exists in the path
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
 
-        # complain about the use of avconv :(
-        warnings.warn("avconv corrupts video data between reading and writing. Search for \"drift\" in the test script test_vread.py for proof. Please consider using FFMPEG.", UserWarning)
 
         israw = 0
 
@@ -167,6 +165,7 @@ class LibAVReader():
 
         self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
+
 
         # Create input args
         iargs = []
@@ -298,6 +297,9 @@ class LibAVWriter():
 
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
 
+        # complain about the use of avconv :(
+        warnings.warn("avconv corrupts video data between reading and writing. Search for \"drift\" in the test script test_vread.py for proof. Please consider using FFMPEG.", UserWarning)
+
         if not inputdict:
             inputdict = {}
 
@@ -354,6 +356,8 @@ class LibAVWriter():
             self.inputdict["-s"] = str(N) + "x" + str(M)
             self.inputwidth = N
             self.inputheight = M
+
+        self.outputdict["-sws_flags"] = "bitexact"
 
         # prepare output parameters, if raw
         if self.extension == ".yuv":
