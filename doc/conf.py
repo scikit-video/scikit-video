@@ -30,6 +30,7 @@ from github_link import make_linkcode_resolve
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.pngmath',
+              'sphinx.ext.viewcode',
               'youtube.youtube',
               #'sphinx.ext.linkcode',
               'numpy_ext.numpydoc']

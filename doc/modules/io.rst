@@ -13,16 +13,16 @@ I/O
 
 Classes
 -------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.io
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
-   io.FFmpegWriter
-   io.FFmpegReader
-   io.LibAVWriter
-   io.LibAVReader
+   FFmpegWriter
+   FFmpegReader
+   LibAVWriter
+   LibAVReader
 
 
 Functions
@@ -31,9 +31,9 @@ Functions
    :toctree: generated/
    :template: function.rst
 
-   io.vread
-   io.vreader
-   io.vwrite
-   io.mprobe
-   io.ffprobe
-   io.avprobe
+   vread
+   vreader
+   vwrite
+   mprobe
+   ffprobe
+   avprobe

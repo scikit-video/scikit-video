@@ -13,11 +13,11 @@ Test Data
 
 Functions
 ---------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.datasets
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   datasets.bigbuckbunny
-   datasets.fullreferencepair
+   bigbuckbunny
+   fullreferencepair

@@ -13,11 +13,11 @@ Motion
 
 Functions
 ---------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.motion
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   motion.blockMotion
-   motion.blockComp
+   blockMotion
+   blockComp

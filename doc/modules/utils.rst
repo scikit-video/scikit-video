@@ -13,11 +13,11 @@ Utility functions
 
 Functions
 ---------
-.. currentmodule:: skvideo
+.. currentmodule:: skvideo.utils
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   utils.vshape
-   utils.rgb2gray
+   vshape
+   rgb2gray

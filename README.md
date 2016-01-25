@@ -20,6 +20,7 @@ This project is distributed under the 3-clause BSD.
 
 Visit the documentation at http://www.scikit-video.org
 
+
 ##Dependencies:
 
 Here are the requirements needed to use scikit-video.
@@ -30,15 +31,19 @@ Here are the requirements needed to use scikit-video.
 - scipy (version >= 0.16.0)
 - mediainfo (optional)
 
+
 ##Installation:
 
 Clone the scikit-video repository, run
 
-`python2 setup.py build`
+`python setup.py build`
 
 then 
 
-`sudo python2 setup.py install`
+`sudo python setup.py install`
+
+where `python` may refer to either python2 or python3.
+
 
 ##TODO/Roadmap:
 - MacOSX and Windows support
@@ -53,6 +58,7 @@ then
 Quick tutorial on how to go about setting up your environment to contribute to scikit-video: 
 
 https://github.com/beyondmetis/scikit-video/blob/master/CONTRIBUTING.md
+
 
 ##Testing
 
