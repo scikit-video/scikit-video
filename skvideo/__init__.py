@@ -107,7 +107,8 @@ def scan_libav():
     global _LIBAV_MINOR_VERSION
     _LIBAV_MAJOR_VERSION = "0"
     _LIBAV_MINOR_VERSION = "0"
-    try:
+    #try:
+    if 1:
         # grab program version string
         version = check_output([_AVCONV_PATH + "/avconv", "-version"])
         # only parse the first line returned
@@ -126,13 +127,13 @@ def scan_libav():
         # check for underscore
         version = version.split(b'_')[0]
         versionparts = version.split(b'.')
-        if versionparts[0][0] == 'v':
-            _LIBAV_MAJOR_VERSION = str(versionparts[0][1:])
+        if versionparts[0].decode()[0] == 'v':
+            _LIBAV_MAJOR_VERSION = versionparts[0].decode()[1:]
         else:
             _LIBAV_MAJOR_VERSION = str(versionparts[0])
             _LIBAV_MINOR_VERSION = str(versionparts[1])
-    except:
-        pass
+    #except:
+    #    pass
 
 
 
