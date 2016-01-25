@@ -144,14 +144,14 @@ if _MEDIAINFO_PATH is not None:
 
 # allow library configuration checking
 def getFFmpegPath():
-    """ Returns the path to the directory containing both FFmpeg and FFprobe 
+    """ Returns the path to the directory containing both ffmpeg and ffprobe 
     """
     return _FFMPEG_PATH
 
 
 def getFFmpegVersion():
-    """ Returns the version of FFmpeg that currently being used
-    """ 
+    """ Returns the version of FFmpeg that is currently being used
+    """
     if _FFMPEG_MAJOR_VERSION[0] == 'N':
         return "%s" % (_FFMPEG_MAJOR_VERSION, )
     else:
@@ -159,21 +159,21 @@ def getFFmpegVersion():
 
 
 def setFFmpegPath(path):
-    """ Sets up the path to the directory containing both FFmpeg and FFprobe
+    """ Sets up the path to the directory containing both ffmpeg and ffprobe
 
         Use this function for to specify specific system installs of FFmpeg. All
-        calls to FFmpeg and FFprobe will use this path as a prefix.
+        calls to ffmpeg and ffprobe will use this path as a prefix.
 
         Parameters
         ----------
         path : string
-            Path to directory containing FFmpeg and FFprobe
+            Path to directory containing ffmpeg and ffprobe
 
         Returns
         -------
         none
 
-    """ 
+    """
     global _FFMPEG_PATH
     global _HAS_FFMPEG
     _FFMPEG_PATH = path
@@ -197,17 +197,21 @@ def setFFmpegPath(path):
 
 
 def getLibAVPath():
+    """ Returns the path to the directory containing both avconv and avprobe
+    """
     return _AVCONV_PATH
 
 
 def getLibAVVersion():
+    """ Returns the version of LibAV that is currently being used
+    """ 
     return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
 
 
 def setLibAVPath(path):
     """ Sets up the path to the directory containing both avconv and avprobe
 
-        Use this function for to specify specific system installs of libav. All
+        Use this function for to specify specific system installs of LibAV. All
         calls to avconv and avprobe will use this path as a prefix.
 
         Parameters
@@ -256,4 +260,3 @@ __all__ = [
     getLibAVVersion,
     setLibAVPath,
 ]
-
