@@ -130,8 +130,8 @@ def scan_libav():
         if versionparts[0].decode()[0] == 'v':
             _LIBAV_MAJOR_VERSION = versionparts[0].decode()[1:]
         else:
-            _LIBAV_MAJOR_VERSION = str(versionparts[0])
-            _LIBAV_MINOR_VERSION = str(versionparts[1])
+            _LIBAV_MAJOR_VERSION = str(versionparts[0].decode())
+            _LIBAV_MINOR_VERSION = str(versionparts[1].decode())
     #except:
     #    pass
 

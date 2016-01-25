@@ -4,8 +4,8 @@ Motion
 
 .. _motion_ref:
 
-:mod:`skvideo.motion`: Motion
-==================================
+:mod:`skvideo.motion`: Motion estimation routines and utilties
+==============================================================
 
 .. automodule:: skvideo.motion
    :no-members:

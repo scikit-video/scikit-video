@@ -37,12 +37,20 @@ h1 {
     text-align: center;
 }
 
-.pre {
-    color: #EF5350;
+h2 {
+    padding-top: 10px;
+    background: #FFCDD2;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 5px;
+    color: #000000;
+    font-size: 18pt;
+    text-align: left;
 }
 
-h2 {
-    font-size: 20pt;
+.pre {
+    color: #EF5350;
 }
 
 .navbar-version-div {

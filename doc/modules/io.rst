@@ -4,8 +4,8 @@ I/O
 
 .. _io_ref:
 
-:mod:`skvideo.io`: I/O
-==================================
+:mod:`skvideo.io`: Video input and output utilities
+===================================================
 
 .. automodule:: skvideo.io
    :no-members:

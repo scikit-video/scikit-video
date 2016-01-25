@@ -4,8 +4,8 @@ Test Data
 
 .. _datasets_ref:
 
-:mod:`skvideo.datasets`: Test Data
-==================================
+:mod:`skvideo.datasets`: Data and data generation routines
+==========================================================
 
 .. automodule:: skvideo.datasets
    :no-members:
