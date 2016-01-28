@@ -18,10 +18,10 @@ cd $TRAVIS_BUILD_DIR
 
 # also build/install libav
 cd $HOME/download
-wget --no-check-certificate "https://libav.org/releases/libav-11.4.tar.gz" || exit 1
-tar xf "libav-11.4.tar.gz"
+wget --no-check-certificate "https://libav.org/releases/libav-$LIBAV.tar.gz" || exit 1
+tar xf "libav-$LIBAV.tar.gz"
 
-cd "libav-11.4"; 
+cd "libav-$LIBAV"; 
 
 echo ./configure
 ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/build_libav" || exit 2
