@@ -1,7 +1,7 @@
 machine:
   environment:
     # We need to set this variable to let python see the package installed through apt-get
-    PYTHONPATH: "/usr/lib/python2.7/dist-packages"
+    PYTHONPATH: "/usr/lib/python2.7/dist-packages:$HOME/.local/lib/python2.7/site-packages"
 dependencies:
   cache_directories:
     - "~/scikit_video_data"
