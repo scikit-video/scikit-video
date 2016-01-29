@@ -28,24 +28,24 @@ def avprobe(filename):
     assert _HAS_AVCONV, "Cannot find installation of avprobe."
     assert int(_LIBAV_MAJOR_VERSION) >= 10, "Version of libav (" + str(_LIBAV_MAJOR_VERSION) +") < 9. Please update libav or use ffmpeg."
 
-    #try:
-    command = [_AVCONV_PATH + "/avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
+    try:
+        command = [_AVCONV_PATH + "/avprobe", "-v", "error", "-show_streams", "-of", "json", filename]
 
-    # simply get std output
-    jsonstr = check_output(command)
-    probedict = json.loads(jsonstr.decode())
+        # simply get std output
+        jsonstr = check_output(command)
+        probedict = json.loads(jsonstr.decode())
 
-    d = probedict["streams"]
+        d = probedict["streams"]
 
-    # check type
-    streamsbytype = {}
-    if type(d) is list:
-        # go through streams
-        for stream in d:
-            streamsbytype[stream["codec_type"].lower()] = stream
-    else:
-        streamsbytype[d["codec_type"].lower()] = d
+        # check type
+        streamsbytype = {}
+        if type(d) is list:
+            # go through streams
+            for stream in d:
+                streamsbytype[stream["codec_type"].lower()] = stream
+        else:
+            streamsbytype[d["codec_type"].lower()] = d
 
-    return streamsbytype
-    #except:
-    #    return {}
+        return streamsbytype
+    except:
+        return {}
