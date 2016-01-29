@@ -364,7 +364,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
     for i in range(0, h - mbSize + 1, mbSize):
         for j in range(0, w - mbSize + 1, mbSize):
 
-            stepSize = stepMax
+            stepSize = np.int(stepMax)
             x = j
             y = i
 
