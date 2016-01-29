@@ -395,6 +395,10 @@ class LibAVWriter():
         """Closes the video and terminates avconv process
 
         """
+        if not self.warmStarted:
+            warnings.warn("LibAVWriter: No frames written.")
+            return
+
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:

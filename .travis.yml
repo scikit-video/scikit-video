@@ -30,7 +30,7 @@ env:
     - COVERAGE="true"
   matrix:
     # Primary targets.
-    - FFMPEG=2.1 LIBAV=9.18
+    - FFMPEG=2.1 LIBAV=10.7
     - FFMPEG=2.8 LIBAV=10.7
     - FFMPEG=snapshot LIBAV=11.4
 

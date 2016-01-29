@@ -75,12 +75,6 @@ def test_sinusoid_ffmpeg():
 def test_sinusoid_libav_version12():
     if not skvideo._HAS_AVCONV:
         return 0
-    if 0:
-        try:
-            if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
-                return 0
-        except:
-            return 0
     pattern_sinusoid('libav')
 
 
