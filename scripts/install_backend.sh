@@ -1,3 +1,5 @@
+# first install desired ffmpeg
+
 cd $HOME/download
 wget --no-check-certificate "http://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.bz2" || exit 1
 tar xjf "ffmpeg-$FFMPEG.tar.bz2"
@@ -16,12 +18,18 @@ echo make install
 make install || exit 4
 cd $TRAVIS_BUILD_DIR
 
-# also build/install libav
-cd $HOME/download
-wget --no-check-certificate "https://libav.org/releases/libav-$LIBAV.tar.gz" || exit 1
-tar xf "libav-$LIBAV.tar.gz"
+# also install desired libav
 
-cd "libav-$LIBAV"; 
+cd $HOME/download
+
+if [[ $LIBAV == "gitrepo" ]]; then 
+    git clone git://git.libav.org/libav.git
+    cd libav
+else
+    wget --no-check-certificate "https://libav.org/releases/libav-$LIBAV.tar.gz" || exit 1
+    tar xf "libav-$LIBAV.tar.gz"
+    cd "libav-$LIBAV"; 
+fi
 
 echo ./configure
 ./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/build_libav" || exit 2
@@ -30,5 +38,3 @@ make -j4 || exit 3
 echo make install
 make install || exit 4
 cd $TRAVIS_BUILD_DIR
-
-# also build/install libav
