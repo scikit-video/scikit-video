@@ -3,11 +3,12 @@
 
 
 
-scikit-video v1.1.0
+scikit-video v1.1.1
 ===================
 
 [![The BSD-3 License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause#licenseText)
 [![Travis](https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master)](https://travis-ci.org/scikit-video/scikit-video)
+[![Coverage Status](https://coveralls.io/repos/github/scikit-video/scikit-video/badge.svg?branch=master)](https://coveralls.io/github/scikit-video/scikit-video?branch=master)
 [![CircleCI](https://circleci.com/gh/scikit-video/scikit-video/tree/master.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-video/scikit-video)
 
 
