@@ -28,12 +28,19 @@ def which(program):
     return None
 
 # only ffprobe exists with ffmpeg
-_FFMPEG_PATH = os.path.split(which("ffprobe"))[0]
+_FFMPEG_PATH = which("ffprobe")
+if _FFMPEG_PATH is not None:
+    _FFMPEG_PATH = os.path.split(_FFMPEG_PATH)[0]
+
 
 # only avprobe exists with libav
-_AVCONV_PATH = os.path.split(which("avprobe"))[0]
+_AVCONV_PATH = which("avprobe")
+if _AVCONV_PATH is not None:
+    _AVCONV_PATH = os.path.split(_AVCONV_PATH)[0]
 
-_MEDIAINFO_PATH = os.path.split(which("mediainfo"))[0]
+_MEDIAINFO_PATH = which("mediainfo")
+if _MEDIAINFO_PATH is not None:
+    _MEDIAINFO_PATH = os.path.split(_MEDIAINFO_PATH)[0]
 
 _HAS_FFMPEG = 0
 _HAS_AVCONV = 0
