@@ -17,4 +17,4 @@ source activate condaenv
 sudo rm -rf /dev/shm
 sudo ln -s /run/shm /dev/shm
 python --version
-source install_backend.sh
+source scripts/install_backend.sh
