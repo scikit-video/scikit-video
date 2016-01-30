@@ -4,8 +4,8 @@ sudo: required
 language: python
 
 os:
-  - linux
-    #  - osx
+    #  - linux
+  - osx
 
 python:
   - 2.7
@@ -30,6 +30,7 @@ addons:
 env:
   global:
     - COVERAGE="true"
+
   matrix:
     # Primary targets.
     - FFMPEG=2.1 LIBAV=10.7
