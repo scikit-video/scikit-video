@@ -23,7 +23,7 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         fi
     fi
 
-    python --version;
+    $PYTHON_BIN --version;
     # brew outdated <package-name> || brew upgrade <package-name>;
     source scripts/install_backend.sh;
 else
