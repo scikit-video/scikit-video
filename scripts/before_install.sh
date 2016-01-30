@@ -6,6 +6,23 @@ mkdir $HOME/build_libav || echo "Already exists.";
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
     brew update;
+
+    if [ "$TRAVIS_PYTHON_VERSION" == "3.5" ]; then
+        brew install python3;
+        /usr/local/bin/pip3 install https://github.com/wbond/asn1crypto/archive/master.zip;
+        export PYTHON_BIN=/usr/local/bin/python3;
+    else
+        if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
+            curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo /usr/bin/python2.7;
+            sudo /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
+            export PYTHON_BIN=/usr/bin/python2.7;
+        else
+            curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo /usr/bin/python2.6;
+            sudo /usr/bin/python2.6 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
+            export PYTHON_BIN=/usr/bin/python2.6;
+        fi
+    fi
+
     python --version;
     # brew outdated <package-name> || brew upgrade <package-name>;
     source scripts/install_backend.sh;
