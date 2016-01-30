@@ -1,5 +1,10 @@
 # first install desired ffmpeg
 
+alias gcc='gcc-4.8'
+alias cc='gcc-4.8'
+alias g++='g++-4.8'
+alias c++='c++-4.8'
+
 cd $HOME/download
 wget --no-check-certificate "http://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.bz2" || exit 1
 tar xjf "ffmpeg-$FFMPEG.tar.bz2"
