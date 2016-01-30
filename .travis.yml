@@ -8,6 +8,9 @@ matrix:
     global:
         COVERAGE="true"
     include:
+        - os: osx
+          python: "3.5"
+          env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=2.1 LIBAV=10.7
         - os: linux
           python: "2.7"
           language: python
