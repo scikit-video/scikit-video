@@ -17,4 +17,8 @@ source activate condaenv
 sudo rm -rf /dev/shm
 sudo ln -s /run/shm /dev/shm
 python --version
+# update gcc for building
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt-get -qq update
+sudo apt-get -qq install g++-4.8
 source scripts/install_backend.sh
