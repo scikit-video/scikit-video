@@ -10,17 +10,15 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     if [ "$TRAVIS_PYTHON_VERSION" == "3.5" ]; then
         brew install python3;
         /usr/local/bin/pip3 install https://github.com/wbond/asn1crypto/archive/master.zip;
-        /usr/local/bin/pip3 install nose
-        /usr/local/bin/pip3 install numpy
-        /usr/local/bin/pip3 install coverage
+        /usr/local/bin/pip3 install nose numpy scipy coverage
         export PYTHON_BIN=/usr/local/bin/python3;
     else
         if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
             curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo -H /usr/bin/python2.7;
             sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
-            sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'nose'])";
-            sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'coverage'])";
-            sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', '-U', 'numpy'])";
+            sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'nose', 'coverage', 'numpy', 'scipy'])";
+            #sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'coverage'])";
+            #sudo -H /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', '-U', 'numpy'])";
             export PYTHON_BIN=/usr/bin/python2.7;
         else
             curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo -H /usr/bin/python2.6;
