@@ -31,9 +31,9 @@ set -e
 # mkdir -p /tmp/skvideo_tmp
 # cd /tmp/skvideo_tmp
 
-python --version
-python -c "import numpy; print('numpy %s' % numpy.__version__)"
-python -c "import scipy; print('scipy %s' % scipy.__version__)"
+$PYTHON_BIN --version
+$PYTHON_BIN -c "import numpy; print('numpy %s' % numpy.__version__)"
+$PYTHON_BIN -c "import scipy; print('scipy %s' % scipy.__version__)"
 
 if [[ "$COVERAGE" == "true" ]]; then
     nosetests -v --with-coverage --cover-package=skvideo  skvideo
