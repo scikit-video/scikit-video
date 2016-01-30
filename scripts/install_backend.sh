@@ -36,7 +36,7 @@ else
     cd "libav-$LIBAV"; 
 fi
 
-echo ./configure
+echo ./configure --disable-yasm
 ./configure --prefix="$HOME/build_libav" || exit 2
 echo make
 make -j4 || exit 3
