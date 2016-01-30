@@ -15,18 +15,6 @@ python:
 notifications:
   email: true
 
-# Pre-install packages for the ubuntu distribution
-cache:
-  apt: true
-  # We use three different cache directory
-  # to work around a Travis bug with multi-platform cache
-addons:
-  apt:
-    packages:
-      - libatlas-dev
-      - ffmpeg # wrong version (libav), installed only for dependencies that come with it
-      - mediainfo
-
 env:
   global:
     - COVERAGE="true"
