@@ -10,6 +10,9 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     # brew outdated <package-name> || brew upgrade <package-name>;
     source scripts/install_backend.sh;
 else
+     # - libatlas-dev
+     # - ffmpeg # wrong version (libav), installed only for dependencies that come with it
+     # - mediainfo
 
     cd $HOME/download
     wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
