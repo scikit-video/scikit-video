@@ -6,6 +6,8 @@ from ..utils import *
 
 
 def _costMAD(block1, block2):
+    block1 = np.float(block1)
+    block2 = np.float(block2)
     return np.mean(np.abs(block1 - block2))
 
 
