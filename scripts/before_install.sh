@@ -22,8 +22,10 @@ sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 sudo apt-get -qq update
 sudo apt-get -qq install g++-4.8
 
-export GCC='gcc-4.8'
-export G++='g++-4.8'
-export CC='gcc-4.8'
+sudo rm /usr/bin/gcc
+sudo rm /usr/bin/g++
+
+sudo ln -s /usr/bin/gcc-4.8 /usr/bin/gcc
+sudo ln -s /usr/bin/g++-4.8 /usr/bin/g++
 
 source scripts/install_backend.sh
