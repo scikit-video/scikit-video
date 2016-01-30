@@ -7,8 +7,10 @@
 # License: 3-clause BSD
 
 # setup installed library paths
-export PATH="$HOME/build_ffmpeg/bin:$HOME/build_libav/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/build_ffmpeg/lib:$HOME/build_libav/lib:$LD_LIBRARY_PATH"
+export PATH="$HOME/build_libav/bin:$HOME/build_ffmpeg/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/build_libav/lib:$HOME/build_ffmpeg/lib:$LD_LIBRARY_PATH"
+#export PATH="$HOME/build_ffmpeg/bin:$HOME/build_libav/bin:$PATH"
+#export LD_LIBRARY_PATH="$HOME/build_ffmpeg/lib:$HOME/build_libav/lib:$LD_LIBRARY_PATH"
 
 echo "which ffmpeg is used:"
 which ffmpeg
