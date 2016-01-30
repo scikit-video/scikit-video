@@ -10,6 +10,7 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     if [ "$TRAVIS_PYTHON_VERSION" == "3.5" ]; then
         brew install python3;
         /usr/local/bin/pip3 install https://github.com/wbond/asn1crypto/archive/master.zip;
+        /usr/local/bin/pip3 install nose
         export PYTHON_BIN=/usr/local/bin/python3;
     else
         if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
