@@ -17,8 +17,8 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
             sudo /usr/bin/python2.7 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
             export PYTHON_BIN=/usr/bin/python2.7;
         else
-            curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo /usr/bin/python2.6;
-            sudo /usr/bin/python2.6 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
+            curl --silent --show-error https://bootstrap.pypa.io/get-pip.py | sudo -H /usr/bin/python2.6;
+            sudo -H /usr/bin/python2.6 -W ignore -c "import pip; pip.main(['--disable-pip-version-check', '--quiet', 'install', 'https://github.com/wbond/asn1crypto/archive/master.zip'])";
             export PYTHON_BIN=/usr/bin/python2.6;
         fi
     fi
