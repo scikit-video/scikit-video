@@ -1,4 +1,6 @@
 # make it explicit that we favor the new container-based travis workers
+sudo: required
+
 language: python
 
 os:
