@@ -37,7 +37,7 @@ else
 fi
 
 echo ./configure --disable-yasm
-./configure --prefix="$HOME/build_libav" || exit 2
+./configure  --disable-yasm --prefix="$HOME/build_libav" || exit 2
 echo make
 make -j4 || exit 3
 echo make install
