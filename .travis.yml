@@ -1,29 +1,35 @@
 # make it explicit that we favor the new container-based travis workers
 sudo: required
 
-# language: python
-
-os:
-    #  - linux
-  - osx
-
-python:
-  - 2.7
-  - 2.6
-  - 3.3
-
 notifications:
   email: true
 
-env:
-  global:
-    - COVERAGE="true"
-
-  matrix:
-    # Primary targets.
-    - FFMPEG=2.1 LIBAV=10.7
-    - FFMPEG=2.8 LIBAV=11.4
-    - FFMPEG=snapshot LIBAV=gitrepo
+matrix:
+    global:
+        COVERAGE="true"
+    include:
+        - os: linux
+          python: "2.7"
+          language: python
+          env: FFMPEG=snapshot LIBAV=gitrepo
+        - os: osx
+          python: "2.6"
+          env: TRAVIS_PYTHON_VERSION=2.6 FFMPEG=2.1 LIBAV=10.7
+        - os: osx
+          python: "2.6"
+          env: TRAVIS_PYTHON_VERSION=2.6 FFMPEG=2.8 LIBAV=11.4
+        - os: osx
+          python: "2.6"
+          env: TRAVIS_PYTHON_VERSION=2.6 FFMPEG=snapshot LIBAV=gitrepo
+        - os: osx
+          python: "2.7"
+          env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=2.1 LIBAV=10.7
+        - os: osx
+          python: "2.7"
+          env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=2.8 LIBAV=11.4
+        - os: osx
+          python: "2.7"
+          env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=snapshot LIBAV=gitrepo
 
 before_install: 
   - source scripts/before_install.sh
