@@ -251,7 +251,7 @@ def _ARPS(imgP, imgI, mbSize, p):
             else:
                 u = vectors[i / mbSize, j / mbSize - 1, 0]
                 v = vectors[i / mbSize, j / mbSize - 1, 1]
-                stepSize = np.max((np.abs(u), np.abs(v)))
+                stepSize = np.int(np.max((np.abs(u), np.abs(v))))
 
                 if (((np.abs(u) == stepSize) and (np.abs(v) == 0)) or
                     ((np.abs(v) == stepSize) and (np.abs(u) == 0))):

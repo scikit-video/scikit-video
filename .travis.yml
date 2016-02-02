@@ -11,10 +11,12 @@ matrix:
         - os: osx
           python: "3.5"
           env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=2.1 LIBAV=10.7
-        - os: linux
-          python: "2.7"
-          language: python
-          env: FFMPEG=snapshot LIBAV=gitrepo
+        - os: osx
+          python: "3.5"
+          env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=2.8 LIBAV=11.4
+        - os: osx
+          python: "3.5"
+          env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=snapshot LIBAV=gitrepo
         - os: osx
           python: "2.6"
           env: TRAVIS_PYTHON_VERSION=2.6 FFMPEG=2.1 LIBAV=10.7
@@ -33,6 +35,42 @@ matrix:
         - os: osx
           python: "2.7"
           env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=snapshot LIBAV=gitrepo
+        - os: linux
+          python: "3.5"
+          language: python
+          env: FFMPEG=2.1 LIBAV=10.7
+        - os: linux
+          python: "3.5"
+          language: python
+          env: FFMPEG=2.8 LIBAV=11.4
+        - os: linux
+          python: "3.5"
+          language: python
+          env: FFMPEG=snapshot LIBAV=gitrepo
+        - os: linux
+          python: "2.7"
+          language: python
+          env: FFMPEG=2.1 LIBAV=10.7
+        - os: linux
+          python: "2.7"
+          language: python
+          env: FFMPEG=2.8 LIBAV=11.4
+        - os: linux
+          python: "2.7"
+          language: python
+          env: FFMPEG=snapshot LIBAV=gitrepo
+        - os: linux
+          python: "2.6"
+          language: python
+          env: FFMPEG=2.1 LIBAV=10.7
+        - os: linux
+          python: "2.6"
+          language: python
+          env: FFMPEG=2.8 LIBAV=11.4
+        - os: linux
+          python: "2.6"
+          language: python
+          env: FFMPEG=snapshot LIBAV=gitrepo
 
 before_install: 
   - source scripts/before_install.sh
