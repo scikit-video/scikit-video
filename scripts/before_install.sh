@@ -27,7 +27,6 @@ cd $TRAVIS_BUILD_DIR
 conda update --yes conda
 conda create --yes -n condaenv python=$TRAVIS_PYTHON_VERSION
 conda install --yes -n condaenv pip
-conda install --yes -n numpy scipy
 source activate condaenv
 # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
 sudo rm -rf /dev/shm
@@ -49,5 +48,3 @@ source scripts/install_backend.sh
 export PYTHON_BIN=python
 
 $PYTHON_BIN --version;
-
-source scripts/install_backend.sh;
