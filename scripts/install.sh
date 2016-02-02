@@ -1,4 +1,4 @@
-conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose dateutil pandas statsmodels coverage
+conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage
 GIT_TRAVIS_REPO=$(pwd)
 echo $GIT_TRAVIS_REPO
 cd $HOME
