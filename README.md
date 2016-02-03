@@ -48,8 +48,7 @@ where `python` may refer to either python2 or python3.
 
 
 ##TODO/Roadmap:
-- MacOSX and Windows support
-- Video quality assessment metrics
+- Windows support
 - Spatial-Temporal filtering helper functions
 - Speedup motion estimation routines
 - More ffmpeg/avconv interfacing
