@@ -113,7 +113,18 @@ def scan_ffmpeg():
 
     try:
         for enc in encoders:
-            #_FFMPEG_SUPPORTED_DECODERS
+            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(enc)])
+            csvstring = ""
+            for line in extension_lst.split('\n'):
+                if "Common extensions:" in line:
+                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+                    break
+            if csvstring == "":
+                continue
+            csvlist = csvstring.split(',')
+            for listitem in csvlist:
+                _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
+        for enc in encoders:
             extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(enc)])
             csvstring = ""
             for line in extension_lst.split('\n'):
@@ -132,7 +143,18 @@ def scan_ffmpeg():
 
     try:
         for dec in decoders:
-            #_FFMPEG_SUPPORTED_DECODERS
+            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(dec)])
+            csvstring = ""
+            for line in extension_lst.split('\n'):
+                if "Common extensions:" in line:
+                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+                    break
+            if csvstring == "":
+                continue
+            csvlist = csvstring.split(',')
+            for listitem in csvlist:
+                _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
+        for dec in decoders:
             extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(dec)])
             csvstring = ""
             for line in extension_lst.split('\n'):
@@ -149,7 +171,6 @@ def scan_ffmpeg():
 
     except:
         pass
-
 
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
