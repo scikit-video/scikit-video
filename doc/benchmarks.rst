@@ -6,28 +6,25 @@ Benchmarking scikit-video
 
 To be useful in any project, we would like to approach real-time performance. Some algorithms implemented may not be able to achieve this (exhaustive search algorithms, for example), but we still set our goals high!
 
-All tests computed for scikit-video v1.0.0
+All tests computed for scikit-video v1.1.1
 
-Mean performance on loading 3 test videos:
+Reading speed
+-------------
+
+Minimum time from 10 trials, loading the 3 test videos in :mod:`skvideo.datasets`:
 
 .. cssclass:: table-striped
 
-================== ================
-Method 		   Time
-================== ================
-skvideo.io.vread   1.346741 seconds
-skvideo.io.vreader 1.311501 seconds
-================== ================
+============================== ================
+Method 		                   Time
+============================== ================
+skvideo.io.vread (FFmpeg)      0.718217 seconds
+skvideo.io.vread (LibAV)       0.815005 seconds
+skvideo.io.vreader (FFmpeg)    0.671952 seconds
+skvideo.io.vreader (LibAV)     0.774765 seconds
+============================== ================
 
-Reading files
------------------------
-
-The average performance over ten iterations of :func:`skvideo.io.vread` and :func:`skvideo.io.vreader`.
-
-------------------------------------------------------------
-                    
-
-The generator is slightly faster on my laptop, but could be faster depending on the disk and memory speeds.
+The fastest backend appears to be FFmpeg for both :func:`skvideo.io.vread` and :func:`skvideo.io.vreader`. Naturally, since :func:`skvideo.io.vreader` uses a yield-based generator to supply frames, it is faster to use than :func:`skvideo.io.vread` which allocates space then copies data frame-by-frame.
 
 Block Motion estimation
 -----------------------
