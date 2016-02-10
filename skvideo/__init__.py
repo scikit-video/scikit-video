@@ -89,88 +89,138 @@ def scan_ffmpeg():
     except:
         pass
 
-    decoders = []
-    encoders = []
+    # decoders = []
+    # encoders = []
 
-    try:
-        extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-formats"])
-        extension_lst = extension_lst.split(b'\n')
-        # skip first line
-        for item in extension_lst[4:]:
-            parts = [x.strip() for x in item.split(b' ') if x]
-            if len(parts) < 2:
-                continue
-            rule = parts[0]
-            extension = parts[1]
-            if b'D' in rule:
-                for item in extension.split(b","):
-                    decoders.append(item)
-            if b'E' in rule:
-                for item in extension.split(b","):
-                    encoders.append(item)
-    except:
-        pass
+    # try:
+    #     extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-formats"])
+    #     extension_lst = extension_lst.split(b'\n')
+    #     # skip first line
+    #     for item in extension_lst[4:]:
+    #         parts = [x.strip() for x in item.split(b' ') if x]
+    #         if len(parts) < 2:
+    #             continue
+    #         rule = parts[0]
+    #         extension = parts[1]
+    #         if b'D' in rule:
+    #             for item in extension.split(b","):
+    #                 decoders.append(item)
+    #         if b'E' in rule:
+    #             for item in extension.split(b","):
+    #                 encoders.append(item)
+    # except:
+    #     pass
 
-    try:
-        for enc in encoders:
-            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(enc)])
-            csvstring = ""
-            for line in extension_lst.split('\n'):
-                if "Common extensions:" in line:
-                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-                    break
-            if csvstring == "":
-                continue
-            csvlist = csvstring.split(',')
-            for listitem in csvlist:
-                _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
-        for enc in encoders:
-            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(enc)])
-            csvstring = ""
-            for line in extension_lst.split('\n'):
-                if "Common extensions:" in line:
-                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-                    break
-            if csvstring == "":
-                continue
-            csvlist = csvstring.split(',')
-            for listitem in csvlist:
-                _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
+    # try:
+    #     for enc in encoders:
+    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(enc)])
+    #         csvstring = ""
+    #         for line in extension_lst.split('\n'):
+    #             if "Common extensions:" in line:
+    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+    #                 break
+    #         if csvstring == "":
+    #             continue
+    #         csvlist = csvstring.split(',')
+    #         for listitem in csvlist:
+    #             _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
+    #     for enc in encoders:
+    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(enc)])
+    #         csvstring = ""
+    #         for line in extension_lst.split('\n'):
+    #             if "Common extensions:" in line:
+    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+    #                 break
+    #         if csvstring == "":
+    #             continue
+    #         csvlist = csvstring.split(',')
+    #         for listitem in csvlist:
+    #             _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
 
-        _FFMPEG_SUPPORTED_ENCODERS = np.unique(_FFMPEG_SUPPORTED_ENCODERS)
-    except:
-        pass
+    #     _FFMPEG_SUPPORTED_ENCODERS = np.unique(_FFMPEG_SUPPORTED_ENCODERS)
+    # except:
+    #     pass
 
-    try:
-        for dec in decoders:
-            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(dec)])
-            csvstring = ""
-            for line in extension_lst.split('\n'):
-                if "Common extensions:" in line:
-                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-                    break
-            if csvstring == "":
-                continue
-            csvlist = csvstring.split(',')
-            for listitem in csvlist:
-                _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
-        for dec in decoders:
-            extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(dec)])
-            csvstring = ""
-            for line in extension_lst.split('\n'):
-                if "Common extensions:" in line:
-                    csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-                    break
-            if csvstring == "":
-                continue
-            csvlist = csvstring.split(',')
-            for listitem in csvlist:
-                _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
+    # try:
+    #     for dec in decoders:
+    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(dec)])
+    #         csvstring = ""
+    #         for line in extension_lst.split('\n'):
+    #             if "Common extensions:" in line:
+    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+    #                 break
+    #         if csvstring == "":
+    #             continue
+    #         csvlist = csvstring.split(',')
+    #         for listitem in csvlist:
+    #             _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
+    #     for dec in decoders:
+    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(dec)])
+    #         csvstring = ""
+    #         for line in extension_lst.split('\n'):
+    #             if "Common extensions:" in line:
+    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
+    #                 break
+    #         if csvstring == "":
+    #             continue
+    #         csvlist = csvstring.split(',')
+    #         for listitem in csvlist:
+    #             _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
 
-        _FFMPEG_SUPPORTED_DECODERS = np.unique(_FFMPEG_SUPPORTED_DECODERS)
+    #     _FFMPEG_SUPPORTED_DECODERS = np.unique(_FFMPEG_SUPPORTED_DECODERS)
+    # except:
+    #     pass
 
-    except:
-        pass
+    # by running the above code block, the bottom arrays are populated
+    # here the output of those commands is provided
+    _FFMPEG_SUPPORTED_DECODERS = [
+        '.264', '.265', '.302', '.3g2', '.3gp', '.722', '.aa', '.aa3', '.aac', '.ac3',
+        '.acm', '.adf', '.adp', '.ads', '.adx', '.aea', '.afc', '.aif', '.aifc', '.aiff',
+        '.al', '.amr', '.ans', '.ape', '.apl', '.apng', '.aqt', '.art', '.asc', '.asf',
+        '.ass', '.ast', '.au', '.avc', '.avi', '.avr', '.bcstm', '.bfstm', '.bin', '.bit',
+        '.bmp', '.bmv', '.brstm', '.caf', '.cavs', '.cdata', '.cdg', '.cdxl', '.cgi',
+        '.cif', '.daud', '.dif', '.diz', '.dnxhd', '.dpx', '.drc', '.dss', '.dtk', '.dts',
+        '.dtshd', '.dv', '.eac3', '.fap', '.ffm', '.ffmeta', '.flac', '.flm', '.flv',
+        '.fsb', '.g722', '.g723_1', '.g729', '.genh', '.gif', '.gsm', '.gxf', '.h261',
+        '.h263', '.h264', '.h265', '.h26l', '.hevc', '.ice', '.ico', '.idf', '.idx', '.im1',
+        '.im24', '.im8', '.ircam', '.ivf', '.ivr', '.j2c', '.j2k', '.jls', '.jp2', '.jpeg',
+        '.jpg', '.js', '.jss', '.lbc', '.ljpg', '.lrc', '.lvf', '.m2a', '.m2t', '.m2ts',
+        '.m3u8', '.m4a', '.m4v', '.mac', '.mj2', '.mjpeg', '.mjpg', '.mk3d', '.mka', '.mks',
+        '.mkv', '.mlp', '.mmf', '.mov', '.mp2', '.mp3', '.mp4', '.mpa', '.mpc', '.mpeg',
+        '.mpg', '.mpl2', '.mpo', '.msf', '.mts', '.mvi', '.mxf', '.mxg', '.nfo', '.nist',
+        '.nut', '.ogg', '.ogv', '.oma', '.omg', '.paf', '.pam', '.pbm', '.pcx', '.pgm',
+        '.pgmyuv', '.pix', '.pjs', '.png', '.ppm', '.pvf', '.qcif', '.ra', '.ras', '.rco',
+        '.rcv', '.rgb', '.rm', '.roq', '.rs', '.rsd', '.rso', '.rt', '.sami', '.sb', '.sbg',
+        '.sdr2', '.sf', '.sgi', '.shn', '.sln', '.smi', '.son', '.sox', '.spdif', '.sph',
+        '.srt', '.ss2', '.ssa', '.stl', '.str', '.sub', '.sun', '.sunras', '.sup', '.svag',
+        '.sw', '.swf', '.tak', '.tco', '.tga', '.thd', '.tif', '.tiff', '.ts', '.tta',
+        '.txt', '.ub', '.ul', '.uw', '.v', '.v210', '.vag', '.vb', '.vc1', '.viv', '.voc',
+        '.vpk', '.vqe', '.vqf', '.vql', '.vt', '.vtt', '.w64', '.wav', '.webm', '.wma',
+        '.wmv', '.wtv', '.wv', '.xbm', '.xface', '.xl', '.xml', '.xvag', '.xwd', '.y',
+        '.y4m', '.yop', '.yuv', '.yuv10'
+    ]
+
+    _FFMPEG_SUPPORTED_ENCODERS = [
+        '., A64', '.264', '.265', '.302', '.3g2', '.3gp', '.722', '.a64', '.aa3', '.aac',
+        '.ac3', '.adts', '.adx', '.afc', '.aif', '.aifc', '.aiff', '.al', '.amr', '.apng',
+        '.asf', '.ass', '.ast', '.au', '.avc', '.avi', '.bit', '.bmp', '.caf', '.cavs',
+        '.chk', '.cif', '.daud', '.dif', '.dnxhd', '.dpx', '.drc', '.dts', '.dv', '.dvd',
+        '.eac3', '.f4v', '.ffm', '.ffmeta', '.flac', '.flm', '.flv', '.g722', '.g723_1',
+        '.gif', '.gxf', '.h261', '.h263', '.h264', '.h265', '.h26l', '.hevc', '.ico',
+        '.im1', '.im24', '.im8', '.ircam', '.isma', '.ismv', '.ivf', '.j2c', '.j2k', '.jls',
+        '.jp2', '.jpeg', '.jpg', '.js', '.jss', '.latm', '.lbc', '.ljpg', '.loas', '.lrc',
+        '.m1v', '.m2a', '.m2t', '.m2ts', '.m2v', '.m3u8', '.m4a', '.m4v', '.mj2', '.mjpeg',
+        '.mjpg', '.mk3d', '.mka', '.mks', '.mkv', '.mlp', '.mmf', '.mov', '.mp2', '.mp3',
+        '.mp4', '.mpa', '.mpeg', '.mpg', '.mpo', '.mts', '.mxf', '.nut', '.oga', '.ogg',
+        '.ogv', '.oma', '.omg', '.opus', '.pam', '.pbm', '.pcx', '.pgm', '.pgmyuv', '.pix',
+        '.png', '.ppm', '.psp', '.qcif', '.ra', '.ras', '.rco', '.rcv', '.rgb', '.rm',
+        '.roq', '.rs', '.rso', '.sb', '.sf', '.sgi', '.sox', '.spdif', '.spx', '.srt',
+        '.ssa', '.sub', '.sun', '.sunras', '.sw', '.swf', '.tco', '.tga', '.thd', '.tif',
+        '.tiff', '.ts', '.ub', '.ul', '.uw', '.vc1', '.vob', '.voc', '.vtt', '.w64', '.wav',
+        '.webm', '.webp', '.wma', '.wmv', '.wtv', '.wv', '.xbm', '.xface', '.xml', '.xwd',
+        '.y', '.y4m', '.yuv'
+    ]
+
 
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
