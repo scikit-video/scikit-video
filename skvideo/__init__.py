@@ -172,7 +172,7 @@ def scan_ffmpeg():
     #     pass
 
     # by running the above code block, the bottom arrays are populated
-    # here the output of those commands is provided
+    # output staticly provided for speed concerns
     _FFMPEG_SUPPORTED_DECODERS = [
         '.264', '.265', '.302', '.3g2', '.3gp', '.722', '.aa', '.aa3', '.aac', '.ac3',
         '.acm', '.adf', '.adp', '.ads', '.adx', '.aea', '.afc', '.aif', '.aifc', '.aiff',
