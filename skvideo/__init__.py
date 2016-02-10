@@ -218,7 +218,10 @@ def scan_ffmpeg():
         b'.ssa', b'.sub', b'.sun', b'.sunras', b'.sw', b'.swf', b'.tco', b'.tga', b'.thd', b'.tif',
         b'.tiff', b'.ts', b'.ub', b'.ul', b'.uw', b'.vc1', b'.vob', b'.voc', b'.vtt', b'.w64', b'.wav',
         b'.webm', b'.webp', b'.wma', b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xml', b'.xwd',
-        b'.y', b'.y4m', b'.yuv'
+        b'.y', b'.y4m', b'.yuv',
+
+        # extra extensions that may be used as raw aliases
+        b'.raw'
     ]
 
 
