@@ -197,7 +197,11 @@ def scan_ffmpeg():
         b'.txt', b'.ub', b'.ul', b'.uw', b'.v', b'.v210', b'.vag', b'.vb', b'.vc1', b'.viv', b'.voc',
         b'.vpk', b'.vqe', b'.vqf', b'.vql', b'.vt', b'.vtt', b'.w64', b'.wav', b'.webm', b'.wma',
         b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xl', b'.xml', b'.xvag', b'.xwd', b'.y',
-        b'.y4m', b'.yop', b'.yuv', b'.yuv10'
+        b'.y4m', b'.yop', b'.yuv', b'.yuv10',
+
+        # extra extensions that are known container formats
+        b'.raw',
+        b'.iso'
     ]
 
     _FFMPEG_SUPPORTED_ENCODERS = [
@@ -220,7 +224,7 @@ def scan_ffmpeg():
         b'.webm', b'.webp', b'.wma', b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xml', b'.xwd',
         b'.y', b'.y4m', b'.yuv',
 
-        # extra extensions that may be used as raw aliases
+        # extra extensions that are known container formats
         b'.raw'
     ]
 
