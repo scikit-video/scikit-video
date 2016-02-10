@@ -22,6 +22,17 @@ def test_measure_SSIM():
     assert_equal(avg_score, 0.722089148702586)
 
 
+def test_measure_MSE():
+    vidpaths = skvideo.datasets.fullreferencepair()
+    ref = skvideo.io.vread(vidpaths[0], as_grey=True)
+    dis = skvideo.io.vread(vidpaths[1], as_grey=True)
+
+    scores = skvideo.measure.mse(ref, dis)
+
+    avg_score = np.mean(scores)
+
+    assert_equal(avg_score, 290.7301544086701)
+
 def test_measure_PSNR():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)

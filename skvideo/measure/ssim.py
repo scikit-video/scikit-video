@@ -21,7 +21,7 @@ def gauss_window(lw, sigma):
 
 
 def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
-    """Computes Structural Similarity (SSIM) Index. [#f1]
+    """Computes Structural Similarity (SSIM) Index. [#f1]_
 
     Both video inputs are compared frame-by-frame to obtain T
     SSIM measurements on the luminance channel.

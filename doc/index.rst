@@ -22,11 +22,11 @@
         </a>
 	</div>
 	<div class="container">
-        <a href='datasets.html'>
-        <div class="col-md-5 menuitem">
-            <img width=128 height=128 src="_static/testdata.png"/>
-            Test Data
-        </div>
+        <a href='measure.html'>
+		<div class="col-md-5 menuitem">
+            <img width=128 height=128 src="_static/measure.png"/>
+            Measurement tools
+		</div>
         </a>
         <a href='utilities.html'>
 		<div class="col-md-5 menuitem">
@@ -36,32 +36,42 @@
         </a>
 	</div>
 	<div class="container">
+        <a href='datasets.html'>
+        <div class="col-md-5 menuitem">
+            <img width=128 height=128 src="_static/testdata.png"/>
+            Test Data
+        </div>
+        </a>
         <a href='examples.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/examples.png"/>
             Examples
 		</div>
         </a>
+	</div>
+	<div class="container">
         <a href='benchmarks.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/benchmarks.png"/>
             Benchmarks
 		</div>
         </a>
-	</div>
-	<div class="container">
         <a href='faq.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/faq.png"/>
             FAQ
 		</div>
         </a>
+	</div>
+	<div class="container">
         <a href='classes.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/API.png"/>
             API Reference
 		</div>
         </a>
+		<div class="col-md-5">
+		</div>
 	</div>
 
 
@@ -74,8 +84,9 @@
 
    io
    motion
-   datasets
+   measure
    utilities
+   datasets
    examples
    benchmarks
    faq
