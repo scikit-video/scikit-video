@@ -234,8 +234,7 @@ def scan_libav():
     global _LIBAV_MINOR_VERSION
     _LIBAV_MAJOR_VERSION = "0"
     _LIBAV_MINOR_VERSION = "0"
-    #try:
-    if 1:
+    try:
         # grab program version string
         version = check_output([_AVCONV_PATH + "/avconv", "-version"])
         # only parse the first line returned
@@ -259,9 +258,8 @@ def scan_libav():
         else:
             _LIBAV_MAJOR_VERSION = str(versionparts[0].decode())
             _LIBAV_MINOR_VERSION = str(versionparts[1].decode())
-    #except:
-    #    pass
-
+    except:
+        pass
 
 
 
