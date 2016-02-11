@@ -7,8 +7,10 @@
 # License: 3-clause BSD
 
 # setup installed library paths
-export PATH="$HOME/build_ffmpeg/bin:$HOME/build_libav/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/build_ffmpeg/lib:$HOME/build_libav/lib:$LD_LIBRARY_PATH"
+export PATH="$HOME/build_libav/bin:$HOME/build_ffmpeg/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/build_libav/lib:$HOME/build_ffmpeg/lib:$LD_LIBRARY_PATH"
+#export PATH="$HOME/build_ffmpeg/bin:$HOME/build_libav/bin:$PATH"
+#export LD_LIBRARY_PATH="$HOME/build_ffmpeg/lib:$HOME/build_libav/lib:$LD_LIBRARY_PATH"
 
 echo "which ffmpeg is used:"
 which ffmpeg
@@ -29,9 +31,9 @@ set -e
 # mkdir -p /tmp/skvideo_tmp
 # cd /tmp/skvideo_tmp
 
-python --version
-python -c "import numpy; print('numpy %s' % numpy.__version__)"
-python -c "import scipy; print('scipy %s' % scipy.__version__)"
+$PYTHON_BIN --version
+$PYTHON_BIN -c "import numpy; print('numpy %s' % numpy.__version__)"
+$PYTHON_BIN -c "import scipy; print('scipy %s' % scipy.__version__)"
 
 if [[ "$COVERAGE" == "true" ]]; then
     nosetests -v --with-coverage --cover-package=skvideo  skvideo

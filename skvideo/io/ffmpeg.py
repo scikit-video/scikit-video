@@ -151,7 +151,7 @@ class FFmpegReader():
             inputdict['-pix_fmt'] = self.pix_fmt
         else:
             # check that the extension makes sense
-            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension
+            assert str.encode(self.extension).lower() in _FFMPEG_SUPPORTED_DECODERS, "Unknown decoder extension: " + self.extension.lower()
 
         self._filename = filename
 
@@ -308,9 +308,8 @@ class FFmpegWriter():
         _, self.extension = os.path.splitext(filename)
 
         print(self.extension)
-        if str.encode(self.extension) not in [b".raw", b".yuv"]:
-            # check that the extension makes sense
-            assert str.encode(self.extension) in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension
+        # check that the extension makes sense
+        assert str.encode(self.extension).lower() in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension.lower()
 
         basepath, _ = os.path.split(filename)
 

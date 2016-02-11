@@ -3,11 +3,13 @@
 
 
 
-scikit-video v1.1.0
+scikit-video v1.1.1
 ===================
 
 [![The BSD-3 License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause#licenseText)
 [![Travis](https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master)](https://travis-ci.org/scikit-video/scikit-video)
+[![Coverage Status](https://coveralls.io/repos/github/scikit-video/scikit-video/badge.svg?branch=master)](https://coveralls.io/github/scikit-video/scikit-video?branch=master)
+[![CircleCI](https://circleci.com/gh/scikit-video/scikit-video/tree/master.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-video/scikit-video)
 
 
 ##Video Processing SciKit
@@ -25,7 +27,7 @@ Visit the documentation at http://www.scikit-video.org
 
 Here are the requirements needed to use scikit-video.
 
-- Either ffmpeg (version >= 2.1) or libav (version >= 9.18)
+- Either ffmpeg (version >= 2.1) or libav (version >= 10.7)
 - python (2.6, 2.7, 3.3, and 3.5)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
@@ -46,8 +48,7 @@ where `python` may refer to either python2 or python3.
 
 
 ##TODO/Roadmap:
-- MacOSX and Windows support
-- Video quality assessment metrics
+- Windows support
 - Spatial-Temporal filtering helper functions
 - Speedup motion estimation routines
 - More ffmpeg/avconv interfacing

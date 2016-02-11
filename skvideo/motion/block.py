@@ -6,6 +6,8 @@ from ..utils import *
 
 
 def _costMAD(block1, block2):
+    block1 = block1.astype(np.float)
+    block2 = block2.astype(np.float)
     return np.mean(np.abs(block1 - block2))
 
 
@@ -249,7 +251,7 @@ def _ARPS(imgP, imgI, mbSize, p):
             else:
                 u = vectors[i / mbSize, j / mbSize - 1, 0]
                 v = vectors[i / mbSize, j / mbSize - 1, 1]
-                stepSize = np.max((np.abs(u), np.abs(v)))
+                stepSize = np.int(np.max((np.abs(u), np.abs(v))))
 
                 if (((np.abs(u) == stepSize) and (np.abs(v) == 0)) or
                     ((np.abs(v) == stepSize) and (np.abs(u) == 0))):
@@ -364,7 +366,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
     for i in range(0, h - mbSize + 1, mbSize):
         for j in range(0, w - mbSize + 1, mbSize):
 
-            stepSize = stepMax
+            stepSize = np.int(stepMax)
             x = j
             y = i
 
@@ -816,10 +818,8 @@ def _4SS(imgP, imgI, mbSize, p):
 def _ES(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
-    vectors = np.zeros((h / mbSize, w / mbSize, 2))
+    vectors = np.zeros((h / mbSize, w / mbSize, 2), dtype=np.float)
     costs = np.ones((2 * p + 1, 2 * p + 1), dtype=np.float)*65537
-
-    computations = 0
 
     # we start off from the top left of the image
     # we will walk in steps of mbSize
@@ -849,7 +849,6 @@ def _ES(imgP, imgI, mbSize, p):
                                 continue
 
                         costs[m + p, n + p] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
-                        computations += 1
 
             else:
                 for m in range(-p, p + 1):
@@ -857,7 +856,6 @@ def _ES(imgP, imgI, mbSize, p):
                         refBlkVer = i + m   # row/Vert co-ordinate for ref block
                         refBlkHor = j + n   # col/Horizontal co-ordinate
                         costs[m + p, n + p] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
-                        computations += 1
 
 
             # Now we find the vector where the cost is minimum
@@ -867,7 +865,7 @@ def _ES(imgP, imgI, mbSize, p):
 
             costs[:, :] = 65537
 
-    return vectors, computations / ((h * w) / mbSize**2)
+    return vectors
 
 
 def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
@@ -936,7 +934,7 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 
     if method == "ES":
         for i in range(numFrames - 1):
-            motion, comps = _ES(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion = _ES(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "4SS":
         for i in range(numFrames - 1):
