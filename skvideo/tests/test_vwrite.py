@@ -34,8 +34,18 @@ def _vwrite(backend):
     os.remove(outputfile)
 
 def test_vreader_ffmpeg():
+    if not skvideo._HAS_FFMPEG:
+        return 0
     _vwrite("ffmpeg")
 
 def test_vreader_libav():
+    if not skvideo._HAS_AVCONV:
+        return 0
+    try:
+        if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
+            return 0
+    except:
+        return 0
+
     _vwrite("libav")
 

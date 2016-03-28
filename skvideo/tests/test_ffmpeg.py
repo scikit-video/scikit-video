@@ -4,8 +4,10 @@ import sys
 import numpy as np
 import skvideo.io
 import skvideo.datasets
+import unittest
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_FFmpegReader():
     reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), verbosity=0)
     
@@ -31,6 +33,7 @@ def test_FFmpegReader():
     assert_equal(accumulation / (T * M * N * C), 109.28332841215979)
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_FFmpegWriter():
     # generate random data for 5 frames
     outputfile = sys._getframe().f_code.co_name + ".mp4"

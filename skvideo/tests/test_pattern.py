@@ -2,6 +2,7 @@ import skvideo.io
 import skvideo.utils
 import numpy as np
 import os
+import unittest
 
 
 def pattern_sinusoid(backend):
@@ -68,21 +69,20 @@ def pattern_noise(backend):
     os.remove("randomNoisePattern_resaved.yuv")
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_sinusoid_ffmpeg():
     pattern_sinusoid('ffmpeg')
 
 
-def test_sinusoid_libav_version12():
-    if not skvideo._HAS_AVCONV:
-        return 0
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
+def test_sinusoid_libav():
     pattern_sinusoid('libav')
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_noisepattern_ffmpeg():
     pattern_noise('ffmpeg')
 
-
-def test_noisepattern_libav_version12():
-    if not skvideo._HAS_AVCONV:
-        return 0
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
+def test_noisepattern_libav():
     pattern_noise('libav')

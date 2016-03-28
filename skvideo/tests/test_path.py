@@ -7,8 +7,10 @@ import sys
 import numpy as np
 import skvideo.io
 import skvideo.datasets
+import unittest
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_FFmpeg_paths():
     current_path = skvideo.getFFmpegPath()
     current_version = skvideo.getFFmpegVersion()
@@ -30,6 +32,7 @@ def test_FFmpeg_paths():
     assert skvideo.getFFmpegVersion() == current_version, "FFmpeg version is not loaded properly from valid FFmpeg."
 
 
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_LibAV_paths():
     current_path = skvideo.getLibAVPath()
     current_version = skvideo.getLibAVVersion()

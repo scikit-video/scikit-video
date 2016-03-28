@@ -2,6 +2,7 @@ from numpy.testing import assert_equal
 import numpy as np
 import skvideo.io
 import skvideo.datasets
+import unittest
 
 
 def _vreader(backend):
@@ -29,13 +30,13 @@ def _vreader(backend):
     assert_equal(109.28332841215979, accumulation / (T * M * N * C))
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_vreader_ffmpeg():
     _vreader("ffmpeg")
 
+
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_vreader_libav_version12():
-    # simply return if libav not installed or of the proper version
-    if not skvideo._HAS_AVCONV:
-        return 0
     try:
         if np.int(skvideo._LIBAV_MAJOR_VERSION) < 12:
             return 0

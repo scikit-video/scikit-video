@@ -5,8 +5,10 @@ import numpy as np
 import skvideo
 import skvideo.io
 import skvideo.datasets
+import unittest
 
 
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_LibAVReader_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
@@ -38,6 +40,7 @@ def test_LibAVReader_aboveversion9():
     assert_equal(accumulation / (T * M * N * C), 109.28332841215979)
 
 
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_LibAVWriter_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
