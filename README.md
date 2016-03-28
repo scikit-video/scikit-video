@@ -33,8 +33,11 @@ Here are the requirements needed to use scikit-video.
 - scipy (version >= 0.16.0)
 - mediainfo (optional)
 
+##Installation
 
-##Installation:
+`$ sudo pip install sk-video`
+
+##Installation from github:
 
 1. Make sure minimum dependencies (above) are installed. In addition, install setuptools (python-setuptools or python2-setuptools).
 
