@@ -59,14 +59,14 @@ If you installed scikit-video prior to version 1.1.2, you may have an import con
 
 To check that the conflict no longer exists, import skvideo and print the file path
 
-	```python
-	import skvideo
-	print skvideo.__file__
-	```
+```python
+import skvideo
+print skvideo.__file__
+```
 
 if setup correctly, you should see `sk_video` in the path:
 
-	`/usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc`
+`/usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc`
 
 
 ##TODO/Roadmap
