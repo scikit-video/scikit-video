@@ -307,7 +307,6 @@ class FFmpegWriter():
 
         _, self.extension = os.path.splitext(filename)
 
-        print(self.extension)
         # check that the extension makes sense
         assert str.encode(self.extension).lower() in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension.lower()
 

@@ -36,13 +36,15 @@ Here are the requirements needed to use scikit-video.
 
 ##Installation:
 
-Clone the scikit-video repository, run
+1. Make sure minimum dependencies (above) are installed. In addition, install setuptools (python-setuptools or python2-setuptools).
 
-`python setup.py build`
+2. Clone the scikit-video repository, enter the project directory, then run
 
-then 
+   `$ python setup.py build`
 
-`sudo python setup.py install`
+3. In that same project directory, run the command
+
+   `$ sudo python setup.py install`
 
 where `python` may refer to either python2 or python3.
 
