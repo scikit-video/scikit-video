@@ -1,7 +1,7 @@
 conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage
 
 echo $TRAVIS_PYTHON_VERSION
-if [[ $TRAVIS_PYTHON_VERSION == 2.6]]; then
+if [[ "$TRAVIS_PYTHON_VERSION" == "2.6" ]]; then
 	conda install --yes python=$TRAVIS_PYTHON_VERSION unittest2
 fi
 
