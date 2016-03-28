@@ -23,7 +23,7 @@ This project is distributed under the 3-clause BSD.
 Visit the documentation at http://www.scikit-video.org
 
 
-##Dependencies:
+##Dependencies
 
 Here are the requirements needed to use scikit-video.
 
@@ -37,7 +37,7 @@ Here are the requirements needed to use scikit-video.
 
 `$ sudo pip install sk-video`
 
-##Installation from github:
+##Installation from github
 
 1. Make sure minimum dependencies (above) are installed. In addition, install setuptools (python-setuptools or python2-setuptools).
 
@@ -51,15 +51,32 @@ Here are the requirements needed to use scikit-video.
 
 where `python` may refer to either python2 or python3.
 
+##Known conflicts
 
-##TODO/Roadmap:
+If you installed scikit-video prior to version 1.1.2, you may have an import conflict. Run the following command to fix it
+
+`$ sudo pip uninstall scikit-video`
+
+To check that the conflict no longer exists, import skvideo and print the file path
+
+	```python
+	import skvideo
+	print skvideo.__file__
+	```
+
+if setup correctly, you should see `sk_video` in the path:
+
+	`/usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc`
+
+
+##TODO/Roadmap
 - Windows support
 - Spatial-Temporal filtering helper functions
 - Speedup motion estimation routines
 - More ffmpeg/avconv interfacing
 
 
-##For Contributors:
+##For Contributors
 
 Quick tutorial on how to go about setting up your environment to contribute to scikit-video: 
 
