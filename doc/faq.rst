@@ -42,7 +42,7 @@ You may not have supplied `num_frames`. The autodetection process sometimes requ
 How do I report a bug with scikit-video?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Please give us a full report of your problem in the issue tracker over on `github <https://github.com/scikit-video/scikit-video>`_.
+Please give us a full report of your problem in the issue tracker over on `github <https://github.com/scikit-video/scikit-video/issues/new>`_.
 
 How do I contribute to make scikit-video better?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
