@@ -7,7 +7,11 @@ import sys
 import numpy as np
 import skvideo.io
 import skvideo.datasets
-import unittest
+
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 @unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")

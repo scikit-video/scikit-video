@@ -1,4 +1,4 @@
-conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage
+conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage unittest2
 GIT_TRAVIS_REPO=$(pwd)
 echo $GIT_TRAVIS_REPO
 cd $HOME

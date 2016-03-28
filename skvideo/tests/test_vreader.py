@@ -2,7 +2,12 @@ from numpy.testing import assert_equal
 import numpy as np
 import skvideo.io
 import skvideo.datasets
-import unittest
+import sys
+
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 def _vreader(backend):
