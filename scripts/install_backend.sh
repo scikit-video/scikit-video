@@ -27,19 +27,21 @@ cd $TRAVIS_BUILD_DIR
 
 cd $HOME/download
 
-if [[ $LIBAV == "gitrepo" ]]; then 
-    git clone git://git.libav.org/libav.git
-    cd libav
-else
-    wget --no-check-certificate "https://libav.org/releases/libav-$LIBAV.tar.gz" || exit 1
-    tar xf "libav-$LIBAV.tar.gz"
-    cd "libav-$LIBAV"; 
-fi
+if [[ $LIBAV != "none" ]]; then
+    if [[ $LIBAV == "gitrepo" ]]; then 
+	git clone git://git.libav.org/libav.git
+	cd libav
+    else
+	wget --no-check-certificate "https://libav.org/releases/libav-$LIBAV.tar.gz" || exit 1
+	tar xf "libav-$LIBAV.tar.gz"
+	cd "libav-$LIBAV"; 
+    fi
 
-echo ./configure --disable-yasm
-./configure  --disable-yasm --prefix="$HOME/build_libav" || exit 2
-echo make
-make -j4 || exit 3
-echo make install
-make install || exit 4
+    echo ./configure --disable-yasm
+    ./configure  --disable-yasm --prefix="$HOME/build_libav" || exit 2
+    echo make
+    make -j4 || exit 3
+    echo make install
+    make install || exit 4
+fi
 cd $TRAVIS_BUILD_DIR
