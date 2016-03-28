@@ -46,7 +46,7 @@ matrix:
         - os: linux
           python: "3.5"
           language: python
-          env: FFMPEG=snapshot LIBAV=gitrepo
+          env: FFMPEG=snapshot LIBAV=none
         - os: linux
           python: "2.7"
           language: python
@@ -58,7 +58,7 @@ matrix:
         - os: linux
           python: "2.7"
           language: python
-          env: FFMPEG=snapshot LIBAV=gitrepo
+          env: FFMPEG=snapshot LIBAV=none
         - os: linux
           python: "2.6"
           language: python
@@ -70,7 +70,7 @@ matrix:
         - os: linux
           python: "2.6"
           language: python
-          env: FFMPEG=snapshot LIBAV=gitrepo
+          env: FFMPEG=snapshot LIBAV=none
 
 before_install: 
   - source scripts/before_install.sh
