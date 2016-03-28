@@ -3,7 +3,7 @@
 
 
 
-scikit-video v1.1.1
+scikit-video v1.1.2
 ===================
 
 [![The BSD-3 License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause#licenseText)
