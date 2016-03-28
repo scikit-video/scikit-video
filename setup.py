@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 descr = """\
 This library provides easy access to common as well as
-state-of-the-art video processing routines. 
+state-of-the-art video processing routines. Check out the
+website for more details. 
 
 """
 
-DISTNAME            = 'scikit-video'
+DISTNAME            = 'sk-video'
 DESCRIPTION         = 'Video Processing in Python'
 LONG_DESCRIPTION    = descr
 MAINTAINER          = 'Todd Goodall',
 MAINTAINER_EMAIL    = 'info@scikit-video.org',
 URL                 = 'http://scikit-video.org/'
 LICENSE             = 'BSD'
-DOWNLOAD_URL        = URL
-PACKAGE_NAME        = 'skvideo'
+DOWNLOAD_URL        = 'https://github.com/scikit-video/scikit-video'
+PACKAGE_NAME        = 'scikit-video'
 EXTRA_INFO          = dict(
     install_requires=['numpy', 'scipy'],
     classifiers=['Development Status :: 3 - Alpha',
@@ -39,7 +40,7 @@ from numpy.distutils.core import setup
 
 import skvideo
 
-def configuration(parent_package='', top_path=None, package_name=DISTNAME):
+def configuration(parent_package='', top_path=None, package_name=PACKAGE_NAME):
     if os.path.exists('MANIFEST'): os.remove('MANIFEST')
 
     from numpy.distutils.misc_util import Configuration
