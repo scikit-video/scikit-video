@@ -14,7 +14,7 @@
     
    .. raw:: html  
 
-    If you have any installation issues, consult the <a href='faq.html'>FAQ</a>. If you still have trouble, please report the issue on `github <https://github.com/scikit-video/scikit-video/issues/new>`_.
+    If you have any installation issues, consult the <a href='faq.html'>FAQ</a>. If you still have trouble, please report the issue on <a href='https://github.com/scikit-video/scikit-video/issues/new'>github</a>.
     <br/><br/>
 
 	Scikit-video is designed for easy video processing using Python. It is modeled in the spirit of other successful scikits such as scikit-learn and scikit-image. The developers of scikit-video know libraries exist for manipulating videos, such as PyFFmpeg, MoviePy, PyAV, imageIO, and opencv. However, no libraries have been found to provide an all-in-one solution for research-level video processing tools.
