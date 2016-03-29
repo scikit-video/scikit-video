@@ -52,8 +52,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'sk-video'
-copyright = u'2015-2016, sk-video developers (BSD License)'
+project = u'scikit-video'
+copyright = u'2015-2016, scikit-video developers (BSD License)'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -4,7 +4,6 @@
 
 |BSD3|_ |Travis|_ |Coveralls|_ |CircleCI|_ |Python27|_ |Python35|_ |PyPi|_ 
 
-
 .. |BSD3| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
 .. _BSD3: https://travis-ci.org/scikit-video/scikit-video
 
@@ -112,4 +111,4 @@ After installation, you can launch the test suite from outside the source direct
     $ nosetests2 -v skvideo
     $ nosetests3 -v skvideo
 
-Copyright 2015-2016, sk-video developers (BSD license).
+Copyright 2015-2016, scikit-video developers (BSD license).
