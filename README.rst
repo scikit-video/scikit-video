@@ -112,4 +112,4 @@ After installation, you can launch the test suite from outside the source direct
     $ nosetests2 -v skvideo
     $ nosetests3 -v skvideo
 
-Copyright 2016 scikit-video developers (BSD license).
+Copyright 2015-2016, sk-video developers (BSD license).
