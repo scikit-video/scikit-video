@@ -27,7 +27,7 @@
 .. _PyPi: https://badge.fury.io/py/scikit-video
 
 .. |skvideologo| image:: doc/images/scikit-video.png
-.. _skvideologo: https://www.scikit-video.org
+.. _skvideologo: http://www.scikit-video.org
 
 
 Video Processing SciKit
