@@ -1,29 +1,51 @@
+.. -*- mode: rst -*-
 
-![scikit-video logo](doc/images/scikit-video.png)
+|BSD3|_ |Travis|_ |Coveralls|_ |CircleCI|_ |Python27|_ |Python35|_ |PyPi|_ 
+
+|skvideologo|
+
+.. |BSD3| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
+.. _BSD3: https://travis-ci.org/scikit-video/scikit-video
+
+.. |Travis| image:: https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master
+.. _Travis: https://travis-ci.org/scikit-video/scikit-video
+
+.. |Coveralls| image:: https://coveralls.io/repos/github/scikit-video/scikit-video/badge.svg?branch=master
+.. _Coveralls: https://coveralls.io/github/scikit-video/scikit-video?branch=master
+
+.. |CircleCI| image:: https://circleci.com/gh/scikit-video/scikit-video/tree/master.svg?style=shield&circle-token=:circle-token
+.. _CircleCI: https://circleci.com/gh/scikit-video/scikit-video
+
+.. |Python27| image:: https://img.shields.io/badge/python-2.7-blue.svg
+.. _Python27: https://badge.fury.io/py/sk-video
+
+.. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg
+.. _Python35: https://badge.fury.io/py/sk-video
+
+.. |PyPi| image:: https://badge.fury.io/py/sk-video.svg
+.. _PyPi: https://badge.fury.io/py/scikit-video
+
+.. |skvideologo| image:: doc/images/scikit-video.png
+.. _skvideologo: https://www.scikit-video.org
 
 
-
-scikit-video v1.1.2
+scikit-video v1.1.3
 ===================
 
-[![The BSD-3 License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause#licenseText)
-[![Travis](https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master)](https://travis-ci.org/scikit-video/scikit-video)
-[![Coverage Status](https://coveralls.io/repos/github/scikit-video/scikit-video/badge.svg?branch=master)](https://coveralls.io/github/scikit-video/scikit-video?branch=master)
-[![CircleCI](https://circleci.com/gh/scikit-video/scikit-video/tree/master.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-video/scikit-video)
+Video Processing SciKit
+-----------------------
+
+    Borrowing coding styles and conventions from scikit-image and scikit-learn,
+    scikit-video is a Python module for video processing built on top of 
+    scipy, numpy, and ffmpeg/libav.
+
+    This project is distributed under the 3-clause BSD.
+
+    Visit the documentation at http://www.scikit-video.org
 
 
-##Video Processing SciKit
-
-Borrowing coding styles and conventions from scikit-image and scikit-learn,
-scikit-video is a Python module for video processing built on top of 
-scipy, numpy, and ffmpeg/libav.
-
-This project is distributed under the 3-clause BSD.
-
-Visit the documentation at http://www.scikit-video.org
-
-
-##Dependencies
+Dependencies and Installation
+-----------------------------
 
 Here are the requirements needed to use scikit-video.
 
@@ -33,62 +55,63 @@ Here are the requirements needed to use scikit-video.
 - scipy (version >= 0.16.0)
 - mediainfo (optional)
 
-##Installation
+Installation::
 
-`$ sudo pip install sk-video`
+$ sudo pip install sk-video
 
-##Installation from github
+Installing from github
 
 1. Make sure minimum dependencies (above) are installed. In addition, install setuptools (python-setuptools or python2-setuptools).
 
-2. Clone the scikit-video repository, enter the project directory, then run
+2. Clone the scikit-video repository, enter the project directory, then run::
 
-   `$ python setup.py build`
+   $ python setup.py build
 
-3. In that same project directory, run the command
+3. In that same project directory, run the command::
 
-   `$ sudo python setup.py install`
+   $ sudo python setup.py install
 
 where `python` may refer to either python2 or python3.
 
-##Known conflicts
+Known conflicts
+---------------
 
-If you installed scikit-video prior to version 1.1.2, you may have an import conflict. Run the following command to fix it
+If you installed scikit-video prior to version 1.1.2, you may have an import conflict. Run the following command to fix it::
 
-`$ sudo pip uninstall scikit-video`
+    $ sudo pip uninstall scikit-video
 
-To check that the conflict no longer exists, import skvideo and print the file path
+To check that the conflict no longer exists, import skvideo and print the file path::
 
-```python
-import skvideo
-print skvideo.__file__
-```
+    import skvideo
+    print skvideo.__file__
 
-if setup correctly, you should see `sk_video` in the path:
+if setup correctly, you should see `sk_video` in the path::
 
-`/usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc`
+/usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc
 
 
-##TODO/Roadmap
+TODO/Roadmap
+------------
 - Windows support
 - Spatial-Temporal filtering helper functions
 - Speedup motion estimation routines
 - More ffmpeg/avconv interfacing
 
 
-##For Contributors
+For Contributors
+----------------
 
 Quick tutorial on how to go about setting up your environment to contribute to scikit-video: 
 
 https://github.com/beyondmetis/scikit-video/blob/master/CONTRIBUTING.md
 
 
-##Testing
+Testing
+-------
 
-After installation, you can launch the test suite from outside the source directory (you will need to have the nose package installed). To ensure that both python2 and python3 versions pass:
+After installation, you can launch the test suite from outside the source directory (you will need to have the nose package installed). To ensure that both python2 and python3 versions pass::
 
-$ nosetests2 -v skvideo
+    $ nosetests2 -v skvideo
+    $ nosetests3 -v skvideo
 
-$ nosetests3 -v skvideo
-
-Copyright &copy; 2015 scikit-video team. Special thanks to Martín Blech for xmltodict, the authors of pymediaprobe, and the developers behind imageio and pyav for releasing under BSD licenses.
+Copyright 2016 scikit-video developers (BSD license).
