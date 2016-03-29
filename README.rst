@@ -1,8 +1,9 @@
 .. -*- mode: rst -*-
 
+|skvideologo|_
+
 |BSD3|_ |Travis|_ |Coveralls|_ |CircleCI|_ |Python27|_ |Python35|_ |PyPi|_ 
 
-|skvideologo|
 
 .. |BSD3| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
 .. _BSD3: https://travis-ci.org/scikit-video/scikit-video
@@ -29,19 +30,16 @@
 .. _skvideologo: https://www.scikit-video.org
 
 
-scikit-video v1.1.3
-===================
-
 Video Processing SciKit
 -----------------------
 
-    Borrowing coding styles and conventions from scikit-image and scikit-learn,
-    scikit-video is a Python module for video processing built on top of 
-    scipy, numpy, and ffmpeg/libav.
+Borrowing coding styles and conventions from scikit-image and scikit-learn,
+scikit-video is a Python module for video processing built on top of 
+scipy, numpy, and ffmpeg/libav.
 
-    This project is distributed under the 3-clause BSD.
+This project is distributed under the 3-clause BSD.
 
-    Visit the documentation at http://www.scikit-video.org
+Visit the documentation at http://www.scikit-video.org
 
 
 Dependencies and Installation
