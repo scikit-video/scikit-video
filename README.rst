@@ -5,7 +5,7 @@
 |BSD3|_ |Travis|_ |Coveralls|_ |CircleCI|_ |Python27|_ |Python35|_ |PyPi|_ 
 
 .. |BSD3| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
-.. _BSD3: https://travis-ci.org/scikit-video/scikit-video
+.. _BSD3: https://opensource.org/licenses/BSD-3-Clause
 
 .. |Travis| image:: https://api.travis-ci.org/scikit-video/scikit-video.png?branch=master
 .. _Travis: https://travis-ci.org/scikit-video/scikit-video
@@ -23,7 +23,7 @@
 .. _Python35: https://badge.fury.io/py/sk-video
 
 .. |PyPi| image:: https://badge.fury.io/py/sk-video.svg
-.. _PyPi: https://badge.fury.io/py/scikit-video
+.. _PyPi: https://badge.fury.io/py/sk-video
 
 .. |skvideologo| image:: doc/images/scikit-video.png
 .. _skvideologo: http://www.scikit-video.org
