@@ -2,8 +2,10 @@
 """
 
 from .block import *
+from .gme import *
 
 __all__ = [
     'blockMotion',
-    'blockComp'
+    'blockComp',
+    'globalEdgeMotion'
 ]

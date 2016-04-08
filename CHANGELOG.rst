@@ -1,3 +1,11 @@
+1.1.6
+-----
+
+- Added scene cut detection functions
+- Added global motion estimation
+- Added edge extraction, but only canny edge detection for now
+
+1.1.5
 1.1.4
 -----
 
