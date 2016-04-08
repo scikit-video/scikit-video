@@ -22,3 +22,4 @@ Functions
    ssim
    mse
    psnr
+   scenedet

@@ -59,6 +59,10 @@ Here is a motion compensated frame from bigbuckbunny
 
 .. image:: images/blockComp.png
 
+Global motion estimation
+-------------------------
+
+Typically, estimating the global motion (sometimes referred to as ego-motion) is not as simple as averaging the block motion vectors. Many techniques have been devised to estimate global motion robust against moving foreground objects and noise. The function :func:`skvideo.motion.globalEdgeMotion` uses edge-based techniques for estimating global motion, with the option to compute error using either the Hausdorff or Hamming distances.
 
 .. toctree::
     :hidden:
