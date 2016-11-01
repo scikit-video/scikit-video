@@ -248,7 +248,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for frame in reader.nextFrame():
             if as_grey:
-                yield vshape(frame[:, :, :, 0])
+                yield vshape(frame[:, :, 0])
             else:
                 yield frame
 
