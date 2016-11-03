@@ -16,7 +16,7 @@ else
 fi
 
 echo ./configure
-./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
+./configure --cc="gcc-4.8" --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
 echo make
 make -j4 || exit 3
 echo make install
@@ -38,7 +38,7 @@ if [[ $LIBAV != "none" ]]; then
     fi
 
     echo ./configure --disable-yasm
-    ./configure  --cc="gcc" --disable-yasm --prefix="$HOME/build_libav" || exit 2
+    ./configure  --cc="gcc-4.8" --disable-yasm --prefix="$HOME/build_libav" || exit 2
     echo make
     make -j4 || exit 3
     echo make install
