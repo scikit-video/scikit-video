@@ -60,3 +60,12 @@ Chroma channel 1 frame (vid_chroma1.png)
 Chroma channel 2 frame (vid_chroma2.png)
 
 .. image:: images/vid_chroma2.png
+
+Video Writing with Quality
+----------------------------------------------
+
+Specifying FFmpeg parameters using the outputdict parameter allows for higher video quality. As you change the bitrate through the "-b" parameter, the video output approaches the fidelity of the original signal.
+
+.. literalinclude:: outputdictexample.py
+   :linenos:
+
