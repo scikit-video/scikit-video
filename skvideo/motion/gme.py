@@ -9,7 +9,6 @@ import scipy.ndimage
 import scipy.spatial
 
 from ..utils import *
-from ..measure.edge import canny
 
 
 def _hausdorff_distance(E_1, E_2):

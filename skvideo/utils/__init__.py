@@ -5,6 +5,7 @@
 from .xmltodict import parse as xmltodictparser
 import subprocess as sp
 import numpy as np
+from .edge import *
 
 # dictionary based on pix_fmt keys
 # first element is number of components
