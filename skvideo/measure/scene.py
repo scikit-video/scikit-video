@@ -12,8 +12,6 @@ import time
 from ..utils import *
 from ..motion.gme import globalEdgeMotion
 
-from .edge import canny
-
 
 def _percentage_distance(canny_in, canny_out, r):
     diamond = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
