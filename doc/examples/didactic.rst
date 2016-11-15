@@ -25,3 +25,8 @@ If you want to create a corrupted version of a video, you can use the FFmpegRead
 
 .. literalinclude:: IOcorrupt.py
    :linenos:
+
+Video output of the corrupted BigBuckBunny sequence:
+
+.. youtube:: q6s5mH39K08
+    :width: 50%
