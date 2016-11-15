@@ -3,6 +3,17 @@ import numpy as np
 from os.path import dirname
 from os.path import join
 
+def bikes():
+    """Test video data
+
+    Returns
+    -------
+    path : string
+        Absolute path to bikes.mp4
+    """
+    module_path = dirname(__file__)
+    return join(module_path, 'data', 'bikes.mp4')
+
 def bigbuckbunny():
     """Test video data
 

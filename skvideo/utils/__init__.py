@@ -5,7 +5,7 @@
 from .xmltodict import parse as xmltodictparser
 import subprocess as sp
 import numpy as np
-from .edge import *
+from .edge import canny
 
 # dictionary based on pix_fmt keys
 # first element is number of components
@@ -291,4 +291,5 @@ __all__ = [
     'check_output',
     'rgb2gray',
     'vshape',
+    'canny',
 ]
