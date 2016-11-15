@@ -1,3 +1,9 @@
+1.1.7
+-----
+- Added scene detection, motion estimation, and miscellaneous examples
+- Fixed bug of not closing FFmpeg when using vread/vreader
+- Fixed bugs with scene detector and motion estimation
+
 1.1.6
 -----
 
