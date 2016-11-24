@@ -6,10 +6,10 @@ How to contribute
 -----------------
 
 The preferred way to contribute to scikit-video is to fork the 
-[main repository](http://github.com/beyondmetis/scikit-video) on
+[main repository](http://github.com/scikit-video/scikit-video) on
 GitHub:
 
-1. Fork the [project repository](http://github.com/beyondmetis/scikit-video):
+1. Fork the [project repository](http://github.com/scikit-video/scikit-video):
    click on the 'Fork' button near the top of the page. This creates
    a copy of the code under your account on the GitHub server.
 
