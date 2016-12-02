@@ -8,6 +8,14 @@ Test Datasets
 
 :mod:`skvideo.datasets` provides several test videos for benchmarking, testing, and example code.
 
+Bikes sequence
+-----------------------
+
+The full absolute path to bikes comes bundled with the skvideo install and can be found using :func:`skvideo.datasets.bikes`
+
+.. youtube:: BDV7ZPIEUXU
+    :width: 50%
+
 Big Buck Bunny sequence
 -----------------------
 
