@@ -45,4 +45,4 @@ def fullreferencepair():
             join(module_path, 'data', 'carphone_distorted.mp4'),
     ])
 
-__all__ = ['bigbuckbunny', 'fullreferencepair']
+__all__ = ['bikes', 'bigbuckbunny', 'fullreferencepair']
