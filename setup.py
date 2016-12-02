@@ -54,6 +54,7 @@ def configuration(parent_package='', top_path=None, package_name=PACKAGE_NAME):
 
     config.add_subpackage('skvideo')
     config.add_data_dir('skvideo/datasets/data')
+    config.add_data_dir('skvideo/measure/data')
     return config
 
 # Documentation building command

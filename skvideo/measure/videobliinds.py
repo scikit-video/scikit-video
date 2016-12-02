@@ -6,6 +6,9 @@ import scipy.fftpack
 import scipy.stats
 import scipy.io
 
+from os.path import dirname
+from os.path import join
+
 gamma_range = np.arange(0.2, 10, 0.001)
 a = scipy.special.gamma(2.0/gamma_range)
 a *= a
@@ -246,7 +249,8 @@ def compute_niqe_features(frames):
     blocksizerow = 96
     blocksizecol = 96
 
-    params = scipy.io.loadmat("dat/frames_modelparameters.mat")
+    module_path = dirname(__file__)
+    params = scipy.io.loadmat(join(module_path, 'data', 'frames_modelparameters.mat'))
     mu_prisparam = params['mu_prisparam']
     cov_prisparam = params['cov_prisparam']
 
@@ -355,7 +359,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     return np.array([dt_dc_measure2, geo_HL_ratio, geo_HM_ratio, geo_hh_ratio, geo_high_ratio, geo_low_ratio])
 
 def videobliinds_features(videoData):
-    """Computes Video Bliinds features.
+    """Computes Video Bliinds features. [#f1]_
 
     Since this is a referenceless quality algorithm, only 1 video is needed. This function
     provides the raw features used by the algorithm.
@@ -371,6 +375,11 @@ def videobliinds_features(videoData):
     -------
     features : ndarray
         The individual features of the algorithm.
+
+    References
+    ----------
+
+    .. [#f1] M. Saad and A.C. Bovik, "Blind prediction of natural video quality" IEEE Transactions on Image Processing, December 2013.
 
     """
 
@@ -392,18 +401,4 @@ def videobliinds_features(videoData):
       np.log(1+temporal_features),
     ))
 
-    print features
-    print features.shape
-
-
-    exit(0)
-
-    #for t in range(T):
-    #    videoData = distortedVideoData[t].astype(np.float)
-#
-#        mse = np.mean((referenceFrame - distortedFrame)**2)
-##        psnr = 10 * np.log10(maxsq / mse)
-#
-#        scores[t] = psnr
-#
     return features
