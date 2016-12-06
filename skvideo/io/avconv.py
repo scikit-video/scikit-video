@@ -94,7 +94,12 @@ class LibAVReader():
             frtxt = viddict["avg_frame_rate"]
             parts = frtxt.split('/') 
             if len(parts) > 1:
-                self.inputfps = np.float(parts[0])/np.float(parts[1])
+                num = np.float(parts[0])
+                den = np.float(parts[1])
+                if den == 0:
+                  self.inputfps = 25
+                else:
+                  self.inputfps = np.float(parts[0])/np.float(parts[1])
             else:
                 self.inputfps = np.float(frtxt)
         else:
