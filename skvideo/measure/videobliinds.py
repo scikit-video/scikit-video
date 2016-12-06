@@ -38,7 +38,7 @@ def extract_aggd_features(imdata):
     imdata.shape = (len(imdata.flat),)
     imdata2 = imdata*imdata
     left_data = imdata2[imdata<0]
-    right_data = imdata2[imdata>=0]
+    right_data = imdata2[imdata>0]
     left_mean_sqrt = 0
     right_mean_sqrt = 0
     if len(left_data) > 0:
@@ -64,7 +64,7 @@ def extract_aggd_features(imdata):
     br = aggdratio * right_mean_sqrt
 
     #mean parameter
-    N = (br - bl)*(gam2 / gam1)*aggdratio
+    N = (br - bl)*(gam2 / gam1)#*aggdratio
     return (alpha, N, bl, br, left_mean_sqrt, right_mean_sqrt)
 
 def extract_ggd_features(imdata):
@@ -102,7 +102,9 @@ def paired_p(new_im):
     D1_img = shift3 * new_im
     D2_img = shift4 * new_im
 
-    return (V_img, H_img, D1_img, D2_img)
+    #return (V_img, H_img, D1_img, D2_img)
+    #return (H_img, V_img, D1_img, D2_img)
+    return (H_img, V_img, D1_img, D2_img)
 
 
 def motion_feature_extraction(frames):
@@ -112,7 +114,7 @@ def motion_feature_extraction(frames):
     h = gauss_window(2, 0.5)
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=np.int(1.5*mblock))
-    motion_vectors = motion_vectors.astype(np.float)
+    motion_vectors = motion_vectors.astype(np.float32)
 
     # step 2: compute coherency
     Eigens = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2], 2), dtype=np.float)
@@ -176,8 +178,8 @@ def _extract_subband_feats(mscncoefs):
     return np.array([alpha_m, (bl+br)/2.0]), np.array([
             alpha1, N1, bl1, br1,  # (V)
             alpha2, N2, bl2, br2,  # (H)
-            alpha3, N3, bl3, bl3,  # (D1)
-            alpha4, N4, bl4, bl4,  # (D2)
+            alpha3, N3, bl3, br3,  # (D1)
+            alpha4, N4, bl4, br4,  # (D2)
     ])
 
 def extract_on_patches(img, blocksizerow, blocksizecol):
@@ -256,9 +258,12 @@ def compute_niqe_features(frames):
 
     niqe_features = np.zeros((frames.shape[0]-10, 37))
     idx = 0
-    for i in xrange(6, frames.shape[0]-4):
+    for i in xrange(5, frames.shape[0]-5):
       niqe_features[idx] = computequality(frames[i], blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
       idx += 1
+    print niqe_features
+
+    exit(0)
 
     niqe_features = np.mean(niqe_features, axis=0)
     return niqe_features
@@ -389,10 +394,12 @@ def videobliinds_features(videoData):
 
     assert C == 1, "videobliinds called with video having %d channels. Please supply only the luminance channel." % (C,)
 
-    niqe_features = compute_niqe_features(videoData)
     temporal_features = motion_feature_extraction(videoData)
-    dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
-    spectral_features = NSS_spectral_ratios_feature_extraction(videoData)
+    print temporal_features
+    exit(0)
+    niqe_features = compute_niqe_features(videoData)
+    #dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
+    #spectral_features = NSS_spectral_ratios_feature_extraction(videoData)
 
     features = np.hstack((
       niqe_features,
