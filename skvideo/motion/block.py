@@ -10,13 +10,26 @@ def _costMAD(block1, block2):
     block2 = block2.astype(np.float)
     return np.mean(np.abs(block1 - block2))
 
-
 def _minCost(costs):
     h, w = costs.shape
-    if costs[h/2, w/2] == 0:
-        return np.int((h-1)/2), np.int((w-1)/2), 0
-    idx = np.unravel_index(np.argmin(costs), costs.shape)
-    return np.int(idx[0]), np.int(idx[1]), costs[idx]
+    mi = 65537
+
+    for i in xrange(h): 
+      for j in xrange(w): 
+        if costs[i, j] < mi:
+          mi = costs[i, j]
+          dx = j
+          dy = i
+
+
+    return dx, dy, mi
+
+#def _minCost(costs):
+#    h, w = costs.shape
+#    if costs[h/2, w/2] == 0:
+#        return np.int((h-1)/2), np.int((w-1)/2), 0
+#    idx = np.unravel_index(np.argmin(costs), costs.shape)
+#    return np.int(idx[0]), np.int(idx[1]), costs[idx]
 
 
 def _checkBounded(xval, yval, w, h, mbSize):
@@ -503,7 +516,13 @@ def _N3SS(imgP, imgI, mbSize, p):
 
     h, w = imgP.shape
 
-    vectors = np.zeros((h / mbSize, w / mbSize, 2))
+    h = np.int(h/mbSize) * mbSize
+    w = np.int(w/mbSize) * mbSize
+    imgP = imgP[:h, :w]
+    imgI = imgI[:h, :w]
+
+    vectors = np.zeros((h / mbSize, w / mbSize, 2), dtype=np.float32)
+
     costs = np.ones((3, 3), dtype=np.float)*65537
 
     computations = 0
@@ -537,6 +556,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                     costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                     computations = computations + 1
 
+
             dx, dy, min1 = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
 
             x1 = x + (dx - 1) * stepSize
@@ -560,15 +580,14 @@ def _N3SS(imgP, imgI, mbSize, p):
                     computations += 1
 
             dx, dy, min2 = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
-
             x2 = x + (dx - 1)
             y2 = y + (dy - 1)
 
             NTSSFlag = 0
             if ((x1 == x2) and (y1 == y2)):
                 NTSSFlag = -1
-                x = x1
-                y = y1
+                #x = x1
+                #y = y1
             elif (min2 <= min1):
                 x = x2
                 y = y2
@@ -577,9 +596,9 @@ def _N3SS(imgP, imgI, mbSize, p):
                 x = x1
                 y = y1
 
-            if NTSSFlag == 2:
+            if NTSSFlag == 1:
                 costs[:, :] = 65537
-                #costs[1, 1] = min2
+                costs[1, 1] = min2
                 stepSize = 1
                 for m in range(-stepSize, stepSize + 1, stepSize):
                     for n in range(-stepSize, stepSize + 1, stepSize):
@@ -596,8 +615,8 @@ def _N3SS(imgP, imgI, mbSize, p):
                             (refBlkHor >= j - 1) and
                             (refBlkHor <= j + 1)):
                                 continue
-                        costRow = m + 1
-                        costCol = n + 1
+                        costRow = m/stepSize + 1
+                        costCol = n/stepSize + 1
                         if ((costRow == 1) and (costCol == 1)):
                             continue
                         costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
@@ -934,31 +953,31 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 
     if method == "ES":
         for i in range(numFrames - 1):
-            motion = _ES(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion = _ES(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "4SS":
         for i in range(numFrames - 1):
-            motion, comps = _4SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _4SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "3SS":
         for i in range(numFrames - 1):
-            motion, comps = _3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _3SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "N3SS":
         for i in range(numFrames - 1):
-            motion, comps = _N3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _N3SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "SE3SS":
         for i in range(numFrames - 1):
-            motion, comps = _SE3SS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _SE3SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "ARPS":  # BROKEN, check this
         for i in range(numFrames - 1):
-            motion, comps = _ARPS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _ARPS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     elif method == "DS":
         for i in range(numFrames - 1):
-            motion, comps = _DS(luminancedata[i, :, :], luminancedata[i + 1, :, :], mbSize, p)
+            motion, comps = _DS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
             motionData[i, :, :, :] = motion
     else:
         raise NotImplementedError
