@@ -160,7 +160,7 @@ def motion_feature_extraction(frames):
     motion_diff = np.abs(mode10x10 - mean10x10)
     G = np.mean(motion_diff) / (1 + np.mean(mode10x10))
 
-    return np.array(meanCoh10x10, G)
+    return np.array([meanCoh10x10, G])
 
 def _extract_subband_feats(mscncoefs):
     # alpha_m,  = extract_ggd_features(mscncoefs)
@@ -261,15 +261,12 @@ def compute_niqe_features(frames):
     for i in xrange(5, frames.shape[0]-5):
       niqe_features[idx] = computequality(frames[i], blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
       idx += 1
-    print niqe_features
-
-    exit(0)
 
     niqe_features = np.mean(niqe_features, axis=0)
     return niqe_features
 
 def temporal_dc_variation_feature_extraction(frames):
-    frames = frames.astype(np.float)
+    frames = frames.astype(np.float32)
     mblock=16
     mbsize=16
     ih = np.int(frames.shape[1]/mbsize)*mbsize
@@ -278,17 +275,16 @@ def temporal_dc_variation_feature_extraction(frames):
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
 
     # step 2: compensated temporal dct differences
-    dct_motion_comp_diff = np.zeros((motion_vectors.shape[0], ih, iw), dtype=np.float)
-    for i in xrange(motion_vectors.shape[0]-1):
+    dct_motion_comp_diff = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2]), dtype=np.float32)
+    for i in xrange(motion_vectors.shape[0]):
       for y in xrange(motion_vectors.shape[1]):
-        for x in xrange(motion_vectors.shape[1]):
-          patchI = frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock, 0]
-          patchP = frames[i+1, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0]
-          if patchP.shape != (mblock, mblock): 
-            patchP = np.zeros((mblock, mblock), np.float)
-          diff = patchI - patchP
+        for x in xrange(motion_vectors.shape[2]):
+          patchP = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock, 0]
+          patchI = frames[i, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0]
+          diff = patchP - patchI
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
-          dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t 
+          #dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t 
+          dct_motion_comp_diff[i, y, x] = t[0, 0] 
 
     dct_motion_comp_diff = dct_motion_comp_diff.reshape(motion_vectors.shape[0], -1) 
 
@@ -394,12 +390,10 @@ def videobliinds_features(videoData):
 
     assert C == 1, "videobliinds called with video having %d channels. Please supply only the luminance channel." % (C,)
 
+    spectral_features = NSS_spectral_ratios_feature_extraction(videoData)
     temporal_features = motion_feature_extraction(videoData)
-    print temporal_features
-    exit(0)
     niqe_features = compute_niqe_features(videoData)
-    #dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
-    #spectral_features = NSS_spectral_ratios_feature_extraction(videoData)
+    dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
 
     features = np.hstack((
       niqe_features,
