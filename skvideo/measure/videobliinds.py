@@ -5,6 +5,7 @@ import scipy.ndimage
 import scipy.fftpack
 import scipy.stats
 import scipy.io
+import sys
 
 from os.path import dirname
 from os.path import join
@@ -390,10 +391,10 @@ def videobliinds_features(videoData):
 
     assert C == 1, "videobliinds called with video having %d channels. Please supply only the luminance channel." % (C,)
 
+    dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
     spectral_features = NSS_spectral_ratios_feature_extraction(videoData)
     temporal_features = motion_feature_extraction(videoData)
     niqe_features = compute_niqe_features(videoData)
-    dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
 
     features = np.hstack((
       niqe_features,

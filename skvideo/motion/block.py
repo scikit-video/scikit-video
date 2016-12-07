@@ -12,25 +12,18 @@ def _costMAD(block1, block2):
 
 def _minCost(costs):
     h, w = costs.shape
-    mi = 65537
+    mi = costs[((h-1)/2), ((w-1)/2)]
+    dy = ((h-1)/2)
+    dx = ((w-1)/2)
 
-    for i in xrange(h): 
-      for j in xrange(w): 
+    for i in range(h): 
+      for j in range(w): 
         if costs[i, j] < mi:
           mi = costs[i, j]
-          dx = j
           dy = i
-
+          dx = j
 
     return dx, dy, mi
-
-#def _minCost(costs):
-#    h, w = costs.shape
-#    if costs[h/2, w/2] == 0:
-#        return np.int((h-1)/2), np.int((w-1)/2), 0
-#    idx = np.unravel_index(np.argmin(costs), costs.shape)
-#    return np.int(idx[0]), np.int(idx[1]), costs[idx]
-
 
 def _checkBounded(xval, yval, w, h, mbSize):
     if ((yval < 0) or

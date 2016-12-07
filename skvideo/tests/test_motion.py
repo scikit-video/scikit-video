@@ -35,8 +35,8 @@ def test_ES():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
-    assert_equal(xmean, 0.31944444444444442)
-    assert_equal(ymean, -0.0069444444444444441)
+    assert_equal(xmean, 0.013888888888888888)
+    assert_equal(ymean, -0.34722222222222221)
 
 
 def test_4SS():
@@ -46,8 +46,8 @@ def test_4SS():
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
     print(xmean, ymean)
-    assert_equal(xmean, 0.5625)
-    assert_equal(ymean, -0.125)
+    assert_equal(xmean, -0.0555555555555555552)
+    assert_equal(ymean, -0.7708333333333333337)
 
 
 def test_3SS():
@@ -56,8 +56,8 @@ def test_3SS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
-    assert_equal(xmean, 0.17361111111111111)
-    assert_equal(ymean, 0)
+    assert_equal(xmean, 0.0069444444444444441)
+    assert_equal(ymean, -0.173611111111111111)
 
 
 def test_N3SS():
@@ -67,7 +67,7 @@ def test_N3SS():
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
 
-    assert_equal(xmean, 0.17361111111111111)
+    assert_equal(xmean, 0.0)
     assert_equal(ymean, 0)
 
 
@@ -77,8 +77,8 @@ def test_SE3SS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
-    assert_equal(xmean, 0.0208333333333333332)
-    assert_equal(ymean, 0)
+    assert_equal(xmean, -0.0347222222222222224)
+    assert_equal(ymean, 0.013888888888888888)
 
 
 def test_ARPS():
@@ -87,8 +87,8 @@ def test_ARPS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
-    assert_equal(ymean, -0.0069444444444444441)
-    assert_equal(xmean, 0.31944444444444442)
+    assert_equal(ymean, 0.0138888888888888888)
+    assert_equal(xmean, -0.333333333333333331)
 
 
 def test_DS():
@@ -97,5 +97,5 @@ def test_DS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
-    assert_equal(ymean, -0.0069444444444444441)
-    assert_equal(xmean, 0.31944444444444442)
+    assert_equal(ymean, 0.0138888888888888888)
+    assert_equal(xmean, -0.347222222222222221)
