@@ -15,6 +15,11 @@ Use :func:`skvideo.measure.ssim` to measure the perceptually quality difference 
 
 Use :func:`skvideo.measure.mse` or :func:`skvideo.measure.psnr` to measure simple point-wise similarity between two videos.
 
+No-Reference Quality Assessment
+---------------------------------
+
+Use :func:`skvideo.measure.videobliinds_features` to extract features using the Video Bliinds algorithm.
+
 Scene detection
 ---------------------------------
 

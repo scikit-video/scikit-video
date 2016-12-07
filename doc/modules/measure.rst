@@ -23,3 +23,4 @@ Functions
    mse
    psnr
    scenedet
+   videobliinds_features
