@@ -393,6 +393,7 @@ class FFmpegWriter():
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
+            print(self._cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
