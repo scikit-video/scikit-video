@@ -7,6 +7,7 @@ from .psnr import *
 from .mse import *
 from .scene import *
 from .videobliinds import *
+from .viideo import *
 
 __all__ = [
     'ssim',
@@ -14,4 +15,5 @@ __all__ = [
     'psnr',
     'scenedet',
     'videobliinds_features',
+    'viideo_features',
 ]
