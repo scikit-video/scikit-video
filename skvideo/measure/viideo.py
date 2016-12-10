@@ -132,7 +132,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
     References
     ----------
 
-    .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, “VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
+    .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, "VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
 
     .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A ‘Completely Blind’ Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
 
@@ -203,7 +203,7 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     References
     ----------
 
-    .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, “VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
+    .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, "VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
 
     .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A ‘Completely Blind’ Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
 
