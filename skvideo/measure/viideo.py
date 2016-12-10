@@ -107,8 +107,79 @@ def paired_p(new_im):
     return (H_img, V_img, D1_img, D2_img)
 
 
+def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7):
+    """Computes VIIDEO score. [#f1]_ [#f2]_
+
+    Since this is a referenceless quality algorithm, only 1 video is needed. This function
+    provides the score computed by the algorithm.
+
+    Parameters
+    ----------
+    videoData : ndarray
+        Reference video, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    blocksize : tuple (2,)
+      
+    blockoverlap: tuple (2,)
+
+    Returns
+    -------
+    score : ndarray
+        The video quality score
+
+    References
+    ----------
+
+    .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, “VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
+
+    .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A ‘Completely Blind’ Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
+
+    """
+    features = viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7)
+
+    features = features.reshape(features.shape[0], -1, features.shape[3])
+
+    n_len, n_blocks, n_feats = features.shape
+
+    n_len -= 1
+    gap = n_len/10
+
+    scores = []
+    for itr in range(1, n_len+1, np.max((np.int(np.round(gap/2.0)), 1))):
+      f1_cum = []
+      f2_cum = []
+      for itr_param in range(itr, np.min((itr+gap, n_len))):
+        low_Fr1 = features[itr_param, :, 2:14]
+        low_Fr2 = features[itr_param+1, :, 2:14]
+
+        high_Fr1 = features[itr_param, :, 16:]
+        high_Fr2 = features[itr_param+1, :, 16:]
+
+        vec1 = np.abs(low_Fr1 - low_Fr2)
+        vec2 = np.abs(high_Fr1- high_Fr2)
+
+        if f1_cum == []:
+          f1_cum = vec1
+          f2_cum = vec2
+        else:
+          f1_cum = np.vstack((f1_cum, vec1))
+          f2_cum = np.vstack((f2_cum, vec2))
+
+      if f1_cum != []:
+        A = np.zeros((f1_cum.shape[1]), dtype=np.float32)
+        for i in xrange(f1_cum.shape[1]):
+          A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
+        scores.append(np.mean(A))
+
+    change_score = np.abs(scores - np.roll(scores, 1))
+
+    return np.mean(change_score) + np.mean(scores)
+
+
 def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7):
-    """Computes VIIDEO features. [#f1]_
+    """Computes VIIDEO features. [#f1]_ [#f2]_
 
     Since this is a referenceless quality algorithm, only 1 video is needed. This function
     provides the raw features used by the algorithm.
@@ -145,13 +216,15 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     assert C == 1, "viideo called with video having %d channels. Please supply only the luminance channel." % (C,)
 
     hf = gauss_window_full(filterlength, filterlength/6.0)
-    blockstrideY = blocksize[0] - blockoverlap[0]
-    blockstrideX = blocksize[1] - blockoverlap[1]
-    Mn = M/blockstrideY
-    Nn = N/blockstrideX
+    blockstrideY = blocksize[0]# - blockoverlap[0]
+    blockstrideX = blocksize[1]# - blockoverlap[1]
+
+    Mn = np.int(np.round(M/np.float(blocksize[0])))
+    Nn = np.int(np.round(N/np.float(blocksize[1])))
 
     # compute every 2 frames
     features = np.zeros((T/2, Mn, Nn, 28), dtype=np.float32)
+
     for k in range(T/2):
       frame1 = videoData[k*2, :, :, 0]
       frame2 = videoData[k*2+1, :, :, 0]
@@ -162,16 +235,25 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
         mscn,_,mu= calc_image(diff, hf)
 
         h, v, d1, d2 = paired_p(mscn)
+
+        # pad arrays
+        mscn = np.pad(mscn, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        h = np.pad(h, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        v = np.pad(v, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        d1 = np.pad(d1, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        d2 = np.pad(d2, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        blockheight = blocksize[0] + blockoverlap[0]*2
+        blockwidth = blocksize[1] + blockoverlap[1]*2
         
         for i in range(Mn):
           for j in range(Nn):
             yp = i*blockstrideY
             xp = j*blockstrideX
-            patch = mscn[yp:yp+blocksize[0], xp:xp+blocksize[1]].copy()
-            ph = h[yp:yp+blocksize[0], xp:xp+blocksize[1]].copy()
-            pv = v[yp:yp+blocksize[0], xp:xp+blocksize[1]].copy()
-            pd1 = d1[yp:yp+blocksize[0], xp:xp+blocksize[1]].copy()
-            pd2 = d2[yp:yp+blocksize[0], xp:xp+blocksize[1]].copy()
+            patch = mscn[yp:yp+blockheight, xp:xp+blockwidth].copy()
+            ph = h[yp:yp+blockheight, xp:xp+blockwidth].copy()
+            pv = v[yp:yp+blockheight, xp:xp+blockwidth].copy()
+            pd1 = d1[yp:yp+blockheight, xp:xp+blockwidth].copy()
+            pd2 = d2[yp:yp+blockheight, xp:xp+blockwidth].copy()
             shape, _, bl, br, _, _ = extract_aggd_features(patch)
             shapeh, _, blh, brh, _, _ = extract_aggd_features(ph)
             shapev, _, blv, brv, _, _ = extract_aggd_features(pv)

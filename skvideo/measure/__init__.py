@@ -16,4 +16,5 @@ __all__ = [
     'scenedet',
     'videobliinds_features',
     'viideo_features',
+    'viideo_score',
 ]
