@@ -151,10 +151,10 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
       step_size = 1
 
     scores = []
-    for itr in range(0, n_len+1, step_size):
+    for itr in range(0, np.int(n_len+1), np.int(step_size)):
       f1_cum = []
       f2_cum = []
-      for itr_param in range(itr, np.min((itr+gap+1, n_len))):
+      for itr_param in range(itr, np.int(np.min((itr+gap+1, n_len)))):
         low_Fr1 = features[itr_param, :, 2:14]
         low_Fr2 = features[itr_param+1, :, 2:14]
 
@@ -173,7 +173,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
 
       if f1_cum != []:
         A = np.zeros((f1_cum.shape[1]), dtype=np.float32)
-        for i in xrange(f1_cum.shape[1]):
+        for i in range(f1_cum.shape[1]):
           if (np.sum(np.abs(f1_cum[:, i])) != 0) & (np.sum(np.abs(f2_cum[:, i])) != 0):
             A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
 
@@ -231,9 +231,9 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     Nn = np.int(np.round((N+blockoverlap[1])/np.float(blocksize[1])))
 
     # compute every 2 frames
-    features = np.zeros((T/2, Mn, Nn, 28), dtype=np.float32)
+    features = np.zeros((np.int(T/2), Mn, Nn, 28), dtype=np.float32)
 
-    for k in range(T/2):
+    for k in range(np.int(T/2)):
       frame1 = videoData[k*2, :, :, 0]
       frame2 = videoData[k*2+1, :, :, 0]
 
