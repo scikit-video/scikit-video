@@ -215,8 +215,6 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
 
     """
 
-    videoData = videoData.astype(np.float32)
-
     videoData = vshape(videoData)
 
     T, M, N, C = videoData.shape
@@ -234,8 +232,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     features = np.zeros((np.int(T/2), Mn, Nn, 28), dtype=np.float32)
 
     for k in range(np.int(T/2)):
-      frame1 = videoData[k*2, :, :, 0]
-      frame2 = videoData[k*2+1, :, :, 0]
+      frame1 = videoData[k*2, :, :, 0].astype(np.float32)
+      frame2 = videoData[k*2+1, :, :, 0].astype(np.float32)
 
       diff = frame1 - frame2
 
