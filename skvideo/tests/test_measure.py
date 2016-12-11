@@ -38,7 +38,7 @@ def test_measure_VideoBliinds():
     ])
 
     for i in range(features.shape[0]):
-      assert_almost_equal(features[i], output[i], decimal=14)
+      assert_almost_equal(features[i], output[i], decimal=10)
 
 def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
