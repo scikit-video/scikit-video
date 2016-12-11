@@ -1,4 +1,4 @@
-conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage pil
+conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose coverage pillow
 
 echo $TRAVIS_PYTHON_VERSION
 if [[ "$TRAVIS_PYTHON_VERSION" == "2.6" ]]; then
