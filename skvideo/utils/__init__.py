@@ -238,7 +238,9 @@ def vshape(videodata):
         Standardized version of videodata, shape (T, M, N, C)
 
     """
-    videodata = np.array(videodata)
+    if not isinstance(videodata, np.ndarray):
+        videodata = np.array(videodata)
+
     if len(videodata.shape) == 2: 
         a, b = videodata.shape
         return videodata.reshape(1, a, b, 1) 
