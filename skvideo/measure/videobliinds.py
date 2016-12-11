@@ -274,7 +274,6 @@ def temporal_dc_variation_feature_extraction(frames):
     iw = np.int(frames.shape[2]/mbsize)*mbsize
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
-
     # step 2: compensated temporal dct differences
     dct_motion_comp_diff = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2]), dtype=np.float32)
     for i in xrange(motion_vectors.shape[0]):
@@ -314,7 +313,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     dct_diff5x5 = dct_diff5x5.reshape(dct_diff5x5.shape[0],dct_diff5x5.shape[1] * dct_diff5x5.shape[2], -1)
 
     # step 2: compute gamma
-    g = np.arange(0.03, 10, 0.001)
+    g = np.arange(0.03, 10+0.001, 0.001)
     r = (scipy.special.gamma(1/g) * scipy.special.gamma(3/g)) / (scipy.special.gamma(2/g)**2)
 
     gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float) 
@@ -322,7 +321,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
       for s in xrange(mblock**2):
         temp = dct_diff5x5[i, :, s]
         mean_gauss = np.mean(temp)
-        var_gauss = np.var(temp)
+        var_gauss = np.var(temp, ddof=1)
         mean_abs = np.mean(np.abs(temp - mean_gauss))**2
         rho = var_gauss/(mean_abs + 1e-7)
 
@@ -345,9 +344,9 @@ def NSS_spectral_ratios_feature_extraction(frames):
     mf_gamma5x5 = freq_bands[:, (mblock**2-1)/3+1:2*(mblock**2-1)/3+1]
     hf_gamma5x5 = freq_bands[:, 2*(mblock**2-1)/3+1:]
 
-    geomean_lf_gam = scipy.stats.mstats.gmean(lf_gamma5x5)
-    geomean_mf_gam = scipy.stats.mstats.gmean(mf_gamma5x5)
-    geomean_hf_gam = scipy.stats.mstats.gmean(hf_gamma5x5)
+    geomean_lf_gam = scipy.stats.mstats.gmean(lf_gamma5x5.T)
+    geomean_mf_gam = scipy.stats.mstats.gmean(mf_gamma5x5.T)
+    geomean_hf_gam = scipy.stats.mstats.gmean(hf_gamma5x5.T)
 
     geo_high_ratio = scipy.stats.mstats.gmean(geomean_hf_gam/(0.1 + (geomean_mf_gam + geomean_lf_gam)/2))
     geo_low_ratio = scipy.stats.mstats.gmean(geomean_mf_gam/(0.1 + geomean_lf_gam))

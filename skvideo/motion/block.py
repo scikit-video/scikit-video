@@ -15,6 +15,9 @@ def _minCost(costs):
     mi = costs[((h-1)/2), ((w-1)/2)]
     dy = ((h-1)/2)
     dx = ((w-1)/2)
+    #mi = 65535
+    #dy = 0
+    #dx = 0
 
     for i in range(h): 
       for j in range(w): 
@@ -523,6 +526,7 @@ def _N3SS(imgP, imgI, mbSize, p):
     L = np.floor(np.log2(p + 1))
     stepMax = np.int(2**(L - 1))
 
+    l_count = 0
     for i in range(0, h - mbSize + 1, mbSize):
         for j in range(0, w - mbSize + 1, mbSize):
             x = j
@@ -538,9 +542,9 @@ def _N3SS(imgP, imgI, mbSize, p):
                     refBlkVer = y + m
                     refBlkHor = x + n
                     if ((refBlkVer < 0) or
-                       (refBlkVer + mbSize >= h) or
+                       (refBlkVer + mbSize > h) or
                        (refBlkHor < 0) or
-                       (refBlkHor + mbSize >= w)):
+                       (refBlkHor + mbSize > w)):
                             continue
                     costRow = m / stepSize + 1
                     costCol = n / stepSize + 1
@@ -561,9 +565,9 @@ def _N3SS(imgP, imgI, mbSize, p):
                     refBlkVer = y + m
                     refBlkHor = x + n
                     if ((refBlkVer < 0) or
-                       (refBlkVer + mbSize >= h) or
+                       (refBlkVer + mbSize > h) or
                        (refBlkHor < 0) or
-                       (refBlkHor + mbSize >= w)):
+                       (refBlkHor + mbSize > w)):
                             continue
                     costRow = m + 1
                     costCol = n + 1
@@ -598,9 +602,9 @@ def _N3SS(imgP, imgI, mbSize, p):
                         refBlkVer = y + m
                         refBlkHor = x + n
                         if ((refBlkVer < 0) or
-                           (refBlkVer + mbSize >= h) or
+                           (refBlkVer + mbSize > h) or
                            (refBlkHor < 0) or
-                           (refBlkHor + mbSize >= w)):
+                           (refBlkHor + mbSize > w)):
                                 continue
 
                         if ((refBlkVer >= i - 1) and
@@ -630,9 +634,9 @@ def _N3SS(imgP, imgI, mbSize, p):
                             refBlkVer = y + m
                             refBlkHor = x + n
                             if ((refBlkVer < 0) or
-                               (refBlkVer + mbSize >= h) or
+                               (refBlkVer + mbSize > h) or
                                (refBlkHor < 0) or
-                               (refBlkHor + mbSize >= w)):
+                               (refBlkHor + mbSize > w)):
                                     continue
                             costRow = m/stepSize + 1
                             costCol = n/stepSize + 1
@@ -640,6 +644,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                                 continue
                             costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                             computations = computations + 1
+                            l_count += 1
                     dx, dy, mi = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
                     x += (dx - 1) * stepSize
                     y += (dy - 1) * stepSize
@@ -683,9 +688,9 @@ def _3SS(imgP, imgI, mbSize, p):
                         refBlkVer = y + m
                         refBlkHor = x + n
                         if ((refBlkVer < 0) or
-                           (refBlkVer + mbSize >= h) or
+                           (refBlkVer + mbSize > h) or
                            (refBlkHor < 0) or
-                           (refBlkHor + mbSize >= w)):
+                           (refBlkHor + mbSize > w)):
                                 continue
                         costRow = m/stepSize + 1
                         costCol = n/stepSize + 1
@@ -855,9 +860,9 @@ def _ES(imgP, imgI, mbSize, p):
                         refBlkVer = i + m   # row/Vert co-ordinate for ref block
                         refBlkHor = j + n   # col/Horizontal co-ordinate
                         if ((refBlkVer < 0) or
-                           (refBlkVer + mbSize >= h) or
+                           (refBlkVer + mbSize > h) or
                            (refBlkHor < 0) or
-                           (refBlkHor + mbSize >= w)):
+                           (refBlkHor + mbSize > w)):
                                 continue
 
                         costs[m + p, n + p] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])

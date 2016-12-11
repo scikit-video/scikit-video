@@ -46,8 +46,8 @@ def test_4SS():
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
     print(xmean, ymean)
-    assert_equal(xmean, -0.0555555555555555552)
-    assert_equal(ymean, -0.7708333333333333337)
+    assert_equal(xmean, -0.055555555555555552)
+    assert_equal(ymean, -0.77083333333333337)
 
 
 def test_3SS():
@@ -56,8 +56,9 @@ def test_3SS():
     mvec = mvec.astype(np.float)
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
+    
     assert_equal(xmean, 0.0069444444444444441)
-    assert_equal(ymean, -0.173611111111111111)
+    assert_equal(ymean, -0.1736111111111111)
 
 
 def test_N3SS():
