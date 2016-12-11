@@ -247,10 +247,12 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
         left_pad = blockoverlap[1]
 
         leftover = M % blocksize[0]
+        bot_pad = 0
         if (leftover > 0):
           bot_pad = blockoverlap[0] + blocksize[0] - leftover
 
         leftover = N % blocksize[1]
+        right_pad = 0
         if (leftover > 0):
           right_pad = blockoverlap[1] + blocksize[1] - leftover
 
