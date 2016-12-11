@@ -127,7 +127,7 @@ def motion_feature_extraction(frames):
 
     # step 2: compute coherency
     Eigens = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2], 2), dtype=np.float)
-    for i in xrange(motion_vectors.shape[0]):
+    for i in range(motion_vectors.shape[0]):
       motion_frame = motion_vectors[i]
 
       upper_left = np.zeros_like(motion_frame[:, :, 0])
@@ -140,8 +140,8 @@ def motion_feature_extraction(frames):
       scipy.ndimage.correlate1d(motion_frame[:, :, 1]*motion_frame[:, :, 0], h, 0, off_diag, mode='reflect') 
       scipy.ndimage.correlate1d(off_diag, h, 1, off_diag, mode='reflect')
 
-      for y in xrange(motion_vectors.shape[1]):
-        for x in xrange(motion_vectors.shape[2]):
+      for y in range(motion_vectors.shape[1]):
+        for x in range(motion_vectors.shape[2]):
           mat = np.array([
             [upper_left[y, x], off_diag[y, x]],
             [off_diag[y, x], lower_right[y, x]],
@@ -160,7 +160,7 @@ def motion_feature_extraction(frames):
     # step 3: global motion
     mode10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float)
     mean10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float)
-    for i in xrange(motion_vectors.shape[0]):
+    for i in range(motion_vectors.shape[0]):
       motion_frame = motion_vectors[i]
       motion_amplitude = np.sqrt(motion_vectors[i, :, :, 0]**2 + motion_vectors[i, :, :, 1]**2) 
       mode10x10[i] = scipy.stats.mode(motion_amplitude, axis=None)[0]
@@ -194,8 +194,8 @@ def _extract_subband_feats(mscncoefs):
 def extract_on_patches(img, blocksizerow, blocksizecol):
     h, w = img.shape
     patches = []
-    for j in xrange(0, h-blocksizerow+1, blocksizerow):
-        for i in xrange(0, w-blocksizecol+1, blocksizecol):
+    for j in range(0, np.int(h-blocksizerow+1), np.int(blocksizerow)):
+        for i in range(0, np.int(w-blocksizecol+1), np.int(blocksizecol)):
             patch = img[j:j+blocksizerow, i:i+blocksizecol]
             patches.append(patch)
 
@@ -226,12 +226,8 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
     if woffset > 0:
         img = img[:, :-woffset]
 
-
     img = img.astype(np.float32)
-    #img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
     img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
-
-    #img3 = scipy.misc.imresize(img, 0.25)
 
     mscn1, var, mu = calc_image(img)
     mscn1 = mscn1.astype(np.float32)
@@ -260,6 +256,9 @@ def compute_niqe_features(frames):
     blocksizerow = 96
     blocksizecol = 96
 
+    T, M, N, C = frames.shape
+    assert ((M >= blocksizerow*2) & (N >= blocksizecol*2)), "Video too small for NIQE extraction"
+
     module_path = dirname(__file__)
     params = scipy.io.loadmat(join(module_path, 'data', 'frames_modelparameters.mat'))
     mu_prisparam = params['mu_prisparam']
@@ -267,7 +266,7 @@ def compute_niqe_features(frames):
 
     niqe_features = np.zeros((frames.shape[0]-10, 37))
     idx = 0
-    for i in xrange(5, frames.shape[0]-5):
+    for i in range(5, frames.shape[0]-5):
       niqe_features[idx] = computequality(frames[i], blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
       idx += 1
 
@@ -284,11 +283,11 @@ def temporal_dc_variation_feature_extraction(frames):
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
     # step 2: compensated temporal dct differences
     dct_motion_comp_diff = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2]), dtype=np.float32)
-    for i in xrange(motion_vectors.shape[0]):
-      for y in xrange(motion_vectors.shape[1]):
-        for x in xrange(motion_vectors.shape[2]):
-          patchP = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock, 0]
-          patchI = frames[i, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0]
+    for i in range(motion_vectors.shape[0]):
+      for y in range(motion_vectors.shape[1]):
+        for x in range(motion_vectors.shape[2]):
+          patchP = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock, 0].astype(np.float32)
+          patchI = frames[i, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0].astype(np.float32)
           diff = patchP - patchI
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
           #dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t 
@@ -312,9 +311,9 @@ def NSS_spectral_ratios_feature_extraction(frames):
 
     # step 1: compute local dct frame differences
     dct_diff5x5 = np.zeros((frames.shape[0]-1, np.int(frames.shape[1]/mblock), np.int(frames.shape[2]/mblock),mblock**2), dtype=np.float)
-    for i in xrange(dct_diff5x5.shape[0]):
-      for y in xrange(dct_diff5x5.shape[1]):
-        for x in xrange(dct_diff5x5.shape[2]):
+    for i in range(dct_diff5x5.shape[0]):
+      for y in range(dct_diff5x5.shape[1]):
+        for x in range(dct_diff5x5.shape[2]):
           diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock]  
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
           dct_diff5x5[i, y, x] = t.ravel()
@@ -325,8 +324,8 @@ def NSS_spectral_ratios_feature_extraction(frames):
     r = (scipy.special.gamma(1/g) * scipy.special.gamma(3/g)) / (scipy.special.gamma(2/g)**2)
 
     gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float) 
-    for i in xrange(dct_diff5x5.shape[0]):
-      for s in xrange(mblock**2):
+    for i in range(dct_diff5x5.shape[0]):
+      for s in range(mblock**2):
         temp = dct_diff5x5[i, :, s]
         mean_gauss = np.mean(temp)
         var_gauss = np.var(temp, ddof=1)
@@ -334,7 +333,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
         rho = var_gauss/(mean_abs + 1e-7)
 
         gamma_gauss = 11
-        for x in xrange(len(g)-1):
+        for x in range(len(g)-1):
           if (rho <= r[x]) and (rho > r[x+1]):
             gamma_gauss = g[x]
             break
@@ -345,7 +344,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     #zigzag = lambda N,w,h:[N[i*w+s-i]for s in range(w+h+1)for i in range(h)[::s%2*2-1]if-1<s-i<w]
 
     freq_bands = np.zeros((dct_diff5x5.shape[0], mblock**2))
-    for i in xrange(dct_diff5x5.shape[0]):
+    for i in range(dct_diff5x5.shape[0]):
       freq_bands[i] = zigzag(gamma_matrix[i]) 
 
     lf_gamma5x5 = freq_bands[:, 1:(mblock**2-1)/3+1]
