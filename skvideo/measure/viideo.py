@@ -31,9 +31,6 @@ def gauss_window_full(lw, sigma):
     return weights
 
 def extract_aggd_features(imdata):
-
-    if np.sum(np.abs(imdata)) == 0:
-      return [np.inf]*6
     #flatten imdata
     imdata.shape = (len(imdata.flat),)
     imdata2 = imdata*imdata
@@ -46,9 +43,17 @@ def extract_aggd_features(imdata):
     if len(right_data) > 0:
         right_mean_sqrt = np.sqrt(np.average(right_data))
 
-    gamma_hat = left_mean_sqrt/right_mean_sqrt
+    if right_mean_sqrt != 0:
+      gamma_hat = left_mean_sqrt/right_mean_sqrt
+    else:
+      gamma_hat = np.inf
     #solve r-hat norm
-    r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
+
+    imdata2_mean = np.mean(imdata2)
+    if imdata2_mean != 0:
+      r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
+    else:
+      r_hat = np.inf
     rhat_norm = r_hat * (((gamma_hat**3 + 1)*(gamma_hat + 1)) / ((gamma_hat**2 + 1)**2))
 
     #solve alpha by guessing values that minimize ro
@@ -65,6 +70,7 @@ def extract_aggd_features(imdata):
 
     #mean parameter
     N = (br - bl)*(gam2 / gam1)#*aggdratio
+
     return (alpha, N, bl, br, left_mean_sqrt, right_mean_sqrt)
 
 def extract_ggd_features(imdata):
@@ -168,8 +174,8 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
       if f1_cum != []:
         A = np.zeros((f1_cum.shape[1]), dtype=np.float32)
         for i in xrange(f1_cum.shape[1]):
-          A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
-
+          if (np.sum(np.abs(f1_cum[:, i])) != 0) & (np.sum(np.abs(f2_cum[:, i])) != 0):
+            A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
 
         scores.append(np.mean(A))
 
