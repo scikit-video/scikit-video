@@ -146,7 +146,6 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
 
     scores = []
     for itr in range(0, n_len+1, step_size):
-      print itr
       f1_cum = []
       f2_cum = []
       for itr_param in range(itr, np.min((itr+gap+1, n_len))):
@@ -170,6 +169,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
         A = np.zeros((f1_cum.shape[1]), dtype=np.float32)
         for i in xrange(f1_cum.shape[1]):
           A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
+
 
         scores.append(np.mean(A))
 
@@ -208,6 +208,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A 'Completely Blind' Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
 
     """
+
+    videoData = videoData.astype(np.float32)
 
     videoData = vshape(videoData)
 
