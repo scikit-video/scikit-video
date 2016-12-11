@@ -10,7 +10,7 @@ import sys
 from os.path import dirname
 from os.path import join
 
-gamma_range = np.arange(0.2, 10, 0.001)
+gamma_range = np.arange(0.2, 5+0.01, 0.01)
 a = scipy.special.gamma(2.0/gamma_range)
 a *= a
 b = scipy.special.gamma(1.0/gamma_range)
@@ -89,9 +89,6 @@ def calc_image(image, avg_window):
     return (image - mu_image)/(var_image + 1), var_image, mu_image
 
 def paired_p(new_im):
-
-    # shifts                   = [ 0 1;1 0 ;1 1;1 -1];
-    #new_im /= 0.353257 #make the RV unit variance
     shift1 = np.roll(new_im.copy(), 1, axis=1)
     shift2 = np.roll(new_im.copy(), 1, axis=0)
     shift3 = np.roll(np.roll(new_im.copy(), 1, axis=0), 1, axis=1)
@@ -102,8 +99,6 @@ def paired_p(new_im):
     D1_img = shift3 * new_im
     D2_img = shift4 * new_im
 
-    #return (V_img, H_img, D1_img, D2_img)
-    #return (H_img, V_img, D1_img, D2_img)
     return (H_img, V_img, D1_img, D2_img)
 
 
@@ -134,8 +129,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
 
     .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, "VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
 
-    .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A ‘Completely Blind’ Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
-
+    .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A 'Completely Blind' Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
     """
     features = viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7)
 
@@ -146,11 +140,16 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
     n_len -= 1
     gap = n_len/10
 
+    step_size = np.round(gap/2.0)
+    if step_size < 1:
+      step_size = 1
+
     scores = []
-    for itr in range(1, n_len+1, np.max((np.int(np.round(gap/2.0)), 1))):
+    for itr in range(0, n_len+1, step_size):
+      print itr
       f1_cum = []
       f2_cum = []
-      for itr_param in range(itr, np.min((itr+gap, n_len))):
+      for itr_param in range(itr, np.min((itr+gap+1, n_len))):
         low_Fr1 = features[itr_param, :, 2:14]
         low_Fr2 = features[itr_param+1, :, 2:14]
 
@@ -171,6 +170,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
         A = np.zeros((f1_cum.shape[1]), dtype=np.float32)
         for i in xrange(f1_cum.shape[1]):
           A[i] = scipy.stats.pearsonr(f1_cum[:, i], f2_cum[:, i])[0]
+
         scores.append(np.mean(A))
 
     change_score = np.abs(scores - np.roll(scores, 1))
@@ -205,7 +205,7 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
 
     .. [#f1] A. Mittal, M. A. Saad and A. C. Bovik, "VIIDEO Software Release", URL: http://live.ece.utexas.edu/research/quality/VIIDEO_release.zip, 2014.
 
-    .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A ‘Completely Blind’ Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
+    .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A 'Completely Blind' Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
 
     """
 
@@ -219,8 +219,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     blockstrideY = blocksize[0]# - blockoverlap[0]
     blockstrideX = blocksize[1]# - blockoverlap[1]
 
-    Mn = np.int(np.round(M/np.float(blocksize[0])))
-    Nn = np.int(np.round(N/np.float(blocksize[1])))
+    Mn = np.int(np.round((M+blockoverlap[0])/np.float(blocksize[0])))
+    Nn = np.int(np.round((N+blockoverlap[1])/np.float(blocksize[1])))
 
     # compute every 2 frames
     features = np.zeros((T/2, Mn, Nn, 28), dtype=np.float32)
@@ -235,20 +235,30 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
         mscn,_,mu= calc_image(diff, hf)
 
         h, v, d1, d2 = paired_p(mscn)
+        top_pad = blockoverlap[0]
+        left_pad = blockoverlap[1]
+
+        leftover = M % blocksize[0]
+        if (leftover > 0):
+          bot_pad = blockoverlap[0] + blocksize[0] - leftover
+
+        leftover = N % blocksize[1]
+        if (leftover > 0):
+          right_pad = blockoverlap[1] + blocksize[1] - leftover
 
         # pad arrays
-        mscn = np.pad(mscn, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
-        h = np.pad(h, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
-        v = np.pad(v, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
-        d1 = np.pad(d1, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
-        d2 = np.pad(d2, ((blockoverlap[0],blockoverlap[0]), (blockoverlap[1],blockoverlap[1])), mode='constant')
+        mscn = np.pad(mscn, ((top_pad, bot_pad), (left_pad, right_pad)), mode='constant')
+        h = np.pad(h, ((top_pad, bot_pad), (left_pad, right_pad)), mode='constant')
+        v = np.pad(v, ((top_pad, bot_pad), (left_pad, right_pad)), mode='constant')
+        d1 = np.pad(d1, ((top_pad, bot_pad), (left_pad, right_pad)), mode='constant')
+        d2 = np.pad(d2, ((top_pad, bot_pad), (left_pad, right_pad)), mode='constant')
         blockheight = blocksize[0] + blockoverlap[0]*2
         blockwidth = blocksize[1] + blockoverlap[1]*2
         
-        for i in range(Mn):
-          for j in range(Nn):
-            yp = i*blockstrideY
-            xp = j*blockstrideX
+        for j in range(Nn):
+          for i in range(Mn):
+            yp = i*blocksize[0]
+            xp = j*blocksize[1]
             patch = mscn[yp:yp+blockheight, xp:xp+blockwidth].copy()
             ph = h[yp:yp+blockheight, xp:xp+blockwidth].copy()
             pv = v[yp:yp+blockheight, xp:xp+blockwidth].copy()
@@ -262,8 +272,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
 
             features[k, i, j, itr*14:(itr+1)*14] = np.array([
               shape, (bl + br)/2.0,
-              shapeh, blh, brh,
               shapev, blv, brv,
+              shapeh, blh, brh,
               shaped1, bld1, brd1,
               shaped2, bld2, brd2,
             ])
