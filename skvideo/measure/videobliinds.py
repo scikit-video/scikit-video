@@ -39,7 +39,7 @@ def extract_aggd_features(imdata):
     imdata.shape = (len(imdata.flat),)
     imdata2 = imdata*imdata
     left_data = imdata2[imdata<0]
-    right_data = imdata2[imdata>0]
+    right_data = imdata2[imdata>=0]
     left_mean_sqrt = 0
     right_mean_sqrt = 0
     if len(left_data) > 0:
@@ -47,9 +47,17 @@ def extract_aggd_features(imdata):
     if len(right_data) > 0:
         right_mean_sqrt = np.sqrt(np.average(right_data))
 
-    gamma_hat = left_mean_sqrt/right_mean_sqrt
+    if right_mean_sqrt != 0:
+      gamma_hat = left_mean_sqrt/right_mean_sqrt
+    else:
+      gamma_hat = np.inf
     #solve r-hat norm
-    r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
+
+    imdata2_mean = np.mean(imdata2)
+    if imdata2_mean != 0:
+      r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
+    else:
+      r_hat = np.inf
     rhat_norm = r_hat * (((gamma_hat**3 + 1)*(gamma_hat + 1)) / ((gamma_hat**2 + 1)**2))
 
     #solve alpha by guessing values that minimize ro
