@@ -20,6 +20,8 @@ No-Reference Quality Assessment
 
 Use :func:`skvideo.measure.videobliinds_features` to extract features using the Video Bliinds algorithm.
 
+Use :func:`skvideo.measure.viideo_features` to extract features using the Viideo Oracle algorithm. If you would like just the score itself, use :func:`skvideo.measure.viideo_score`. 
+
 Scene detection
 ---------------------------------
 

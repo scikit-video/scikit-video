@@ -24,3 +24,5 @@ Functions
    psnr
    scenedet
    videobliinds_features
+   viideo_features
+   viideo_score
