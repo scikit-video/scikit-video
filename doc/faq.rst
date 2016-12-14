@@ -24,7 +24,7 @@ You can verify the module path by importing skvideo and printing the path to the
 .. code-block:: python
 
     import skvideo
-    print skvideo.__file__
+    print(skvideo.__file__)
 
 This should produce output like
 
