@@ -50,6 +50,8 @@ Here are the requirements needed to use scikit-video.
 - python (2.6, 2.7, 3.3, and 3.5)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
+- PIL (version >= 3.1)
+- scikit-learn (version >= 0.18)
 - mediainfo (optional)
 
 Installation::
