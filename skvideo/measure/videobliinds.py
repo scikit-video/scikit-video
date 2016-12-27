@@ -314,7 +314,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     for i in range(dct_diff5x5.shape[0]):
       for y in range(dct_diff5x5.shape[1]):
         for x in range(dct_diff5x5.shape[2]):
-          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock]  
+          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float) - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float)  
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
           dct_diff5x5[i, y, x] = t.ravel()
     dct_diff5x5 = dct_diff5x5.reshape(dct_diff5x5.shape[0],dct_diff5x5.shape[1] * dct_diff5x5.shape[2], -1)
