@@ -14,8 +14,9 @@ Videos can be made of sparse filters evolving over time. Below is a code snippet
 
 The video output for 200 iterations of the K-SVD algorithm:
 
-.. youtube:: hJwX7z5JZb4
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="../_static/sparsity.mp4"></video></center> 
 
 ----------------------------------------------
 Selectively manipulating frames
@@ -28,5 +29,6 @@ If you want to create a corrupted version of a video, you can use the FFmpegRead
 
 Video output of the corrupted BigBuckBunny sequence:
 
-.. youtube:: q6s5mH39K08
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="../_static/corrupted_video.mp4"></video></center> 

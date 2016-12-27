@@ -31,19 +31,21 @@ Given an input raw video format like yuv, one must specify the width, height, an
 
 Luminance video (luma.mp4)
 
-.. youtube:: 1RrVxVE8igs
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="../_static/luma.mp4"></video></center> 
 
 Chroma channel 1 video (chroma1.mp4)
 
-.. youtube:: AZ0v_wDeDx0
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="../_static/chroma1.mp4"></video></center> 
 
 Chroma channel 2 video (chroma2.mp4)
 
-.. youtube:: R7-1COKxLUs
-    :width: 50%
+.. raw:: html 
 
+   <center><video controls width=75% src="../_static/chroma2.mp4"></video></center> 
 
 Luminance frame (vid_luma_frame1.png)
 

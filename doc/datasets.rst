@@ -6,39 +6,39 @@ Test Datasets
 
 .. currentmodule:: skvideo.datasets
 
-:mod:`skvideo.datasets` provides several test videos for benchmarking, testing, and example code.
+:mod:`skvideo.datasets` provides several test videos for benchmarking and testing internal code.
 
-Bikes sequence
------------------------
-
-The full absolute path to bikes comes bundled with the skvideo install and can be found using :func:`skvideo.datasets.bikes`
-
-.. youtube:: BDV7ZPIEUXU
-    :width: 50%
 
 Big Buck Bunny sequence
 -----------------------
 
-The full absolute path to bigbuckbunny comes bundled with the skvideo install and can be found using :func:`skvideo.datasets.bigbuckbunny`
+Use :func:`skvideo.datasets.bigbuckbunny` for the absolute path to the bigbuckbunny sequence, used for general testing.
 
-.. youtube:: uIH7mRUruoM
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="_static/bigbuckbunny.mp4"></video></center> 
+
+Bikes sequence
+-----------------------
+
+Use :func:`skvideo.datasets.bikes` for the absolute path to the bikes sequence, used for scene detection testing.
+
+.. raw:: html 
+
+   <center><video controls width=75% src="_static/bikes.mp4"></video></center> 
 
 
 Carphone pristine and distorted sequences
 -----------------------------------------
 
-The path to the carphone pristine and distorted sequences come bundled with the skvideo install and can be found using :func:`skvideo.datasets.fullreferencepair`
+Use :func:`skvideo.datasets.fullreferencepair` for both pristine and distorted versions of the carphone sequence, used for full-reference quality algorithm testing.
 
-Pristine:
+.. raw:: html 
 
-.. youtube:: 8TUA4cMN41s
-    :width: 50%
+   <center><video controls width=38% src="_static/carphone_pristine.mp4"></video> <video controls width=38% src="_static/carphone_distorted.mp4"></video></center> 
 
-Distorted:
+.. raw:: html 
 
-.. youtube:: BqjEcVduul0
-    :width: 50%
 
 .. toctree::
     :hidden:

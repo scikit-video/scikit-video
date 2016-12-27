@@ -10,5 +10,6 @@ For this example, BigBuckBunny will be used to show off the computed motion vect
 
 The video output of the above code:
 
-.. youtube:: 2u2ixEOtGP4
-    :width: 50%
+.. raw:: html 
+
+   <center><video controls width=75% src="../_static/motion.mp4"></video></center> 

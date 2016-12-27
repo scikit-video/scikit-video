@@ -9,7 +9,7 @@ def getPlot(edgelist1, edgelist2, t, w, h, T):
     myDPI = 100.0
     fig = plt.figure(figsize=(w/myDPI, h/myDPI), dpi=myDPI)
     plt.subplot(211)
-    plt.title("intensity algorithm")
+    plt.title("histogram algorithm")
     plt.plot(edgelist1)
     plt.plot([t, t], [0, 1])
     plt.xlim([0, T])
@@ -49,7 +49,7 @@ scene_edge = np.zeros((num_frames,))
 scene_edge[scene_edge_idx] = 1
 
 # using the "luminance" algorithm
-scene_lum_idx = skvideo.measure.scenedet(videodata, method='intensity', parameter1=1.0)
+scene_lum_idx = skvideo.measure.scenedet(videodata, method='histogram', parameter1=1.0)
 scene_lum = np.zeros((num_frames,))
 scene_lum[scene_lum_idx] = 1
 

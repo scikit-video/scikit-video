@@ -18,14 +18,16 @@ Use :func:`skvideo.measure.mse` or :func:`skvideo.measure.psnr` to measure simpl
 No-Reference Quality Assessment
 ---------------------------------
 
-Use :func:`skvideo.measure.videobliinds_features` to extract features using the Video Bliinds algorithm.
+Use :func:`skvideo.measure.videobliinds_features` to extract features using the Video Bliinds algorithm, useful for training your own quality-aware model.
 
-Use :func:`skvideo.measure.viideo_features` to extract features using the Viideo Oracle algorithm. If you would like just the score itself, use :func:`skvideo.measure.viideo_score`. 
+Use :func:`skvideo.measure.viideo_features` to extract features using the Viideo Oracle algorithm, useful for training your own quality-aware model. 
+
+Use :func:`skvideo.measure.viideo_score` to return the score of the Viideo Oracle algorithm.
 
 Scene detection
 ---------------------------------
 
-Use :func:`skvideo.measure.scenedet` to find frames that start scene boundaries. At this moment, two very distinct scene detection techniques are implemented. The first, "luminance", thresholds based on histogram luminance values to find scene tranisitions. The second, "edge", uses canny edge detection to measure how edges evolve between motion-compensated frames.
+Use :func:`skvideo.measure.scenedet` to find frames that start scene boundaries. Check the documentation on selecting the specific detection algorithm.
 
 .. toctree::
     :hidden:

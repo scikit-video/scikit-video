@@ -20,4 +20,5 @@ Functions
    :template: function.rst
 
    bigbuckbunny
+   bikes
    fullreferencepair
