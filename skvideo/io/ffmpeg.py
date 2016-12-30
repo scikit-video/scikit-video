@@ -303,6 +303,8 @@ class FFmpegWriter():
         none
 
         """
+        self.DEVNULL = open(os.devnull, 'wb')
+
         filename = os.path.abspath(filename)
 
         _, self.extension = os.path.splitext(filename)
@@ -391,7 +393,7 @@ class FFmpegWriter():
         # Launch process
         if self.verbosity == 0:
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=sp.PIPE)
+                                  stdout=self.DEVNULL, stderr=sp.STDOUT)
         else:
             print(self._cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
@@ -410,6 +412,7 @@ class FFmpegWriter():
             self._proc.stdin.close()
         self._proc.wait()
         self._proc = None
+        self.DEVNULL.close()
 
 
     def writeFrame(self, im):
