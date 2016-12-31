@@ -20,6 +20,7 @@
 	Scikit-video is designed for easy video processing using Python. It is modeled in the spirit of other successful scikits such as scikit-learn and scikit-image. The developers of scikit-video know libraries exist for manipulating videos, such as PyFFmpeg, MoviePy, PyAV, imageIO, and opencv. However, no libraries have been found to provide an all-in-one solution for research-level video processing tools.
     <br/><br/>
     This project aims to make video algorithms easy to access for students, engineers, instructors, and researchers. Choose a category below to start learning how to use scikit-video!
+    <br/>
     <hr/>
     <br/>
 	<div class="container">
@@ -64,6 +65,9 @@
 		</div>
         </a>
 	</div>
+	<br/>
+	<hr/>
+	<br/>
 	<div class="container">
         <a href='benchmarks.html'>
 		<div class="col-md-5 menuitem">

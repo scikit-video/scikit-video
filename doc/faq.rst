@@ -4,6 +4,19 @@
 Frequently Asked Questions
 ===========================
 
+What is scikit-video?
+~~~~~~~~~~~~~~~~~~~~~
+
+Scikit-video allows users easy access to video files through the use of the FFmpeg/LibAV backend. This toolkit 
+privides both high-level and low-level abstractions for reading and writing video files.
+
+Scikit-video comes bundled with state-of-the-art quality measurement tools allowing users to begin curating
+their own video collections. Using the latest quality-aware tools allows researchers to easily compare their algorithms
+against a consistent and peer-reviewed set of tools.
+
+Finally, scikit-video provides helpful utilities, like scene-boundary detectors and block-motion estimators commonly
+used in video processing algorithms.
+
 How do I tell scikit-video to use different FFmpeg/LibAV installs?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

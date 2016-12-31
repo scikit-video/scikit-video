@@ -31,7 +31,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.pngmath',
               'sphinx.ext.viewcode',
-              'youtube.youtube',
+              #'youtube.youtube',
               #'sphinx.ext.linkcode',
               'numpy_ext.numpydoc']
 
