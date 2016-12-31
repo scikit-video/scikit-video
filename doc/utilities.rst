@@ -1,7 +1,7 @@
 .. _utilities:
 
 ===========================
-Utility functions
+Utility Functions
 ===========================
 
 .. currentmodule:: skvideo.utils
@@ -17,8 +17,6 @@ Grayscaling
 -----------------------
 
 Use :func:`skvideo.utils.rgb2gray` to convert video data into its grayscaled version.
-
-
 
 .. toctree::
     :hidden:

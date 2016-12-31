@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'scikit-video'
-copyright = u'2015-2016, scikit-video developers (BSD License)'
+copyright = u'2015-2017, scikit-video developers (BSD License)'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -146,6 +146,7 @@ html_sidebars = {
     'index': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
     'io': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
     'motion': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
+    'measure': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
     'utilities': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
     'datasets': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],
     'examples': ['home.html', 'mycustomsidebar.html', 'searchbox.html'],

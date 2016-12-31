@@ -40,13 +40,13 @@
         <a href='measure.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/measure.png"/>
-            Measurement tools
+            Measurement Tools
 		</div>
         </a>
         <a href='utilities.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/utilities.png"/>
-            General Utilities
+            Utility Functions
 		</div>
         </a>
 	</div>
@@ -54,7 +54,7 @@
         <a href='datasets.html'>
         <div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/testdata.png"/>
-            Test Data
+            Test Datasets
         </div>
         </a>
         <a href='examples.html'>
@@ -68,13 +68,13 @@
         <a href='benchmarks.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/benchmarks.png"/>
-            Benchmarks
+            Benchmarking scikit-video
 		</div>
         </a>
         <a href='faq.html'>
 		<div class="col-md-5 menuitem">
             <img width=128 height=128 src="_static/faq.png"/>
-            FAQ
+            Frequently Asked Questions
 		</div>
         </a>
 	</div>
@@ -91,7 +91,7 @@
 
 
         <br/>
-.. images:: images/*.png
+
 
 .. toctree::
    :maxdepth: 2

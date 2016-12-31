@@ -1,5 +1,5 @@
 =============
-Test Data
+Test Datasets
 =============
 
 .. _datasets_ref:

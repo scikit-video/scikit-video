@@ -1,7 +1,7 @@
 .. _measure:
 
 ===========================
-Measurement functions
+Measurement Tools
 ===========================
 
 .. currentmodule:: skvideo.measure

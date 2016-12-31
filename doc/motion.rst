@@ -1,7 +1,7 @@
 .. _motion:
 
 ===========================
-Motion
+Motion Estimation Tools
 ===========================
 
 .. currentmodule:: skvideo.motion

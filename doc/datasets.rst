@@ -37,8 +37,5 @@ Use :func:`skvideo.datasets.fullreferencepair` for both pristine and distorted v
 
    <center><video controls width=38% src="_static/carphone_pristine.mp4"></video> <video controls width=38% src="_static/carphone_distorted.mp4"></video></center> 
 
-.. raw:: html 
-
-
 .. toctree::
     :hidden:

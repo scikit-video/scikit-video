@@ -4,10 +4,10 @@
 Frequently Asked Questions
 ===========================
 
-How do I tell scikit-video to use different FFmpeg installs?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How do I tell scikit-video to use different FFmpeg/LibAV installs?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use the function :mod:`skvideo.setFFmpegPath`.
+You can use the function :mod:`skvideo.setFFmpegPath` or :mod:`skvideo.setLibAVPath` in the core :mod:`skvideo` API.
 
 I installed scikit-video, but the API I installed does not match the website! How do I fix this?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +30,7 @@ This should produce output like
 
 .. code-block:: python
 
-    /usr/lib/python2.7/site-packages/sk_video-1.1.1-py2.7.egg/skvideo/__init__.pyc
+    /usr/lib/python2.7/site-packages/sk_video-*.*.*-py2.7.egg/skvideo/__init__.pyc
 
 
 
@@ -51,6 +51,5 @@ Please fork our project, make a new branch on your fork, then make changes there
 
 https://github.com/scikit-video/scikit-video/blob/master/CONTRIBUTING.rst.
 
-
 .. toctree::
-    :hidden:
+   :hidden:
