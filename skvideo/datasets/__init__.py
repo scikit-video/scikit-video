@@ -4,7 +4,7 @@ from os.path import dirname
 from os.path import join
 
 def bikes():
-    """Test video data
+    """Test video data for video scene detection algorithms
 
     Returns
     -------
@@ -15,7 +15,7 @@ def bikes():
     return join(module_path, 'data', 'bikes.mp4')
 
 def bigbuckbunny():
-    """Test video data
+    """Test video data for general video algorithms
 
     Returns
     -------
@@ -26,7 +26,7 @@ def bigbuckbunny():
     return join(module_path, 'data', 'bigbuckbunny.mp4')
 
 def fullreferencepair():
-    """Test video data for full-reference quality algorithms
+    """Test video data for full-reference video quality algorithms
 
     The sequence "carphone" is provided for quality-based
     test cases where two videos of the same dimensions are
