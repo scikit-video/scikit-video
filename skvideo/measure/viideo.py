@@ -19,14 +19,14 @@ c = scipy.special.gamma(3.0/gamma_range)
 prec_gammas = a/(b*c)
 
 def gauss_window_full(lw, sigma):
-    sd = float(sigma)
+    sd = np.float32(sigma)
     lw = int(lw)
     weights = [0.0] * (lw)
     sd *= sd
     center = (lw-1)/2.0
     for ii in range(lw):
         x = ii - center
-        tmp = np.exp(-0.5 * float(x * x) / sd)
+        tmp = np.exp(-0.5 * np.float32(x * x) / sd)
         weights[ii] = tmp
     weights /= np.sum(weights)
     return weights
@@ -87,7 +87,7 @@ def calc_image(image, avg_window):
     w, h = np.shape(image)
     mu_image = np.zeros((w, h))
     var_image = np.zeros((w, h))
-    image = np.array(image).astype('float')
+    image = np.array(image).astype(np.float32)
     scipy.ndimage.correlate1d(image, avg_window, 0, mu_image, mode=extend_mode)
     scipy.ndimage.correlate1d(mu_image, avg_window, 1, mu_image, mode=extend_mode)
     scipy.ndimage.correlate1d(image**2, avg_window, 0, var_image, mode=extend_mode)
@@ -226,8 +226,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     blockstrideY = blocksize[0]# - blockoverlap[0]
     blockstrideX = blocksize[1]# - blockoverlap[1]
 
-    Mn = np.int(np.round((M+blockoverlap[0])/np.float(blocksize[0])))
-    Nn = np.int(np.round((N+blockoverlap[1])/np.float(blocksize[1])))
+    Mn = np.int(np.round((M+blockoverlap[0])/np.float32(blocksize[0])))
+    Nn = np.int(np.round((N+blockoverlap[1])/np.float32(blocksize[1])))
 
     # compute every 2 frames
     features = np.zeros((np.int(T/2), Mn, Nn, 28), dtype=np.float32)

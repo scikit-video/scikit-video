@@ -18,14 +18,14 @@ c = scipy.special.gamma(3.0/gamma_range)
 prec_gammas = a/(b*c)
 
 def gauss_window(lw, sigma):
-    sd = float(sigma)
+    sd = np.float32(sigma)
     lw = int(lw)
     weights = [0.0] * (2 * lw + 1)
     weights[lw] = 1.0
     sum = 1.0
     sd *= sd
     for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * float(ii * ii) / sd)
+        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
         weights[lw + ii] = tmp
         weights[lw - ii] = tmp
         sum += 2.0 * tmp
@@ -89,7 +89,7 @@ def calc_image(image):
     w, h = np.shape(image)
     mu_image = np.zeros((w, h))
     var_image = np.zeros((w, h))
-    image = np.array(image).astype('float')
+    image = np.array(image).astype('float32')
     scipy.ndimage.correlate1d(image, avg_window, 0, mu_image, mode=extend_mode)
     scipy.ndimage.correlate1d(mu_image, avg_window, 1, mu_image, mode=extend_mode)
     scipy.ndimage.correlate1d(image**2, avg_window, 0, var_image, mode=extend_mode)
@@ -118,7 +118,7 @@ def paired_p(new_im):
 
 def motion_feature_extraction(frames):
     # setup
-    frames = frames.astype(np.float)
+    frames = frames.astype(np.float32)
     mblock=10
     h = gauss_window(2, 0.5)
     # step 1: motion vector calculation
@@ -126,7 +126,7 @@ def motion_feature_extraction(frames):
     motion_vectors = motion_vectors.astype(np.float32)
 
     # step 2: compute coherency
-    Eigens = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2], 2), dtype=np.float)
+    Eigens = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2], 2), dtype=np.float32)
     for i in range(motion_vectors.shape[0]):
       motion_frame = motion_vectors[i]
 
@@ -158,8 +158,8 @@ def motion_feature_extraction(frames):
     meanCoh10x10 = np.mean(Coh10x10)
 
     # step 3: global motion
-    mode10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float)
-    mean10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float)
+    mode10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float32)
+    mean10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float32)
     for i in range(motion_vectors.shape[0]):
       motion_frame = motion_vectors[i]
       motion_amplitude = np.sqrt(motion_vectors[i, :, :, 0]**2 + motion_vectors[i, :, :, 1]**2) 
@@ -310,11 +310,11 @@ def NSS_spectral_ratios_feature_extraction(frames):
     mblock=5
 
     # step 1: compute local dct frame differences
-    dct_diff5x5 = np.zeros((frames.shape[0]-1, np.int(frames.shape[1]/mblock), np.int(frames.shape[2]/mblock),mblock**2), dtype=np.float)
+    dct_diff5x5 = np.zeros((frames.shape[0]-1, np.int(frames.shape[1]/mblock), np.int(frames.shape[2]/mblock),mblock**2), dtype=np.float32)
     for i in range(dct_diff5x5.shape[0]):
       for y in range(dct_diff5x5.shape[1]):
         for x in range(dct_diff5x5.shape[2]):
-          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float) - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float)  
+          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32) - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32)  
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
           dct_diff5x5[i, y, x] = t.ravel()
     dct_diff5x5 = dct_diff5x5.reshape(dct_diff5x5.shape[0],dct_diff5x5.shape[1] * dct_diff5x5.shape[2], -1)
@@ -323,7 +323,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     g = np.arange(0.03, 10+0.001, 0.001)
     r = (scipy.special.gamma(1/g) * scipy.special.gamma(3/g)) / (scipy.special.gamma(2/g)**2)
 
-    gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float) 
+    gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float32) 
     for i in range(dct_diff5x5.shape[0]):
       for s in range(mblock**2):
         temp = dct_diff5x5[i, :, s]
