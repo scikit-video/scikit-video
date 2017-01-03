@@ -49,7 +49,7 @@ def test_measure_SSIM():
 
     avg_score = np.mean(scores)
 
-    assert_equal(avg_score, 0.722089148702586)
+    assert_almost_equal(avg_score, 0.722089111804962, decimal=15)
 
 
 def test_measure_MSE():
@@ -61,7 +61,7 @@ def test_measure_MSE():
 
     avg_score = np.mean(scores)
 
-    assert_equal(avg_score, 290.7301544086701)
+    assert_almost_equal(avg_score, 290.730133056640625, decimal=15)
 
 def test_measure_PSNR():
     vidpaths = skvideo.datasets.fullreferencepair()

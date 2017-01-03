@@ -6,8 +6,8 @@ from ..utils import *
 
 
 def _costMAD(block1, block2):
-    block1 = block1.astype(np.float)
-    block2 = block2.astype(np.float)
+    block1 = block1.astype(np.float32)
+    block2 = block2.astype(np.float32)
     return np.mean(np.abs(block1 - block2))
 
 def _minCost(costs):
@@ -519,7 +519,7 @@ def _N3SS(imgP, imgI, mbSize, p):
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2), dtype=np.float32)
 
-    costs = np.ones((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float32)*65537
 
     computations = 0
 
@@ -665,7 +665,7 @@ def _3SS(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.ones((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float32)*65537
 
     computations = 0
 
@@ -725,7 +725,7 @@ def _4SS(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
     vectors = np.zeros((h / mbSize, w / mbSize, 2))
-    costs = np.ones((3, 3), dtype=np.float)*65537
+    costs = np.ones((3, 3), dtype=np.float32)*65537
 
     computations = 0
     for i in range(0, h - mbSize + 1, mbSize):
@@ -835,8 +835,8 @@ def _4SS(imgP, imgI, mbSize, p):
 def _ES(imgP, imgI, mbSize, p):
     h, w = imgP.shape
 
-    vectors = np.zeros((h / mbSize, w / mbSize, 2), dtype=np.float)
-    costs = np.ones((2 * p + 1, 2 * p + 1), dtype=np.float)*65537
+    vectors = np.zeros((h / mbSize, w / mbSize, 2), dtype=np.float32)
+    costs = np.ones((2 * p + 1, 2 * p + 1), dtype=np.float32)*65537
 
     # we start off from the top left of the image
     # we will walk in steps of mbSize

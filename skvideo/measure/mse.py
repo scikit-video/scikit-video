@@ -38,10 +38,10 @@ def mse(referenceVideoData, distortedVideoData):
 
     assert C == 1, "mse called with videos containing %d channels. Please supply only the luminance channel" % (C,)
 
-    scores = np.zeros(T, dtype=np.float)
+    scores = np.zeros(T, dtype=np.float32)
     for t in range(T):
-        referenceFrame = referenceVideoData[t].astype(np.float)
-        distortedFrame = distortedVideoData[t].astype(np.float)
+        referenceFrame = referenceVideoData[t].astype(np.float32)
+        distortedFrame = distortedVideoData[t].astype(np.float32)
 
         mse = np.mean((referenceFrame - distortedFrame)**2)
 

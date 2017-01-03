@@ -4,14 +4,14 @@ import scipy.ndimage
 
 
 def gauss_window(lw, sigma):
-    sd = float(sigma)
+    sd = np.float32(sigma)
     lw = int(lw)
     weights = [0.0] * (2 * lw + 1)
     weights[lw] = 1.0
     ss = 1.0
     sd *= sd
     for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * float(ii * ii) / sd)
+        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
         weights[lw + ii] = tmp
         weights[lw - ii] = tmp
         ss += 2.0 * tmp
@@ -75,16 +75,16 @@ def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
     C1 = (K_1 * L)**2
     C2 = (K_2 * L)**2
 
-    mu1 = np.zeros((M, N), dtype=np.float)
-    mu2 = np.zeros((M, N), dtype=np.float)
-    var1 = np.zeros((M, N), dtype=np.float)
-    var2 = np.zeros((M, N), dtype=np.float)
-    var12 = np.zeros((M, N), dtype=np.float)
+    mu1 = np.zeros((M, N), dtype=np.float32)
+    mu2 = np.zeros((M, N), dtype=np.float32)
+    var1 = np.zeros((M, N), dtype=np.float32)
+    var2 = np.zeros((M, N), dtype=np.float32)
+    var12 = np.zeros((M, N), dtype=np.float32)
 
-    scores = np.zeros(T, dtype=np.float)
+    scores = np.zeros(T, dtype=np.float32)
     for t in range(T):
-        referenceFrame = referenceVideoData[t].astype(np.float)
-        distortedFrame = distortedVideoData[t].astype(np.float)
+        referenceFrame = referenceVideoData[t].astype(np.float32)
+        distortedFrame = distortedVideoData[t].astype(np.float32)
         scipy.ndimage.correlate1d(referenceFrame, avg_window, 0, mu1, mode=extend_mode)
         scipy.ndimage.correlate1d(mu1, avg_window, 1, mu1, mode=extend_mode)
         scipy.ndimage.correlate1d(distortedFrame, avg_window, 0, mu2, mode=extend_mode)

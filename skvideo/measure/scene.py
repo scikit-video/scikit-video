@@ -19,7 +19,7 @@ def _percentage_distance(canny_in, canny_out, r):
     E_1 = scipy.ndimage.morphology.binary_dilation(canny_in, structure=diamond, iterations=r)
     E_2 = scipy.ndimage.morphology.binary_dilation(canny_out, structure=diamond, iterations=r)
 
-    return 1.0 - np.float(np.sum(E_1 & E_2))/np.float(np.sum(E_1))
+    return 1.0 - np.float32(np.sum(E_1 & E_2))/np.float32(np.sum(E_1))
 
 def _scenedet_edges(videodata, threshold, min_scene_len=2):
     # the first frame is always a new scene
@@ -70,8 +70,8 @@ def _scenedet_histogram(videodata, parameter1, min_scene_len=2):
         hist1, bins = np.histogram(luminancedata[t], bins=256, range=(0, 255))
         hist2, bins = np.histogram(luminancedata[t+1], bins=256, range=(0, 255))
 
-        hist1 = hist1.astype(np.float)
-        hist2 = hist2.astype(np.float)
+        hist1 = hist1.astype(np.float32)
+        hist2 = hist2.astype(np.float32)
 
         hist1 /= 256.0
         hist2 /= 256.0
@@ -90,8 +90,8 @@ def _scenedet_intensity(videodata, parameter1, min_scene_len=2, colorspace='hsv'
     numFrames, height, width, channels = videodata.shape
 
     for t in range(0, numFrames-1):
-        frame0 = videodata[t].astype(np.float)
-        frame1 = videodata[t+1].astype(np.float)
+        frame0 = videodata[t].astype(np.float32)
+        frame1 = videodata[t+1].astype(np.float32)
 
         delta = np.sum(np.abs(frame1 - frame0)/(height * width * channels))
 
