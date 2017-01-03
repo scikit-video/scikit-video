@@ -82,6 +82,7 @@ def _rawhelper1(backend):
 
     os.remove("bunnyMP4VideoData_vwrite_" + backend + ".yuv")
     os.remove("bunnyYUVVideoData_vwrite.yuv")
+    os.remove("raw_" + backend + ".raw")
 
 
 # reading/writing consistency check using real input data and yuv444
