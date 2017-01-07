@@ -18,6 +18,8 @@ Use :func:`skvideo.measure.mse` or :func:`skvideo.measure.psnr` to measure simpl
 No-Reference Quality Assessment
 ---------------------------------
 
+Use :func:`skvideo.measure.brisque_features` to extract frame-by-frame features using the BRISQUE image quality algorithm, useful for frame-level quality analysis and training your own frame-based quality-aware model.
+
 Use :func:`skvideo.measure.videobliinds_features` to extract features using the Video Bliinds algorithm, useful for training your own quality-aware model.
 
 Use :func:`skvideo.measure.viideo_features` to extract features using the Viideo Oracle algorithm, useful for training your own quality-aware model. 
