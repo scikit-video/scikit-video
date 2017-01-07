@@ -23,6 +23,7 @@ Functions
    mse
    psnr
    scenedet
+   brisque_features
    videobliinds_features
    viideo_features
    viideo_score

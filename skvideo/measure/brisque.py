@@ -74,13 +74,14 @@ def extract_aggd_features(imdata):
 
 def extract_ggd_features(imdata):
     nr_gam = 1/prec_gammas
-    sigma_sq = np.average(imdata**2)
-    E = np.average(np.abs(imdata))
+    sigma_sq = np.var(imdata)
+    E = np.mean(np.abs(imdata))
     rho = sigma_sq/E**2
     pos = np.argmin(np.abs(nr_gam - rho));
-    return gamma_range[pos], np.sqrt(sigma_sq)
+    return gamma_range[pos], sigma_sq
 
 def calc_image(image):
+    #extend_mode = 'constant'
     extend_mode = 'constant'
     h, w = np.shape(image)
     mu_image = np.zeros((h, w), dtype=np.float32)
@@ -108,18 +109,18 @@ def paired_p(new_im):
 
 def _extract_subband_feats(mscncoefs):
     # alpha_m,  = extract_ggd_features(mscncoefs)
-    alpha_m, N, bl, br, lsq, rsq = extract_aggd_features(mscncoefs.copy())
+    alpha_m, sigma_sq = extract_ggd_features(mscncoefs.copy())
     pps1, pps2, pps3, pps4 = paired_p(mscncoefs)
     alpha1, N1, bl1, br1, lsq1, rsq1 = extract_aggd_features(pps1)
     alpha2, N2, bl2, br2, lsq2, rsq2 = extract_aggd_features(pps2)
     alpha3, N3, bl3, br3, lsq3, rsq3 = extract_aggd_features(pps3)
     alpha4, N4, bl4, br4, lsq4, rsq4 = extract_aggd_features(pps4)
     return np.array([
-            alpha_m, (bl+br)/2.0,
-            alpha1, N1, bl1, br1,  # (V)
-            alpha2, N2, bl2, br2,  # (H)
-            alpha3, N3, bl3, br3,  # (D1)
-            alpha4, N4, bl4, br4,  # (D2)
+            alpha_m, sigma_sq,
+            alpha1, N1, lsq1**2, rsq1**2,  # (V)
+            alpha2, N2, lsq2**2, rsq2**2,  # (H)
+            alpha3, N3, lsq3**2, rsq3**2,  # (D1)
+            alpha4, N4, lsq4**2, rsq4**2,  # (D2)
     ])
 
 
@@ -154,18 +155,15 @@ def brisque_features(videoData):
 
     assert C == 1, "brisque_features called with video having %d channels. Please supply only the luminance channel." % (C,)
 
-    feats = np.zeros((T, 54), dtype=np.float32)
+    feats = np.zeros((T, 36), dtype=np.float32)
     for i in range(T):
       full_scale = videoData[i, :, :, 0].astype(np.float32)
       half_scale = scipy.misc.imresize(full_scale, 0.5, interp='bicubic', mode='F')
-      quart_scale = scipy.misc.imresize(full_scale, 0.25, interp='bicubic', mode='F')
 
       full_scale, _, _ = calc_image(full_scale)
       half_scale, _, _ = calc_image(half_scale)
-      quart_scale, _, _ = calc_image(quart_scale)
 
       feats[i, 18*0:18*1] = _extract_subband_feats(full_scale)
       feats[i, 18*1:18*2] = _extract_subband_feats(half_scale)
-      feats[i, 18*2:18*3] = _extract_subband_feats(quart_scale)
 
     return feats
