@@ -125,7 +125,7 @@ def _extract_subband_feats(mscncoefs):
 
 
 def brisque_features(videoData):
-    """Computes Blind Reference-less Image Spatial QUality Evaluator (BRISQUE) features. [#f1]_
+    """Computes Blind/Referenceless Image Spatial QUality Evaluator (BRISQUE) features. [#f1]_ [#f2]_
 
     Since this is a referenceless image quality algorithm, only 1 video is needed. This function
     provides the raw features extracted per frame.
@@ -140,12 +140,13 @@ def brisque_features(videoData):
     Returns
     -------
     features : ndarray
-        The individual features of the algorithm.
+        A matrix of shape (T, 36) of the computed BRISQUE features.
 
     References
     ----------
 
-    .. [#f1] 
+    .. [#f1] A. Mittal, A. K. Moorthy and A. C. Bovik, "No-Reference Image Quality Assessment in the Spatial Domain" IEEE Transactions on Image Processing, 2012. 
+    .. [#f2] A. Mittal, A. K. Moorthy and A. C. Bovik, "Referenceless Image Spatial Quality Evaluation Engine," 45th Asilomar Conference on Signals, Systems and Computers , November 2011.
 
     """
 
