@@ -381,15 +381,15 @@ def videobliinds_features(videoData):
 
     Returns
     -------
-    features : ndarray, size (46,)
-        The individual features of the algorithm. The features are arranged as follows.
-
-        features[:36] : spatial niqe vector averaged over the video, size (36,)
-        features[36] : niqe naturalness score, size (1,)
-        features[37:39] : DC measurements between frames, size (2,)
-        features[39:44] : Natural Video Statistics, size (5,)
-        features[44] : Motion coherence, size (1,)
-        features[45] : Global motion, size (1,)
+    features : ndarray, shape (46,)
+        |  The individual features of the algorithm. The features are arranged as follows:
+        |  
+        |    features[:36] : spatial niqe vector averaged over the video, shape (36,)
+        |    features[36] : niqe naturalness score, shape (1,)
+        |    features[37:39] : DC measurements between frames, shape (2,)
+        |    features[39:44] : Natural Video Statistics, shape (5,)
+        |    features[44] : Motion coherence, shape (1,)
+        |    features[45] : Global motion, shape (1,)
 
     References
     ----------

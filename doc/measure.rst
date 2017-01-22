@@ -8,6 +8,12 @@ Measurement Tools
 
 :mod:`skvideo.measure` provides quality assessment tools, scene detection, and other measurement operations.
 
+Reduced-Reference Quality Assessment
+---------------------------------
+
+Use :func:`skvideo.measure.strred` to measure the perceptually quality difference between two videos, providing a slightly reduced reference score along with a critically reduced reference score (1 number comparison between videos).
+
+
 Full-Reference Quality Assessment
 ---------------------------------
 

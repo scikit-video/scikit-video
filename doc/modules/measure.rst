@@ -19,6 +19,7 @@ Functions
    :toctree: generated/
    :template: function.rst
 
+   strred
    ssim
    mse
    psnr

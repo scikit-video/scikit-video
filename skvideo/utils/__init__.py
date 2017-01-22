@@ -6,6 +6,7 @@ from .xmltodict import parse as xmltodictparser
 import subprocess as sp
 import numpy as np
 from .edge import canny
+from .stpyr import SpatialSteerablePyramid
 
 # dictionary based on pix_fmt keys
 # first element is number of components
@@ -294,4 +295,5 @@ __all__ = [
     'rgb2gray',
     'vshape',
     'canny',
+    'SpatialSteerablePyramid',
 ]

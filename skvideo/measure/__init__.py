@@ -3,6 +3,7 @@
 """
 
 from .ssim import *
+from .strred import *
 from .psnr import *
 from .mse import *
 from .scene import *
@@ -12,6 +13,7 @@ from .viideo import *
 
 __all__ = [
     'ssim',
+    'strred',
     'mse',
     'psnr',
     'scenedet',
