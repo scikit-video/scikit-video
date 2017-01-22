@@ -133,7 +133,6 @@ def strred(referenceVideoData, distortedVideoData):
     rredtsn = []
 
     for i in range(0, T-1, 2):
-      print i
       refFrame1 = referenceVideoData[i]
       refFrame2 = referenceVideoData[i+1]
 

@@ -9,7 +9,7 @@ Measurement Tools
 :mod:`skvideo.measure` provides quality assessment tools, scene detection, and other measurement operations.
 
 Reduced-Reference Quality Assessment
----------------------------------
+------------------------------------
 
 Use :func:`skvideo.measure.strred` to measure the perceptually quality difference between two videos, providing a slightly reduced reference score along with a critically reduced reference score (1 number comparison between videos).
 
@@ -18,6 +18,8 @@ Full-Reference Quality Assessment
 ---------------------------------
 
 Use :func:`skvideo.measure.ssim` to measure the perceptually quality difference between two videos, considering only individual frames.
+
+Use :func:`skvideo.measure.msssim` to measure the perceptually quality difference between two videos, considering only individual frames. Differs from ssim in that this function considers multiple scales.
 
 Use :func:`skvideo.measure.mse` or :func:`skvideo.measure.psnr` to measure simple point-wise similarity between two videos.
 

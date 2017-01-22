@@ -21,6 +21,7 @@ Functions
 
    strred
    ssim
+   msssim
    mse
    psnr
    scenedet

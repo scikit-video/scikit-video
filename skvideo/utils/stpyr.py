@@ -1,5 +1,4 @@
 import numpy as np
-import pylab as py
 import scipy.misc as sc
 import scipy.signal
 import scipy.io
@@ -16,9 +15,9 @@ def rolling_window_lastaxis(a, window):
 	"""Directly taken from Erik Rigtorp's post to numpy-discussion.
 	<http://www.mail-archive.com/numpy-discussion@scipy.org/msg29450.html>"""
 	if window < 1:
-		raise ValueError, "`window` must be at least 1."
+		raise(ValueError, "`window` must be at least 1.")
 	if window > a.shape[-1]:
-		raise ValueError, "`window` is too long."
+		raise(ValueError, "`window` is too long.")
 	shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
 	strides = a.strides + (a.strides[-1],)
 	return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
@@ -414,11 +413,11 @@ def load_sp5filters():
 
 class SpatialSteerablePyramid():
   def __init__(self, height = 4):
-		"""
-		height is the total height, including highpass and lowpass
-		"""
+    """
+    height is the total height, including highpass and lowpass
+    """
 
-		self.height = height
+    self.height = height
 
   def corr(self, A, fw):
     h, w = A.shape
@@ -452,8 +451,7 @@ class SpatialSteerablePyramid():
     if filtfile == 'sp5Filters':
       lo0filt,hi0filt,lofilt,bfilts,mtx,harmonics = load_sp5filters()
     else:
-      print "Not implemnted"
-      exit(0)
+      raise(NotImplementedError, "That filter configuration is not implemnted")
 
     h, w = inputimage.shape
 

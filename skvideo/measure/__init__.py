@@ -2,6 +2,7 @@
 
 """
 
+from .msssim import *
 from .ssim import *
 from .strred import *
 from .psnr import *
@@ -12,6 +13,7 @@ from .videobliinds import *
 from .viideo import *
 
 __all__ = [
+    'msssim',
     'ssim',
     'strred',
     'mse',
