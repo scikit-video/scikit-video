@@ -9,6 +9,30 @@ import skvideo.io
 import skvideo.datasets
 import skvideo.measure
 
+def test_measure_STRRED():
+    vidpaths = skvideo.datasets.fullreferencepair()
+
+    ref = skvideo.io.vread(vidpaths[0], as_grey=True)[:12]
+    dis = skvideo.io.vread(vidpaths[1], as_grey=True)[:12]
+
+    strred_array, strred, strredssn = skvideo.measure.strred(ref, dis)
+
+    expected_array = np.array([
+        [7.972984622064974, 21.013149126277558, 1.137021992483605, 3.105208329976863], 
+        [7.190453449813643, 28.211434210404345, 0.824827530825050, 11.768678500436938], 
+        [7.762658941726505, 30.080095257963947, 0.482920896700376, 11.239652779646052], 
+        [7.838751686094609, 29.701432770111165, 0.275781332259063, 1.087973458476529], 
+        [6.290578978414275, 31.812489018014656, 0.417441318850232, 11.035832728886906], 
+        [7.427282193981054, 23.272660928933146, 0.656953022734266, 0.641854205985658], 
+    ])
+
+    for j in range(6):
+      for i in range(4):
+        assert_almost_equal(strred_array[j, i], expected_array[j,i], decimal=10)
+
+    assert_almost_equal(strred, 202.756221374297297, decimal=10)
+    assert_almost_equal(strredssn, 4.098457449584735, decimal=10)
+
 def test_measure_MSSSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
 

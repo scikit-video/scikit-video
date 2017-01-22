@@ -148,6 +148,11 @@ def strred(referenceVideoData, distortedVideoData):
       rredssn.append(np.abs(np.mean(spatialRef - spatialDis)))
       rredtsn.append(np.abs(np.mean(temporalRef - temporalDis)))
 
+    rreds = np.array(rreds)
+    rredt = np.array(rredt)
+    rredssn = np.array(rredssn)
+    rredtsn = np.array(rredtsn)
+
     srred = np.mean(rreds)
     trred = np.mean(rredt)
     srredsn = np.mean(rredssn)
@@ -156,4 +161,4 @@ def strred(referenceVideoData, distortedVideoData):
     strred = srred * trred
     strredsn = srredsn * trredsn
 
-    return strred, strredsn
+    return np.hstack((rreds.reshape(-1, 1), rredt.reshape(-1, 1), rredssn.reshape(-1, 1), rredtsn.reshape(-1, 1))), strred, strredsn
