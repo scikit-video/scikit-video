@@ -66,7 +66,7 @@ def ssim_index_new(im1, im2, K_1, K_2, avg_window):
 
 def compute_msssim(frame1, frame2, method='product'):
     extend_mode = 'constant'
-    avg_window = gauss_window(5, 1.5)
+    avg_window = np.array(gauss_window(5, 1.5))
     K_1 = 0.01
     K_2 = 0.03
     level = 5
@@ -147,15 +147,13 @@ def msssim(referenceVideoData, distortedVideoData, method='product'):
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,)
-
-    referenceVideoData = referenceVideoData[:, :, :, 0]
-    distortedVideoData = distortedVideoData[:, :, :, 0]
+    assert C == 1, "MS-SSIM called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    assert (M >= 176) | (N >= 176), "You supplied a resolution of %dx%d. MS-SSIM can only be used with videos large enough having multiple scales. Please use only with resolutions >= 176x176." % (M, N)
 
     scores = np.zeros(T, dtype=np.float32)
     for t in range(T):
-        referenceFrame = referenceVideoData[t].astype(np.float32)
-        distortedFrame = distortedVideoData[t].astype(np.float32)
+        referenceFrame = referenceVideoData[t, :, :, 0].astype(np.float32)
+        distortedFrame = distortedVideoData[t, :, :, 0].astype(np.float32)
     
         scores[t] = compute_msssim(referenceFrame, distortedFrame, method=method)
 
