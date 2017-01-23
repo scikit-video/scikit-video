@@ -1,13 +1,12 @@
 from ..utils import *
 import numpy as np
 import scipy.ndimage
-
+import scipy.linalg
 
 def est_params(frame, blk, sigma_nn):
     h, w = frame.shape
     sizeim = np.floor(np.array(frame.shape)/blk) * blk
     sizeim = sizeim.astype(np.int)
-    #sizeim += 1
 
     frame = frame[:sizeim[0], :sizeim[1]]
 
@@ -16,9 +15,9 @@ def est_params(frame, blk, sigma_nn):
     for u in range(blk):
       for v in range(blk):
         temp.append(np.ravel(frame[v:(sizeim[0]-(blk-v)+1), u:(sizeim[1]-(blk-u)+1)]))
-    temp = np.array(temp)
+    temp = np.array(temp).astype(np.float32)
 
-    cov_mat = np.cov(temp, bias=1)
+    cov_mat = np.cov(temp, bias=1).astype(np.float32)
 
     # force PSD
     eigval, eigvec = np.linalg.eig(cov_mat)
@@ -30,22 +29,28 @@ def est_params(frame, blk, sigma_nn):
     for u in range(blk):
       for v in range(blk):
         temp.append(np.ravel(frame[v::blk, u::blk]))
-    temp = np.array(temp)
+    temp = np.array(temp).astype(np.float32)
 
-    V,d = np.linalg.eig(cov_mat)
+    # float32 vs float64 difference between python2 and python3 
+    # avoiding this problem with quick cast to float64
+    V,d = scipy.linalg.eigh(cov_mat.astype(np.float64))
+    V = V.astype(np.float32)
 
     # Estimate local variance
     ss = np.zeros((sizeim[0]/blk, sizeim[1]/blk), dtype=np.float32)
     if np.max(V) > 0:
-      ss = np.dot(np.linalg.inv(cov_mat), temp)
+      # avoid the matrix inverse for extra speed/accuracy
+      ss = scipy.linalg.solve(cov_mat, temp)
       ss = np.sum(np.multiply(ss, temp) / (blk**2), axis=0)
       ss = ss.reshape(sizeim/blk)
 
     V = V[V>0]
+
     # Compute entropy
-    ent = np.zeros_like(ss)
+    ent = np.zeros_like(ss, dtype=np.float32)
     for u in range(V.shape[0]):
       ent += np.log2(ss * V[u] + sigma_nn) + np.log(2*np.pi*np.exp(1))
+
 
     return ss, ent
 
@@ -54,18 +59,16 @@ def extract_info(frame1, frame2):
     blk = 3
     sigma_nsq = 0.1
     sigma_nsqt = 0.1
-    band = 0
 
     model = SpatialSteerablePyramid(height=6)
-    dframe1 = model.decompose(frame1, filtfile="sp5Filters")
-    dframe2 = model.decompose(frame2, filtfile="sp5Filters")
-    y1 = dframe1[4][band]
-    y2 = dframe2[4][band]
+    y1 = model.extractSingleBand(frame1, filtfile="sp5Filters", band=0, level=4)
+    y2 = model.extractSingleBand(frame2, filtfile="sp5Filters", band=0, level=4)
 
     ydiff = y1 - y2
 
     ss, q = est_params(y1, blk, sigma_nsq)
     ssdiff, qdiff = est_params(ydiff, blk, sigma_nsqt)
+
 
     spatial = np.multiply(q, np.log2(1 + ss))
     temporal = np.multiply(qdiff, np.multiply(np.log2(1 + ss), np.log2(1 + ssdiff)))
@@ -133,11 +136,11 @@ def strred(referenceVideoData, distortedVideoData):
     rredtsn = []
 
     for i in range(0, T-1, 2):
-      refFrame1 = referenceVideoData[i]
-      refFrame2 = referenceVideoData[i+1]
+      refFrame1 = referenceVideoData[i].astype(np.float32)
+      refFrame2 = referenceVideoData[i+1].astype(np.float32)
 
-      disFrame1 = distortedVideoData[i]
-      disFrame2 = distortedVideoData[i+1]
+      disFrame1 = distortedVideoData[i].astype(np.float32)
+      disFrame2 = distortedVideoData[i+1].astype(np.float32)
 
       spatialRef, temporalRef = extract_info(refFrame1, refFrame2) 
       spatialDis, temporalDis = extract_info(disFrame1, disFrame2) 

@@ -409,7 +409,7 @@ def load_sp5filters():
     ]
   ])[:, ::-1, ::-1]
 
-  return lo0filt,hi0filt,lofilt,bfilts,mtx,harmonics
+  return lo0filt.astype(np.float32), hi0filt.astype(np.float32), lofilt.astype(np.float32), bfilts.astype(np.float32), mtx.astype(np.float32), harmonics.astype(np.float32)
 
 class SpatialSteerablePyramid():
   def __init__(self, height = 4):
@@ -428,8 +428,9 @@ class SpatialSteerablePyramid():
     # pad the same as the matlabpyrtools
     newpad = np.vstack((A[1:fw.shape[0]-sy2, :][::-1], A, A[h-(fw.shape[0]-sy2):h-1, :][::-1]))#,
     newpad = np.hstack((newpad[:, 1:fw.shape[1]-sx2][:, ::-1], newpad, newpad[:, w-(fw.shape[1]-sx2):w-1][:, ::-1]))
+    newpad = newpad.astype(np.float32)
 
-    return scipy.signal.correlate2d(newpad, fw, mode='valid')# blah
+    return scipy.signal.correlate2d(newpad, fw, mode='valid').astype(np.float32)
 
   def buildLevs(self, lo0, lofilt, bfilts, edges, mHeight): 
     if mHeight <= 0:
@@ -462,3 +463,27 @@ class SpatialSteerablePyramid():
     pyr = [hi0] + pyr
 
     return pyr
+
+  def extractSingleBand(self, inputimage, filtfile='sp1Filters', edges='symm', band=0, level=1): 
+    inputimage = inputimage.astype(np.float32)
+
+    if filtfile == 'sp5Filters':
+      lo0filt,hi0filt,lofilt,bfilts,mtx,harmonics = load_sp5filters()
+    else:
+      raise(NotImplementedError, "That filter configuration is not implemnted")
+
+    h, w = inputimage.shape
+
+    if level == 0:
+      hi0 = self.corr(inputimage, hi0filt)
+      singleband = hi0
+    else:
+      lo0 = self.corr(inputimage, lo0filt)
+      for i in range(1, level):
+        lo0 = self.corr(lo0, lofilt)[::2, ::2]
+
+      # now get the band
+      filt = bfilts[band]
+      singleband = self.corr(lo0, filt)
+
+    return singleband
