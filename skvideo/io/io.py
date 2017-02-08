@@ -117,7 +117,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
     Returns
     -------
     vid_array : ndarray
-        ndarray of dimension (T, M, N, 3), where T
+        ndarray of dimension (T, M, N, C), where T
         is the number of frames, M is the height, N is
         width, and C is depth.
 
