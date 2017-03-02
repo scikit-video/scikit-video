@@ -106,7 +106,6 @@ def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)
     dis = skvideo.io.vread(vidpaths[1], as_grey=True)
-    print ref.shape
 
     scores = skvideo.measure.ssim(ref, dis)
 
