@@ -20,7 +20,7 @@ def gauss_window(lw, sigma):
     return weights
 
 
-def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
+def ssim(referenceVideoData, distortedVideoData, bitdepth=8, scaleFix=True):
     """Computes Structural Similarity (SSIM) Index. [#f1]_
 
     Both video inputs are compared frame-by-frame to obtain T
@@ -40,6 +40,9 @@ def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
 
     bitdepth : int
         The number of bits each pixel effectively has
+
+    scaleFix : bool
+        Whether to scale the input frame size based on assumed distance, to improve subjective correlation.
 
     Returns
     -------
@@ -75,6 +78,14 @@ def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
     C1 = (K_1 * L)**2
     C2 = (K_2 * L)**2
 
+    factor = np.int(np.max((1, np.round(np.min((M, N))/256.0))))
+    factor_lpf = np.ones((factor,factor), dtype=np.float32)
+    factor_lpf /= np.sum(factor_lpf)
+
+    if scaleFix:
+      M = np.int(np.round(np.float(M) / factor + 1e-9))
+      N = np.int(np.round(np.float(N) / factor + 1e-9))
+
     mu1 = np.zeros((M, N), dtype=np.float32)
     mu2 = np.zeros((M, N), dtype=np.float32)
     var1 = np.zeros((M, N), dtype=np.float32)
@@ -85,6 +96,14 @@ def ssim(referenceVideoData, distortedVideoData, bitdepth=8):
     for t in range(T):
         referenceFrame = referenceVideoData[t].astype(np.float32)
         distortedFrame = distortedVideoData[t].astype(np.float32)
+
+        # scale if enabled
+        if scaleFix and (factor > 1):
+            referenceFrame = scipy.signal.correlate2d(referenceFrame, factor_lpf, mode='same', boundary='symm')
+            distortedFrame = scipy.signal.correlate2d(distortedFrame, factor_lpf, mode='same', boundary='symm')
+            referenceFrame = referenceFrame[::factor, ::factor]
+            distortedFrame = distortedFrame[::factor, ::factor]
+
         scipy.ndimage.correlate1d(referenceFrame, avg_window, 0, mu1, mode=extend_mode)
         scipy.ndimage.correlate1d(mu1, avg_window, 1, mu1, mode=extend_mode)
         scipy.ndimage.correlate1d(distortedFrame, avg_window, 0, mu2, mode=extend_mode)

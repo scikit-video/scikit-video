@@ -106,12 +106,30 @@ def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)
     dis = skvideo.io.vread(vidpaths[1], as_grey=True)
+    print ref.shape
 
     scores = skvideo.measure.ssim(ref, dis)
 
     avg_score = np.mean(scores)
 
     assert_almost_equal(avg_score, 0.722089111804962, decimal=15)
+
+    # beef up ref/dis forcing larger size
+    im1 = np.zeros((512, 512))
+    im2 = np.ones((512, 512))
+    im1[::2] = im2[::2]
+    im2 = im1.T
+    scores = skvideo.measure.ssim(im1, im2, scaleFix=False)
+
+    avg_score = np.mean(scores)
+
+    assert_almost_equal(avg_score, 0.991528987884521, decimal=15)
+
+    scores = skvideo.measure.ssim(im1, im2, scaleFix=True)
+
+    avg_score = np.mean(scores)
+
+    assert_almost_equal(avg_score, 1.0, decimal=15)
 
 
 def test_measure_MSE():
