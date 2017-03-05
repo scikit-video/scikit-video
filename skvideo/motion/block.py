@@ -267,7 +267,7 @@ def _ARPS(imgP, imgI, mbSize, p):
                     maxIndex = 5
                 else:
                     maxIndex = 6
-                    LDSP[5] = [v, u]
+                    LDSP[5] = [np.int(v), np.int(u)]
 
             # large diamond search
             LDSP[0] = [0, -stepSize]
