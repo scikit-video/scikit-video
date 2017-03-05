@@ -7,6 +7,7 @@ from .ssim import *
 from .strred import *
 from .psnr import *
 from .mse import *
+from .mad import *
 from .scene import *
 from .brisque import *
 from .videobliinds import *
@@ -17,6 +18,7 @@ __all__ = [
     'ssim',
     'strred',
     'mse',
+    'mad',
     'psnr',
     'scenedet',
     'brisque_features',

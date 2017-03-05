@@ -137,6 +137,16 @@ def test_measure_SSIM():
 
     assert_almost_equal(avg_score, 1.0, decimal=15)
 
+def test_measure_MAD():
+    vidpaths = skvideo.datasets.fullreferencepair()
+    ref = skvideo.io.vread(vidpaths[0], as_grey=True)
+    dis = skvideo.io.vread(vidpaths[1], as_grey=True)
+
+    scores = skvideo.measure.mad(ref, dis)
+
+    avg_score = np.mean(scores)
+
+    assert_almost_equal(avg_score, 11.515880584716797, decimal=15)
 
 def test_measure_MSE():
     vidpaths = skvideo.datasets.fullreferencepair()

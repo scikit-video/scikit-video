@@ -21,7 +21,7 @@ Use :func:`skvideo.measure.ssim` to measure the perceptually quality difference 
 
 Use :func:`skvideo.measure.msssim` to measure the perceptually quality difference between two videos, considering only individual frames. Differs from ssim in that this function considers multiple scales.
 
-Use :func:`skvideo.measure.mse` or :func:`skvideo.measure.psnr` to measure simple point-wise similarity between two videos.
+Use :func:`skvideo.measure.mse`, :func:`skvideo.measure.mad`, or :func:`skvideo.measure.psnr` to measure simple point-wise similarity between two videos.
 
 No-Reference Quality Assessment
 ---------------------------------
