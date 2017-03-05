@@ -150,7 +150,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
 
         if as_grey: 
             videodata = vshape(videodata[:, :, :, 0])
-        reader._close()
+        reader.close()
 
         return videodata
     elif backend == "libav":
@@ -170,7 +170,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         for idx, frame in enumerate(reader.nextFrame()):
             videodata[idx, :, :, :] = frame
 
-        reader._close()
+        reader.close()
         return videodata
 
     else:
@@ -254,7 +254,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
                 yield vshape(frame[:, :, 0])
             else:
                 yield frame
-        reader._close()
+        reader.close()
 
     elif backend == "libav":
         # check if FFMPEG exists in the path
@@ -269,7 +269,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for frame in reader.nextFrame():
             yield frame
-        reader._close()
+        reader.close()
 
     else:
         raise NotImplemented

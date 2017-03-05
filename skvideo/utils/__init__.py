@@ -1,7 +1,9 @@
 """ Various utility functions for manipulating video data
 
 """
-
+import os
+import platform
+import itertools
 from .xmltodict import parse as xmltodictparser
 import subprocess as sp
 import numpy as np
@@ -219,6 +221,61 @@ def check_output(*popenargs, **kwargs):
         raise error
     return output
 
+try:
+    # on py27 make map/filter behave like an iterator
+    map = itertools.imap
+    filter = itertools.ifilter
+except AttributeError:
+    # py3+
+    pass
+
+
+def where( filename ):
+    """ Returns all matching file paths. """
+    return list(iwhere(filename))
+
+
+def first( filename ):
+    """ Returns first matching file path. """
+    try:
+        return next(iwhere(filename))
+    except StopIteration:
+        return None
+
+
+def iwhere( filename ):
+    possible_paths = _gen_possible_matches(filename)
+    existing_file_paths = filter(os.path.isfile, possible_paths)
+    return existing_file_paths
+
+def iter_unique(iterable):
+    yielded = set()
+    for i in iterable:
+        if i in yielded:
+            continue
+        yield i
+        yielded.add(i)
+
+def imapchain(*a, **kwa):
+    """ Like map but also chains the results. """
+
+    imap_results = map(*a, **kwa)
+    return itertools.chain(*imap_results)
+
+def _gen_possible_matches(filename):
+    path_parts =     os.environ.get("PATH", "").split(os.pathsep)
+    path_parts =     itertools.chain((os.curdir,), path_parts)
+    possible_paths = map(lambda path_part: os.path.join(path_part, filename), path_parts)
+
+    if platform.system() == "Windows":
+        possible_paths = imapchain(lambda path: (path, path+".bat", path+".com", path+".exe"), possible_paths)
+
+    possible_paths = map(os.path.abspath, possible_paths)
+
+    result = iter_unique(possible_paths)
+
+    return result
+
 def vshape(videodata):
     """Standardizes the input data shape.
 
@@ -291,6 +348,7 @@ def rgb2gray(videodata):
 __all__ = [
     'xmltodictparser',
     'bpplut',
+    'where',
     'check_output',
     'rgb2gray',
     'vshape',

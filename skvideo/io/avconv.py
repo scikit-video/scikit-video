@@ -24,6 +24,7 @@ from .avprobe import avprobe
 from ..utils import *
 from .. import _HAS_AVCONV
 from .. import _AVCONV_PATH
+from .. import _AVCONV_APPLICATION
 
 # uses libav to read the given file with parameters
 class LibAVReader():
@@ -192,11 +193,11 @@ class LibAVReader():
         # Create process
 
         if verbosity == 0:
-            cmd = [_AVCONV_PATH + "/avconv", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            cmd = [_AVCONV_PATH + "/" + _AVCONV_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = [_AVCONV_PATH + "/avconv"] + iargs + ['-i', self._filename] + oargs + ['pipe:']
+            cmd = [_AVCONV_PATH + "/" + _AVCONV_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['pipe:']
             print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
@@ -209,8 +210,7 @@ class LibAVReader():
            
         return self.inputframenum, self.inputheight, self.inputwidth, self.inputdepth 
 
-
-    def _close(self):
+    def close(self):
         self._terminate(0.05)  # Short timeout
         self._proc = None
 

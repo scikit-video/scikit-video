@@ -1,6 +1,6 @@
 __version__ = "1.1.7"
 
-from .utils import check_output
+from .utils import check_output, where
 import os
 import warnings
 import numpy as np
@@ -10,36 +10,18 @@ import numpy as np
 # Sets environment variables based on programs
 # found.
 
-def which(program):
-    import os
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
 # only ffprobe exists with ffmpeg
-_FFMPEG_PATH = which("ffprobe")
+_FFMPEG_PATH = where("ffprobe")[0]
 if _FFMPEG_PATH is not None:
     _FFMPEG_PATH = os.path.split(_FFMPEG_PATH)[0]
 
 
 # only avprobe exists with libav
-_AVCONV_PATH = which("avprobe")
+_AVCONV_PATH = where("avprobe")[0]
 if _AVCONV_PATH is not None:
     _AVCONV_PATH = os.path.split(_AVCONV_PATH)[0]
 
-_MEDIAINFO_PATH = which("mediainfo")
+_MEDIAINFO_PATH = where("mediainfo")[0]
 if _MEDIAINFO_PATH is not None:
     _MEDIAINFO_PATH = os.path.split(_MEDIAINFO_PATH)[0]
 
@@ -57,6 +39,19 @@ _FFMPEG_SUPPORTED_DECODERS = []
 _FFMPEG_SUPPORTED_ENCODERS = []
 _LIBAV_SUPPORTED_EXT = []
 
+_FFPROBE_APPLICATION = "ffprobe"
+_FFMPEG_APPLICATION = "ffmpeg"
+_AVPROBE_APPLICATION = "avprobe"
+_AVCONV_APPLICATION = "avconv"
+_MEDIAINFO_APPLICATION = "mediainfo"
+
+# Windows compat
+if os.name == "nt":
+    _FFPROBE_APPLICATION += ".exe"
+    _FFMPEG_APPLICATION += ".exe"
+    _AVPROBE_APPLICATION += ".exe"
+    _AVCONV_APPLICATION += ".exe"
+    _MEDIAINFO_APPLICATION += ".exe"
 
 def scan_ffmpeg():
     global _FFMPEG_MAJOR_VERSION
@@ -71,7 +66,7 @@ def scan_ffmpeg():
     _FFMPEG_SUPPORTED_ENCODERS = []
     try:
         # grab program version string
-        version = check_output([_FFMPEG_PATH + "/ffmpeg", "-version"])
+        version = check_output([_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-version"])
         # only parse the first line returned
         firstline = version.split(b'\n')[0]
 
@@ -304,7 +299,7 @@ def setFFmpegPath(path):
     _FFMPEG_PATH = path
 
     # check to see if the executables actually exist on these paths
-    if os.path.isfile(_FFMPEG_PATH + "/ffmpeg") and os.path.isfile(_FFMPEG_PATH + "/ffprobe"):
+    if os.path.isfile(_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION) and os.path.isfile(_FFMPEG_PATH + "/" + _FFPROBE_APPLICATION):
         _HAS_FFMPEG = 1
     else:
         warnings.warn("ffmpeg/ffprobe not found in path: " + str(path), UserWarning)
@@ -354,7 +349,7 @@ def setLibAVPath(path):
     _AVCONV_PATH = path
 
     # check to see if the executables actually exist on these paths
-    if os.path.isfile(_AVCONV_PATH + "/avconv") and os.path.isfile(_AVCONV_PATH + "/avprobe"):
+    if os.path.isfile(_AVCONV_PATH + "/" + _AVCONV_APPLICATION) and os.path.isfile(_AVCONV_PATH + "/" + _AVPROBE_APPLICATION):
         _HAS_AVCONV = 1
     else:
         warnings.warn("avconv/avprobe not found in path: " + str(path), UserWarning)

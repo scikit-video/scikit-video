@@ -26,6 +26,7 @@ from .. import _HAS_FFMPEG
 from .. import _FFMPEG_PATH
 from .. import _FFMPEG_SUPPORTED_DECODERS
 from .. import _FFMPEG_SUPPORTED_ENCODERS
+from .. import _FFMPEG_APPLICATION
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -196,11 +197,11 @@ class FFmpegReader():
         # Create process
 
         if verbosity == 0:
-            cmd = [_FFMPEG_PATH + "/ffmpeg", "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i', self._filename] + oargs + ['-']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = [_FFMPEG_PATH + "/ffmpeg"] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
@@ -214,7 +215,7 @@ class FFmpegReader():
         return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
 
-    def _close(self):
+    def close(self):
         self._terminate(0.05)  # Short timeout
         self._proc = None
 
@@ -386,7 +387,7 @@ class FFmpegWriter():
             oargs.append(key)
             oargs.append(self.outputdict[key])
 
-        cmd = [_FFMPEG_PATH + "/ffmpeg", "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 

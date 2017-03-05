@@ -2,6 +2,7 @@ import subprocess as sp
 
 from ..utils import *
 from .. import _HAS_MEDIAINFO
+from .. import _MEDIAINFO_APPLICATION
 
 
 def mprobe(filename):
@@ -28,7 +29,7 @@ def mprobe(filename):
 
     try:
         # '-f' gets full output, and --Output=XML is xml formatted output
-        command = ["mediainfo", "-f", "--Output=XML", filename]
+        command = [_MEDIAINFO_APPLICATION, "-f", "--Output=XML", filename]
 
         # simply get std output
         xml = check_output(command)
