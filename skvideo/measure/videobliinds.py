@@ -193,6 +193,8 @@ def _extract_subband_feats(mscncoefs):
 
 def extract_on_patches(img, blocksizerow, blocksizecol):
     h, w = img.shape
+    blocksizerow = np.int(blocksizerow)
+    blocksizecol = np.int(blocksizecol)
     patches = []
     for j in range(0, np.int(h-blocksizerow+1), np.int(blocksizerow)):
         for i in range(0, np.int(w-blocksizecol+1), np.int(blocksizecol)):
@@ -347,9 +349,9 @@ def NSS_spectral_ratios_feature_extraction(frames):
     for i in range(dct_diff5x5.shape[0]):
       freq_bands[i] = zigzag(gamma_matrix[i]) 
 
-    lf_gamma5x5 = freq_bands[:, 1:(mblock**2-1)/3+1]
-    mf_gamma5x5 = freq_bands[:, (mblock**2-1)/3+1:2*(mblock**2-1)/3+1]
-    hf_gamma5x5 = freq_bands[:, 2*(mblock**2-1)/3+1:]
+    lf_gamma5x5 = freq_bands[:, 1:np.int((mblock**2-1)/3)+1]
+    mf_gamma5x5 = freq_bands[:, np.int((mblock**2-1)/3)+1:2*np.int((mblock**2-1)/3)+1]
+    hf_gamma5x5 = freq_bands[:, np.int(2*(mblock**2-1)/3)+1:]
 
     geomean_lf_gam = scipy.stats.mstats.gmean(lf_gamma5x5.T)
     geomean_mf_gam = scipy.stats.mstats.gmean(mf_gamma5x5.T)

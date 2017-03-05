@@ -37,12 +37,13 @@ def est_params(frame, blk, sigma_nn):
     V = V.astype(np.float32)
 
     # Estimate local variance
-    ss = np.zeros((sizeim[0]/blk, sizeim[1]/blk), dtype=np.float32)
+    sizeim_reduced = (sizeim/blk).astype(np.int)
+    ss = np.zeros((sizeim_reduced[0], sizeim_reduced[1]), dtype=np.float32)
     if np.max(V) > 0:
       # avoid the matrix inverse for extra speed/accuracy
       ss = scipy.linalg.solve(cov_mat, temp)
       ss = np.sum(np.multiply(ss, temp) / (blk**2), axis=0)
-      ss = ss.reshape(sizeim/blk)
+      ss = ss.reshape(sizeim_reduced)
 
     V = V[V>0]
 
