@@ -91,7 +91,6 @@ if setup correctly, you should see `sk_video` in the path::
 
 TODO/Roadmap
 ------------
-- Windows support
 - Spatial-Temporal filtering helper functions
 - Speedup routines (using cython and/or opencl)
 - More ffmpeg/avconv interfacing
@@ -115,4 +114,4 @@ After installation, you can launch the test suite from outside the source direct
     $ nosetests2 -v skvideo
     $ nosetests3 -v skvideo
 
-Copyright 2015-2016, scikit-video developers (BSD license).
+Copyright 2015-2017, scikit-video developers (BSD license).
