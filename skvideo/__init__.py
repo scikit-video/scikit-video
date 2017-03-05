@@ -10,20 +10,21 @@ import numpy as np
 # Sets environment variables based on programs
 # found.
 
-# only ffprobe exists with ffmpeg
-_FFMPEG_PATH = where("ffprobe")[0]
-if _FFMPEG_PATH is not None:
-    _FFMPEG_PATH = os.path.split(_FFMPEG_PATH)[0]
+def which(command):
+  candidates = where(command)
+  if len(candidates) > 0:
+    return os.path.split(candidates[0])[0]
+  else:
+    return ""
 
+
+# only ffprobe exists with ffmpeg
+_FFMPEG_PATH = which("ffprobe")
 
 # only avprobe exists with libav
-_AVCONV_PATH = where("avprobe")[0]
-if _AVCONV_PATH is not None:
-    _AVCONV_PATH = os.path.split(_AVCONV_PATH)[0]
+_AVCONV_PATH = which("avprobe")
 
-_MEDIAINFO_PATH = where("mediainfo")[0]
-if _MEDIAINFO_PATH is not None:
-    _MEDIAINFO_PATH = os.path.split(_MEDIAINFO_PATH)[0]
+_MEDIAINFO_PATH = which("mediainfo")
 
 _HAS_FFMPEG = 0
 _HAS_AVCONV = 0
