@@ -9,9 +9,16 @@ import skvideo.io
 import skvideo.datasets
 import skvideo.measure
 
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
+
 #TODO: Check blas implementation, then check numerical accuracy.
 #      The required inverse operation in ST-RRED differs across
 #      blas implementations
+
+@unittest.skip("Disabled pending BLAS check")
 def test_measure_STRRED():
     vidpaths = skvideo.datasets.fullreferencepair()
 
