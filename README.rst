@@ -103,7 +103,7 @@ For Contributors
 
 Quick tutorial on how to go about setting up your environment to contribute to scikit-video: 
 
-https://github.com/beyondmetis/scikit-video/blob/master/CONTRIBUTING.md
+https://github.com/beyondmetis/scikit-video/blob/master/CONTRIBUTING.rst
 
 
 Testing
