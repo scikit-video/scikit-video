@@ -214,9 +214,12 @@ class FFmpegReader():
            
         return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
-
     def close(self):
-        self._terminate(0.05)  # Short timeout
+        if self._proc is not None and self._proc.poll() is None:
+            self._proc.stdin.close()
+            self._proc.stdout.close()
+            self._proc.stderr.close()
+            self._terminate(0.2)
         self._proc = None
 
     def _terminate(self, timeout=1.0):
