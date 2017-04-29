@@ -249,12 +249,14 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
             outputdict['-pix_fmt'] = 'gray'
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        for frame in reader.nextFrame():
-            if as_grey:
-                yield vshape(frame[:, :, 0])
-            else:
-                yield frame
-        reader.close()
+        try:
+            for frame in reader.nextFrame():
+                if as_grey:
+                    yield vshape(frame[:, :, 0])
+                else:
+                    yield frame
+        finally:
+            reader.close()
 
     elif backend == "libav":
         # check if FFMPEG exists in the path
@@ -267,9 +269,11 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
             outputdict['-vframes'] = str(num_frames)
 
         reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        for frame in reader.nextFrame():
-            yield frame
-        reader.close()
+        try:
+            for frame in reader.nextFrame():
+                yield frame
+        finally:
+            reader.close()
 
     else:
         raise NotImplemented
