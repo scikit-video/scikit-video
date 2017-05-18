@@ -31,9 +31,9 @@ else
 fi
 
 echo ./configure
-./configure --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
+PATH="$HOME/build_ffmpeg/bin:$PATH" PKG_CONFIG_PATH="$HOME/build_ffmpeg/lib/pkgconfig" ./configure --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
 echo make
-make -j4 > /dev/null 2>&1 || exit 3
+PATH="$HOME/build_ffmpeg/bin:$PATH" make -j4 > /dev/null 2>&1 || exit 3
 echo make install
 make install || exit 4
 cd $TRAVIS_BUILD_DIR
