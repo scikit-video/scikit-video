@@ -5,6 +5,21 @@ alias cc='gcc-4.8'
 alias g++='g++-4.8'
 alias c++='c++-4.8'
 
+# install yasm
+cd $HOME/download
+wget --no-check-certificate "http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz" || exit 1
+tar -xf "yasm-1.3.0.tar.gz"
+cd yasm-1.3.0;
+echo ./configure
+./configure --prefix="$HOME/build_ffmpeg" --bindir="$HOME/build_ffmpeg/bin"
+echo make
+#make -j4 > /dev/null 2>&1 || exit 3
+make -j4
+echo make install
+#make install || exit 4
+make install
+
+
 cd $HOME/download
 wget --no-check-certificate "http://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.bz2" || exit 1
 tar xjf "ffmpeg-$FFMPEG.tar.bz2"
@@ -16,7 +31,7 @@ else
 fi
 
 echo ./configure
-./configure --disable-yasm --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
+./configure --disable-static --enable-shared --disable-doc --prefix="$HOME/build_ffmpeg" || exit 2
 echo make
 make -j4 > /dev/null 2>&1 || exit 3
 echo make install
@@ -37,7 +52,7 @@ if [[ $LIBAV != "none" ]]; then
 	cd "libav-$LIBAV"; 
     fi
 
-    echo ./configure --disable-yasm
+    echo ./configure
     ./configure --disable-yasm --prefix="$HOME/build_libav" || exit 2
     echo make
     make -j4 > /dev/null 2>&1 || exit 3
