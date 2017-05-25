@@ -1,51 +1,7 @@
 from ..utils import *
+from .ssim import *
 import numpy as np
 import scipy.ndimage
-
-def ssim_index_new(im1, im2, K_1, K_2, avg_window):
-    extend_mode='constant'
-    C1 = (K_1 * 255)**2
-    C2 = (K_2 * 255)**2
-    M, N = im1.shape
-    mu1 = np.zeros((M, N), dtype=np.float32)
-    mu2 = np.zeros((M, N), dtype=np.float32)
-    var1 = np.zeros((M, N), dtype=np.float32)
-    var2 = np.zeros((M, N), dtype=np.float32)
-    var12 = np.zeros((M, N), dtype=np.float32)
-
-    referenceFrame = im1.astype(np.float32)
-    distortedFrame = im2.astype(np.float32)
-    scipy.ndimage.correlate1d(referenceFrame, avg_window, 0, mu1, mode=extend_mode)
-    scipy.ndimage.correlate1d(mu1, avg_window, 1, mu1, mode=extend_mode)
-    scipy.ndimage.correlate1d(distortedFrame, avg_window, 0, mu2, mode=extend_mode)
-    scipy.ndimage.correlate1d(mu2, avg_window, 1, mu2, mode=extend_mode)
-
-    mu1_sq = mu1**2
-    mu2_sq = mu2**2
-    mu1_mu2 = mu1 * mu2
-
-    scipy.ndimage.correlate1d(referenceFrame**2, avg_window, 0, var1, mode=extend_mode)
-    scipy.ndimage.correlate1d(var1, avg_window, 1, var1, mode=extend_mode)
-    scipy.ndimage.correlate1d(distortedFrame**2, avg_window, 0, var2, mode=extend_mode)
-    scipy.ndimage.correlate1d(var2, avg_window, 1, var2, mode=extend_mode)
-    scipy.ndimage.correlate1d(referenceFrame * distortedFrame, avg_window, 0, var12, mode=extend_mode)
-    scipy.ndimage.correlate1d(var12, avg_window, 1, var12, mode=extend_mode)
-
-    sigma1_sq = var1 - mu1_sq
-    sigma2_sq = var2 - mu2_sq
-    sigma12 = var12 - mu1_mu2
-
-    ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
-    cs_map = (2*sigma12 + C2)/(sigma1_sq + sigma2_sq + C2)
-
-    ssim_map = ssim_map[5:-5, 5:-5]
-    cs_map = cs_map[5:-5, 5:-5]
-
-    mssim = np.mean(ssim_map)
-    mcs = np.mean(cs_map)
-
-    return mssim, ssim_map, mcs, cs_map
-
 
 def compute_msssim(frame1, frame2, method='product'):
     extend_mode = 'constant'
@@ -65,7 +21,11 @@ def compute_msssim(frame1, frame2, method='product'):
     overall_mssim1 = []
     overall_mssim2 = []
     for i in range(level):
-      mssim_array, ssim_map_array, mcs_array, cs_map_array = ssim_index_new(im1, im2, K_1, K_2, avg_window)
+      mssim_array, ssim_map_array, mcs_array, cs_map_array = ssim_full(im1, im2, K_1 = K_1, K_2 = K_2, avg_window = avg_window)
+      mssim_array = mssim_array[0]
+      ssim_map_array = ssim_map_array[0]
+      mcs_array = mcs_array[0]
+      cs_map_array = cs_map_array[0]
       filtered_im1 = scipy.ndimage.correlate1d(im1, downsample_filter, 0)
       filtered_im1 = scipy.ndimage.correlate1d(filtered_im1, downsample_filter, 1)
       filtered_im1 = filtered_im1[1:, 1:]
