@@ -11,13 +11,6 @@ import math
 from os.path import dirname
 from os.path import join
 
-gamma_range = np.arange(0.2, 5+0.01, 0.01)
-a = scipy.special.gamma(2.0/gamma_range)
-a *= a
-b = scipy.special.gamma(1.0/gamma_range)
-c = scipy.special.gamma(3.0/gamma_range)
-prec_gammas = a/(b*c)
-
 def gauss_window_full(lw, sigma):
     sd = np.float32(sigma)
     lw = int(lw)
@@ -30,71 +23,6 @@ def gauss_window_full(lw, sigma):
         weights[ii] = tmp
     weights /= np.sum(weights)
     return weights
-
-def extract_aggd_features(imdata):
-    #flatten imdata
-    imdata.shape = (len(imdata.flat),)
-    imdata2 = imdata*imdata
-    left_data = imdata2[imdata<0]
-    right_data = imdata2[imdata>0]
-    left_mean_sqrt = 0
-    right_mean_sqrt = 0
-    if len(left_data) > 0:
-        left_mean_sqrt = np.sqrt(np.average(left_data))
-    if len(right_data) > 0:
-        right_mean_sqrt = np.sqrt(np.average(right_data))
-
-    if right_mean_sqrt != 0:
-      gamma_hat = left_mean_sqrt/right_mean_sqrt
-    else:
-      gamma_hat = np.inf
-    #solve r-hat norm
-
-    imdata2_mean = np.mean(imdata2)
-    if imdata2_mean != 0:
-      r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
-    else:
-      r_hat = np.inf
-    rhat_norm = r_hat * (((math.pow(gamma_hat, 3) + 1)*(gamma_hat + 1)) / (math.pow(math.pow(gamma_hat,2) + 1,2)))
-
-    #solve alpha by guessing values that minimize ro
-    pos = np.argmin((prec_gammas - rhat_norm)**2);
-    alpha = gamma_range[pos]
-
-    gam1 = scipy.special.gamma(1.0/alpha)
-    gam2 = scipy.special.gamma(2.0/alpha)
-    gam3 = scipy.special.gamma(3.0/alpha)
-
-    aggdratio = np.sqrt(gam1) / np.sqrt(gam3)
-    bl = aggdratio * left_mean_sqrt
-    br = aggdratio * right_mean_sqrt
-
-    #mean parameter
-    N = (br - bl)*(gam2 / gam1)#*aggdratio
-
-    return (alpha, N, bl, br, left_mean_sqrt, right_mean_sqrt)
-
-def extract_ggd_features(imdata):
-    nr_gam = 1/prec_gammas
-    sigma_sq = np.average(imdata**2)
-    E = np.average(np.abs(imdata))
-    rho = sigma_sq/E**2
-    pos = np.argmin(np.abs(nr_gam - rho));
-    return gamma_range[pos], np.sqrt(sigma_sq)
-
-def paired_p(new_im):
-    shift1 = np.roll(new_im.copy(), 1, axis=1)
-    shift2 = np.roll(new_im.copy(), 1, axis=0)
-    shift3 = np.roll(np.roll(new_im.copy(), 1, axis=0), 1, axis=1)
-    shift4 = np.roll(np.roll(new_im.copy(), 1, axis=0), -1, axis=1)
-
-    H_img = shift1 * new_im
-    V_img = shift2 * new_im
-    D1_img = shift3 * new_im
-    D2_img = shift4 * new_im
-
-    return (H_img, V_img, D1_img, D2_img)
-
 
 def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7):
     """Computes VIIDEO score. [#f1]_ [#f2]_
@@ -228,7 +156,7 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
       for itr in range(0, 2):
         mscn,_,mu= compute_image_mscn_transform(diff, avg_window=hf, extend_mode='nearest')
 
-        h, v, d1, d2 = paired_p(mscn)
+        h, v, d1, d2 = paired_product(mscn)
         top_pad = blockoverlap[0]
         left_pad = blockoverlap[1]
 
@@ -260,11 +188,11 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
             pv = v[yp:yp+blockheight, xp:xp+blockwidth].copy()
             pd1 = d1[yp:yp+blockheight, xp:xp+blockwidth].copy()
             pd2 = d2[yp:yp+blockheight, xp:xp+blockwidth].copy()
-            shape, _, bl, br, _, _ = extract_aggd_features(patch)
-            shapeh, _, blh, brh, _, _ = extract_aggd_features(ph)
-            shapev, _, blv, brv, _, _ = extract_aggd_features(pv)
-            shaped1, _, bld1, brd1, _, _ = extract_aggd_features(pd1)
-            shaped2, _, bld2, brd2, _, _ = extract_aggd_features(pd2)
+            shape, _, bl, br, _, _ = aggd_features(patch)
+            shapeh, _, blh, brh, _, _ = aggd_features(ph)
+            shapev, _, blv, brv, _, _ = aggd_features(pv)
+            shaped1, _, bld1, brd1, _, _ = aggd_features(pd1)
+            shaped2, _, bld2, brd2, _, _ = aggd_features(pd2)
 
             features[k, i, j, itr*14:(itr+1)*14] = np.array([
               shape, (bl + br)/2.0,
