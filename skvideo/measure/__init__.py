@@ -12,6 +12,7 @@ from .scene import *
 from .brisque import *
 from .videobliinds import *
 from .viideo import *
+from .niqe import *
 
 __all__ = [
     'msssim',
@@ -25,4 +26,5 @@ __all__ = [
     'videobliinds_features',
     'viideo_features',
     'viideo_score',
+    'niqe',
 ]

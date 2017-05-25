@@ -138,6 +138,20 @@ def test_measure_SSIM():
 
     assert_almost_equal(avg_score, 1.0, decimal=15)
 
+def test_measure_NIQE():
+    vidpaths = skvideo.datasets.bigbuckbunny()
+
+    ref = skvideo.io.vread(vidpaths, as_grey=True)
+
+    # only first 2 frames
+    ref = ref[:2]
+
+    scores = skvideo.measure.niqe(ref)
+
+    assert_almost_equal(scores[0], 11.197661399841, decimal=10)
+    assert_almost_equal(scores[1], 11.055174827576, decimal=10)
+
+
 def test_measure_MAD():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)
