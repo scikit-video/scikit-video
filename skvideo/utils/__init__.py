@@ -9,6 +9,8 @@ import subprocess as sp
 import numpy as np
 from .edge import canny
 from .stpyr import SpatialSteerablePyramid
+from .mscn import compute_image_mscn_transform, gen_gauss_window
+from .stats import ggd_features, aggd_features, paired_product
 
 # dictionary based on pix_fmt keys
 # first element is number of components
@@ -354,4 +356,9 @@ __all__ = [
     'vshape',
     'canny',
     'SpatialSteerablePyramid',
+    'compute_image_mscn_transform',
+    'gen_gauss_window',
+    'paired_product',
+    'ggd_features',
+    'aggd_features'
 ]
