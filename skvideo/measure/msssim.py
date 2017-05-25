@@ -2,23 +2,6 @@ from ..utils import *
 import numpy as np
 import scipy.ndimage
 
-
-def gauss_window(lw, sigma):
-    sd = np.float32(sigma)
-    lw = int(lw)
-    weights = [0.0] * (2 * lw + 1)
-    weights[lw] = 1.0
-    ss = 1.0
-    sd *= sd
-    for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
-        weights[lw + ii] = tmp
-        weights[lw - ii] = tmp
-        ss += 2.0 * tmp
-    for ii in range(2 * lw + 1):
-        weights[ii] /= ss
-    return weights
-
 def ssim_index_new(im1, im2, K_1, K_2, avg_window):
     extend_mode='constant'
     C1 = (K_1 * 255)**2
@@ -66,7 +49,7 @@ def ssim_index_new(im1, im2, K_1, K_2, avg_window):
 
 def compute_msssim(frame1, frame2, method='product'):
     extend_mode = 'constant'
-    avg_window = np.array(gauss_window(5, 1.5))
+    avg_window = np.array(gen_gauss_window(5, 1.5))
     K_1 = 0.01
     K_2 = 0.03
     level = 5

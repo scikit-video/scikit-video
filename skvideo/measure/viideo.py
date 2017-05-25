@@ -82,19 +82,6 @@ def extract_ggd_features(imdata):
     pos = np.argmin(np.abs(nr_gam - rho));
     return gamma_range[pos], np.sqrt(sigma_sq)
 
-def calc_image(image, avg_window):
-    extend_mode = 'nearest'#'nearest'#'wrap'
-    w, h = np.shape(image)
-    mu_image = np.zeros((w, h))
-    var_image = np.zeros((w, h))
-    image = np.array(image).astype(np.float32)
-    scipy.ndimage.correlate1d(image, avg_window, 0, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(mu_image, avg_window, 1, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(image**2, avg_window, 0, var_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(var_image, avg_window, 1, var_image, mode=extend_mode)
-    var_image = np.sqrt(np.abs(var_image - mu_image**2))
-    return (image - mu_image)/(var_image + 1), var_image, mu_image
-
 def paired_p(new_im):
     shift1 = np.roll(new_im.copy(), 1, axis=1)
     shift2 = np.roll(new_im.copy(), 1, axis=0)
@@ -239,7 +226,7 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
       diff = frame1 - frame2
 
       for itr in range(0, 2):
-        mscn,_,mu= calc_image(diff, hf)
+        mscn,_,mu= compute_image_mscn_transform(diff, avg_window=hf, extend_mode='nearest')
 
         h, v, d1, d2 = paired_p(mscn)
         top_pad = blockoverlap[0]

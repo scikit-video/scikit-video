@@ -3,23 +3,6 @@ import numpy as np
 import scipy.ndimage
 
 
-def gauss_window(lw, sigma):
-    sd = np.float32(sigma)
-    lw = int(lw)
-    weights = [0.0] * (2 * lw + 1)
-    weights[lw] = 1.0
-    ss = 1.0
-    sd *= sd
-    for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
-        weights[lw + ii] = tmp
-        weights[lw - ii] = tmp
-        ss += 2.0 * tmp
-    for ii in range(2 * lw + 1):
-        weights[ii] /= ss
-    return weights
-
-
 def ssim(referenceVideoData, distortedVideoData, bitdepth=8, scaleFix=True):
     """Computes Structural Similarity (SSIM) Index. [#f1]_
 
@@ -70,7 +53,7 @@ def ssim(referenceVideoData, distortedVideoData, bitdepth=8, scaleFix=True):
     distortedVideoData = distortedVideoData[:, :, :, 0]
 
     extend_mode = 'constant'
-    avg_window = gauss_window(5, 1.5)
+    avg_window = gen_gauss_window(5, 1.5)
     K_1 = 0.01
     K_2 = 0.03
     L = np.int(2**bitdepth - 1)
