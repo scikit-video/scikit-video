@@ -13,23 +13,6 @@ b = scipy.special.gamma(1.0/gamma_range)
 c = scipy.special.gamma(3.0/gamma_range)
 prec_gammas = a/(b*c)
 
-def gauss_window(lw, sigma):
-    sd = np.float32(sigma)
-    lw = int(lw)
-    weights = [0.0] * (2 * lw + 1)
-    weights[lw] = 1.0
-    sum = 1.0
-    sd *= sd
-    for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
-        weights[lw + ii] = tmp
-        weights[lw - ii] = tmp
-        sum += 2.0 * tmp
-    for ii in range(2 * lw + 1):
-        weights[ii] /= sum
-    return weights
-avg_window = gauss_window(3, 7.0/6.0)
-
 def extract_aggd_features(imdata):
     #flatten imdata
     imdata.shape = (len(imdata.flat),)
@@ -79,20 +62,6 @@ def extract_ggd_features(imdata):
     rho = sigma_sq/E**2
     pos = np.argmin(np.abs(nr_gam - rho));
     return gamma_range[pos], sigma_sq
-
-def calc_image(image):
-    #extend_mode = 'constant'
-    extend_mode = 'constant'
-    h, w = np.shape(image)
-    mu_image = np.zeros((h, w), dtype=np.float32)
-    var_image = np.zeros((h, w), dtype=np.float32)
-    image = np.array(image).astype('float32')
-    scipy.ndimage.correlate1d(image, avg_window, 0, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(mu_image, avg_window, 1, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(image**2, avg_window, 0, var_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(var_image, avg_window, 1, var_image, mode=extend_mode)
-    var_image = np.sqrt(np.abs(var_image - mu_image**2))
-    return (image - mu_image)/(var_image + 1), var_image, mu_image
 
 def paired_p(new_im):
     shift1 = np.roll(new_im.copy(), 1, axis=1)
@@ -161,8 +130,8 @@ def brisque_features(videoData):
       full_scale = videoData[i, :, :, 0].astype(np.float32)
       half_scale = scipy.misc.imresize(full_scale, 0.5, interp='bicubic', mode='F')
 
-      full_scale, _, _ = calc_image(full_scale)
-      half_scale, _, _ = calc_image(half_scale)
+      full_scale, _, _ = compute_image_mscn_transform(full_scale)
+      half_scale, _, _ = compute_image_mscn_transform(half_scale)
 
       feats[i, 18*0:18*1] = _extract_subband_feats(full_scale)
       feats[i, 18*1:18*2] = _extract_subband_feats(half_scale)

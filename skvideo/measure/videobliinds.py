@@ -17,23 +17,6 @@ b = scipy.special.gamma(1.0/gamma_range)
 c = scipy.special.gamma(3.0/gamma_range)
 prec_gammas = a/(b*c)
 
-def gauss_window(lw, sigma):
-    sd = np.float32(sigma)
-    lw = int(lw)
-    weights = [0.0] * (2 * lw + 1)
-    weights[lw] = 1.0
-    sum = 1.0
-    sd *= sd
-    for ii in range(1, lw + 1):
-        tmp = np.exp(-0.5 * np.float32(ii * ii) / sd)
-        weights[lw + ii] = tmp
-        weights[lw - ii] = tmp
-        sum += 2.0 * tmp
-    for ii in range(2 * lw + 1):
-        weights[ii] /= sum
-    return weights
-avg_window = gauss_window(3, 7.0/6.0)
-
 def extract_aggd_features(imdata):
     #flatten imdata
     imdata.shape = (len(imdata.flat),)
@@ -84,19 +67,6 @@ def extract_ggd_features(imdata):
     pos = np.argmin(np.abs(nr_gam - rho));
     return gamma_range[pos], np.sqrt(sigma_sq)
 
-def calc_image(image):
-    extend_mode = 'nearest'#'nearest'#'wrap'
-    w, h = np.shape(image)
-    mu_image = np.zeros((w, h))
-    var_image = np.zeros((w, h))
-    image = np.array(image).astype('float32')
-    scipy.ndimage.correlate1d(image, avg_window, 0, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(mu_image, avg_window, 1, mu_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(image**2, avg_window, 0, var_image, mode=extend_mode)
-    scipy.ndimage.correlate1d(var_image, avg_window, 1, var_image, mode=extend_mode)
-    var_image = np.sqrt(np.abs(var_image - mu_image**2))
-    return (image - mu_image)/(var_image + 1), var_image, mu_image
-
 def paired_p(new_im):
 
     # shifts                   = [ 0 1;1 0 ;1 1;1 -1];
@@ -120,7 +90,7 @@ def motion_feature_extraction(frames):
     # setup
     frames = frames.astype(np.float32)
     mblock=10
-    h = gauss_window(2, 0.5)
+    h = gen_gauss_window(2, 0.5)
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=np.int(1.5*mblock))
     motion_vectors = motion_vectors.astype(np.float32)
@@ -231,10 +201,10 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
     img = img.astype(np.float32)
     img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
 
-    mscn1, var, mu = calc_image(img)
+    mscn1, var, mu = compute_image_mscn_transform(img, extend_mode='nearest')
     mscn1 = mscn1.astype(np.float32)
 
-    mscn2, _, _ = calc_image(img2)
+    mscn2, _, _ = compute_image_mscn_transform(img2, extend_mode='nearest')
     mscn2 = mscn2.astype(np.float32)
 
     feats_lvl1 = extract_on_patches(mscn1, blocksizerow, blocksizecol)
