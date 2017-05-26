@@ -3,7 +3,6 @@ from ..utils import *
 import numpy as np
 import scipy.misc
 import scipy.io
-from sklearn.externals import joblib
 
 from os.path import dirname
 from os.path import join
