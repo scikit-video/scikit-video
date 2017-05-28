@@ -33,7 +33,7 @@ def aggd_features(imdata):
       r_hat = (np.average(np.abs(imdata))**2) / (np.average(imdata2))
     else:
       r_hat = np.inf
-    rhat_norm = r_hat * (((gamma_hat**3 + 1)*(gamma_hat + 1)) / ((gamma_hat**2 + 1)**2))
+    rhat_norm = r_hat * (((math.pow(gamma_hat, 3) + 1)*(gamma_hat + 1)) / math.pow(math.pow(gamma_hat, 2) + 1, 2))
 
     #solve alpha by guessing values that minimize ro
     pos = np.argmin((prec_gammas - rhat_norm)**2);
