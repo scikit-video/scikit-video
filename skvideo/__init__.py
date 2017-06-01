@@ -67,7 +67,7 @@ def scan_ffmpeg():
     _FFMPEG_SUPPORTED_ENCODERS = []
     try:
         # grab program version string
-        version = check_output([_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-version"])
+        version = check_output([os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION), "-version"])
         # only parse the first line returned
         firstline = version.split(b'\n')[0]
 
@@ -232,7 +232,7 @@ def scan_libav():
     _LIBAV_MINOR_VERSION = "0"
     try:
         # grab program version string
-        version = check_output([_AVCONV_PATH + "/avconv", "-version"])
+        version = check_output([os.path.join(_AVCONV_PATH, _AVCONV_APPLICATION), "-version"])
         # only parse the first line returned
         firstline = version.split(b'\n')[0]
 
@@ -300,7 +300,7 @@ def setFFmpegPath(path):
     _FFMPEG_PATH = path
 
     # check to see if the executables actually exist on these paths
-    if os.path.isfile(_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION) and os.path.isfile(_FFMPEG_PATH + "/" + _FFPROBE_APPLICATION):
+    if os.path.isfile(os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION)) and os.path.isfile(os.path.join(_FFMPEG_PATH, _FFPROBE_APPLICATION)):
         _HAS_FFMPEG = 1
     else:
         warnings.warn("ffmpeg/ffprobe not found in path: " + str(path), UserWarning)
@@ -350,7 +350,7 @@ def setLibAVPath(path):
     _AVCONV_PATH = path
 
     # check to see if the executables actually exist on these paths
-    if os.path.isfile(_AVCONV_PATH + "/" + _AVCONV_APPLICATION) and os.path.isfile(_AVCONV_PATH + "/" + _AVPROBE_APPLICATION):
+    if os.path.isfile(os.path.join(_AVCONV_PATH, _AVCONV_APPLICATION)) and os.path.isfile(os.path.join(_AVCONV_PATH, _AVPROBE_APPLICATION)):
         _HAS_AVCONV = 1
     else:
         warnings.warn("avconv/avprobe not found in path: " + str(path), UserWarning)
