@@ -34,6 +34,8 @@ Use :func:`skvideo.measure.viideo_features` to extract features using the Viideo
 
 Use :func:`skvideo.measure.viideo_score` to return the score of the Viideo Oracle algorithm.
 
+Use :func:`skvideo.measure.niqe` to return per-frame Naturalness Image Quality Evaluator (NIQE) scores.
+
 Scene detection
 ---------------------------------
 
