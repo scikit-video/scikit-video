@@ -14,7 +14,7 @@ dependencies:
     - sudo apt-get install python-nose python-coverage
     - sudo apt-get install python-sphinx
     - sudo apt-get install libav-tools
-    - sudo pip install -U setuptools
+    - pip install -U pip setuptools virtualenv
     #- pip install cython
   # The --user is needed to let sphinx see the source and the binaries
   # The pipefail is requested to propagate exit code
