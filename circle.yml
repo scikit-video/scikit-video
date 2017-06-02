@@ -2,6 +2,8 @@ machine:
   environment:
     # We need to set this variable to let python see the package installed through apt-get
     PYTHONPATH: "/usr/lib/python2.7/dist-packages:$HOME/.local/lib/python2.7/site-packages"
+    MINICONDA_PATH: $HOME/miniconda
+    CONDA_ENV_NAME: testenv
 dependencies:
   cache_directories:
     - "~/scikit_video_data"
@@ -12,9 +14,9 @@ dependencies:
     #- pip install cython
   # The --user is needed to let sphinx see the source and the binaries
   # The pipefail is requested to propagate exit code
-  override:
-    - python setup.py install --user
-    - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+  # override:
+  #   - python setup.py install --user
+  #   - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
 test:
   # Grep error on the documentation
   override:
