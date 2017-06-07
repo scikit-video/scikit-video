@@ -82,6 +82,8 @@ class FFmpegReader():
         # General information
         _, self.extension = os.path.splitext(filename)
 
+        # smartphone video data is weird
+        self.rotationAngle = '0'
 
         self.size = os.path.getsize(filename)
         self.probeInfo = ffprobe(filename)
@@ -106,6 +108,13 @@ class FFmpegReader():
             self.inputfps = 25
             # No input frame rate detected. Assuming 25 fps. Consult documentation on I/O if this is not desired.
 
+        # check for transposition tag
+        if ('tag' in viddict):
+          tagdata = viddict['tag']
+          for tags in tagdata:
+            if tags['@key'] == 'rotate':
+              self.rotationAngle = tags['@value']
+
         # if we don't have width or height at all, raise exception
         if ("-s" in inputdict):
             widthheight = inputdict["-s"].split('x')
@@ -116,6 +125,11 @@ class FFmpegReader():
             self.inputheight = np.int(viddict["@height"])
         else:
             raise ValueError("No way to determine width or height from video. Need `-s` in `inputdict`. Consult documentation on I/O.")
+
+        # smartphone recordings seem to store data about rotations
+        # in tag format. Just swap the width and height
+        if self.rotationAngle == '90' or self.rotationAngle == '270':
+          self.inputwidth, self.inputheight = self.inputheight, self.inputwidth
 
         self.bpp = -1 # bits per pixel
         self.pix_fmt = ""
@@ -211,7 +225,7 @@ class FFmpegReader():
         
         Returns the video shape in number of frames, height, width, and channels per pixel.
         """
-           
+
         return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
     def close(self):
@@ -259,11 +273,9 @@ class FFmpegReader():
         # t0 = time.time()
         s = self._read_frame_data()
         result = np.fromstring(s, dtype='uint8')
-        result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
-        # t1 = time.time()
-        # print('etime', t1-t0)
 
-        # Store and return
+        result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
+
         self._lastread = result
         return result
 
