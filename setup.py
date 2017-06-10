@@ -36,7 +36,7 @@ import sys
 import subprocess
 
 import setuptools
-from distutils.core import setup
+from numpy.distutils.core import setup
 
 import skvideo
 
