@@ -1,7 +1,8 @@
 machine:
   environment:
     # We need to set this variable to let python see the package installed through apt-get
-    PYTHONPATH: "/usr/lib/python2.7/dist-packages:$HOME/.local/lib/python2.7/site-packages"
+    # PYTHONPATH: "/usr/lib/python2.7/dist-packages:$HOME/.local/lib/python2.7/site-packages"
+    PYTHONPATH: '/home/ubuntu/miniconda'
     MINICONDA_PATH: $HOME/miniconda
     CONDA_ENV_NAME: testenv
 dependencies:
