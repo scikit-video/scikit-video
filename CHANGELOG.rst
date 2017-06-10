@@ -1,12 +1,12 @@
 1.1.8
 -----
--- Added Video Bliinds and BRISQUE quality feature extractors
--- Added ST-RRED, MS-SSIM, SSIM, NIQE, Video Oracle quality metrics
--- Added initial windows support
--- Added supporting unit tests
--- Python3 compatibility patches
--- Fixed assortment of bugs
--- Fixed file descriptor deadlock when using too much data
+- Added Video Bliinds and BRISQUE quality feature extractors
+- Added ST-RRED, MS-SSIM, SSIM, NIQE, Video Oracle quality metrics
+- Added initial windows support
+- Added supporting unit tests
+- Python3 compatibility patches
+- Fixed assortment of bugs
+- Fixed file descriptor deadlock when using too much data
 
 1.1.7
 -----
