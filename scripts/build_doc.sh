@@ -31,5 +31,6 @@ conda create -n $CONDA_ENV_NAME --yes --quiet python numpy scipy \
   cython nose coverage matplotlib sphinx pillow
 source activate testenv
 
-python setup.py install --user
+which python
+/home/ubuntu/miniconda/bin/python setup.py install --user
 set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
