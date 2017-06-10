@@ -111,6 +111,9 @@ class FFmpegReader():
         # check for transposition tag
         if ('tag' in viddict):
           tagdata = viddict['tag']
+          if not isinstance(tagdata, list):
+            tagdata = [tagdata]
+
           for tags in tagdata:
             if tags['@key'] == 'rotate':
               self.rotationAngle = tags['@value']
