@@ -31,6 +31,5 @@ conda create -n $CONDA_ENV_NAME --yes python numpy scipy \
   cython nose coverage matplotlib sphinx pillow setuptools
 source activate testenv
 
-which python
-python setup.py install --user
+python setup.py install
 set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
