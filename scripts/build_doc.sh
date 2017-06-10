@@ -27,7 +27,7 @@ conda update --yes --quiet conda
 
 # Configure the conda environment and put it in the path using the
 # provided versions
-conda create -n $CONDA_ENV_NAME --yes python numpy scipy \
+conda create -n $CONDA_ENV_NAME --yes --quiet python numpy scipy \
   cython nose coverage matplotlib sphinx pillow setuptools
 source activate testenv
 
