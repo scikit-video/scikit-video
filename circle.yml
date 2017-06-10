@@ -10,7 +10,7 @@ dependencies:
     - "~/scikit_video_data"
     - "~/scikit-video.github.io"
   # Various dependencies
-  pre:
+  override:
     - bash scripts/build_doc.sh 
     #- pip install cython
   # The --user is needed to let sphinx see the source and the binaries
