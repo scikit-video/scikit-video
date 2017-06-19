@@ -100,7 +100,7 @@ Often, writing videos requires fine tuning FFmpeg's writing parameters to select
 	outputdata = np.random.random(size=(5, 480, 680, 3)) * 255
 	outputdata = outputdata.astype(np.uint8)
 
-	writer = skvideo.io.FFmpegWriter("outputvideo.mp4", (5, 480, 640, 3))
+	writer = skvideo.io.FFmpegWriter("outputvideo.mp4")
 	for i in xrange(5):
 		writer.writeFrame(outputdata[i, :, :, :])
 	writer.close()
