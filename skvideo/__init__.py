@@ -364,12 +364,11 @@ def setLibAVPath(path):
     # reload version from new path
     scan_libav()
 
-if (_FFMPEG_PATH is not None):
+if (len(_FFMPEG_PATH) > 0):
     setFFmpegPath(_FFMPEG_PATH)
 
 
-if (_AVCONV_PATH is not None):
-    _HAS_AVCONV = 1
+if (len(_AVCONV_PATH) > 0):
     setLibAVPath(_AVCONV_PATH)
 
 
