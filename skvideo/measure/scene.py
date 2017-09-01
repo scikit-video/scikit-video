@@ -60,15 +60,15 @@ def _scenedet_histogram(videodata, parameter1, min_scene_len=2):
     detected_scenes = [0]
 
     # grayscale
-    luminancedata = rgb2gray(videodata)
-
-    numFrames, height, width, channels = luminancedata.shape
-
-    luminancedata = luminancedata[:, :, :, 0]
+    numFrames, height, width, channels = videodata.shape
 
     for t in range(0, numFrames-1):
-        hist1, bins = np.histogram(luminancedata[t], bins=256, range=(0, 255))
-        hist2, bins = np.histogram(luminancedata[t+1], bins=256, range=(0, 255))
+        curr = rgb2gray(videodata[t])
+        nxt = rgb2gray(videodata[t+1])
+        curr = curr[0, :, :, 0]
+        nxt = nxt[0, :, :, 0]
+        hist1, bins = np.histogram(curr, bins=256, range=(0, 255))
+        hist2, bins = np.histogram(nxt, bins=256, range=(0, 255))
 
         hist1 = hist1.astype(np.float32)
         hist2 = hist2.astype(np.float32)
