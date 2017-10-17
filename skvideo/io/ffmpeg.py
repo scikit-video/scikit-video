@@ -155,6 +155,10 @@ class FFmpegReader():
 
         if ("-vframes" in outputdict):
             self.inputframenum = np.int(outputdict["-vframes"])
+        elif ("-r" in outputdict):
+            self.inputfps = np.int(outputdict["-r"])
+            self.inputduration = np.float(viddict["@duration"])
+            self.inputframenum = np.int(round(self.inputfps*self.inputduration) + 1)
         elif ("@nb_frames" in viddict):
             self.inputframenum = np.int(viddict["@nb_frames"])
         elif israw == 1:
