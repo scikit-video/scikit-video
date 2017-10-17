@@ -11,19 +11,11 @@ matrix:
         - os: osx
           python: "3.5"
           osx_image: xcode8.2
-          env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=2.1 LIBAV=none
-        - os: osx
-          python: "3.5"
-          osx_image: xcode8.2
           env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=2.8 LIBAV=none
         - os: osx
           python: "3.5"
           osx_image: xcode8.2
           env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=snapshot LIBAV=none
-        - os: osx
-          python: "2.6"
-          osx_image: xcode8.2
-          env: TRAVIS_PYTHON_VERSION=2.6 FFMPEG=2.1 LIBAV=none
         - os: osx
           python: "2.6"
           osx_image: xcode8.2
@@ -35,10 +27,6 @@ matrix:
         - os: osx
           python: "2.7"
           osx_image: xcode8.2
-          env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=2.1 LIBAV=none
-        - os: osx
-          python: "2.7"
-          osx_image: xcode8.2
           env: TRAVIS_PYTHON_VERSION=2.7 FFMPEG=2.8 LIBAV=none
         - os: osx
           osx_image: xcode8.2
@@ -47,10 +35,6 @@ matrix:
         - os: linux
           python: "3.5"
           language: python
-          env: FFMPEG=2.1 LIBAV=10.7
-        - os: linux
-          python: "3.5"
-          language: python
           env: FFMPEG=2.8 LIBAV=11.4
         - os: linux
           python: "3.5"
@@ -59,19 +43,11 @@ matrix:
         - os: linux
           python: "2.7"
           language: python
-          env: FFMPEG=2.1 LIBAV=10.7
-        - os: linux
-          python: "2.7"
-          language: python
           env: FFMPEG=2.8 LIBAV=11.4
         - os: linux
           python: "2.7"
           language: python
           env: FFMPEG=snapshot LIBAV=none
-        - os: linux
-          python: "2.6"
-          language: python
-          env: FFMPEG=2.1 LIBAV=10.7
         - os: linux
           python: "2.6"
           language: python
