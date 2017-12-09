@@ -1,3 +1,9 @@
+1.1.9
+-----
+- Dropping ffmpeg 2.1 support
+- removed libav warning when ffmpeg is already installed
+- scene detector uses less memory
+
 1.1.8
 -----
 - Added Video Bliinds and BRISQUE quality feature extractors
