@@ -26,6 +26,7 @@ EXTRA_INFO          = dict(
                  'Operating System :: Microsoft :: Windows',
                  'Programming Language :: Python :: 2.6',
                  'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3.6',
                  'Topic :: Multimedia :: Video',
                  'Topic :: Scientific/Engineering']
 )

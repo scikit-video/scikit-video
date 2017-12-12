@@ -1,3 +1,7 @@
+1.1.10
+-----
+- Adding BSD license file
+
 1.1.9
 -----
 - Dropping ffmpeg 2.1 support
