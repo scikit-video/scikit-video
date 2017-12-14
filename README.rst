@@ -17,13 +17,13 @@
 .. _CircleCI: https://circleci.com/gh/scikit-video/scikit-video
 
 .. |Python27| image:: https://img.shields.io/badge/python-2.7-blue.svg
-.. _Python27: https://badge.fury.io/py/sk-video
+.. _Python27: https://badge.fury.io/py/scikit-video
 
 .. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg
-.. _Python35: https://badge.fury.io/py/sk-video
+.. _Python35: https://badge.fury.io/py/scikit-video
 
-.. |PyPi| image:: https://badge.fury.io/py/sk-video.svg
-.. _PyPi: https://badge.fury.io/py/sk-video
+.. |PyPi| image:: https://badge.fury.io/py/scikit-video.svg
+.. _PyPi: https://badge.fury.io/py/scikit-video
 
 .. |skvideologo| image:: doc/images/scikit-video.png
 .. _skvideologo: http://www.scikit-video.org
@@ -56,7 +56,7 @@ Here are the requirements needed to use scikit-video.
 
 Installation::
 
-$ sudo pip install sk-video
+$ sudo pip install scikit-video
 
 Installing from github
 
@@ -75,18 +75,18 @@ where `python` may refer to either python2 or python3.
 Known conflicts
 ---------------
 
-If you installed scikit-video prior to version 1.1.2, you may have an import conflict. Run the following command to fix it::
+If you installed scikit-video prior to version 1.1.10, you may have an import conflict. Run the following command(s) to fix it::
 
-    $ sudo pip uninstall scikit-video
+    $ sudo pip uninstall sk-video
 
-To check that the conflict no longer exists, import skvideo and print the file path::
+Then To check that the conflict no longer exists, import skvideo and print the file path::
 
     import skvideo
     print(skvideo.__file__)
 
-if setup correctly, you should see `sk_video` in the path::
+if setup correctly, you should see `scikit_video` in the path::
 
-/usr/lib/python2.7/site-packages/sk_video-*.*.*-py2.7.egg/skvideo/__init__.pyc
+/usr/lib/python*/site-packages/scikit_video-*.*.*-py*.egg/skvideo/__init__.pyc
 
 
 TODO/Roadmap
