@@ -29,8 +29,8 @@ You may be using an old version of scikit-video. Uninstall it using
 
 .. code-block:: python
 
-    $ sudo pip uninstall scikit-video
-    $ sudo pip install sk-video
+    $ sudo pip uninstall sk-video
+    $ sudo pip install scikit-video
 
 You can verify the module path by importing skvideo and printing the path to the init file
 
@@ -43,7 +43,7 @@ This should produce output like
 
 .. code-block:: python
 
-    /usr/lib/python2.7/site-packages/sk_video-*.*.*-py2.7.egg/skvideo/__init__.pyc
+  /usr/lib/python*/site-packages/scikit_video-*.*.*-py*.egg/skvideo/__init__.pyc
 
 
 

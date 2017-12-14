@@ -8,7 +8,7 @@
 
 .. code-block:: python
 
-    $ sudo pip install sk-video
+    $ sudo pip install scikit-video
 
 .. only:: html
     
