@@ -4,13 +4,14 @@ Implementation of scene detection algorithms.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
-import time
+from tqdm import tqdm
 
 from ..utils import *
 from ..motion.gme import globalEdgeMotion
+
+default_parameter = {'histogram': 1.0, 'edges': .6, 'intensity': 1.0}
 
 
 def _percentage_distance(canny_in, canny_out, r):
@@ -20,6 +21,7 @@ def _percentage_distance(canny_in, canny_out, r):
     E_2 = scipy.ndimage.morphology.binary_dilation(canny_out, structure=diamond, iterations=r)
 
     return 1.0 - np.float32(np.sum(E_1 & E_2))/np.float32(np.sum(E_1))
+
 
 def _scenedet_edges(videodata, threshold, min_scene_len=2):
     # the first frame is always a new scene
@@ -34,7 +36,7 @@ def _scenedet_edges(videodata, threshold, min_scene_len=2):
     # lop off the meaningless dimension
     luminancedata = luminancedata[:, :, :, 0]
 
-    for t in range(0, numFrames-1):
+    for t in tqdm(range(0, numFrames-1)):
         canny_in = canny(luminancedata[t])
         canny_out = canny(luminancedata[t+1])
 
@@ -62,7 +64,7 @@ def _scenedet_histogram(videodata, parameter1, min_scene_len=2):
     # grayscale
     numFrames, height, width, channels = videodata.shape
 
-    for t in range(0, numFrames-1):
+    for t in tqdm(range(0, numFrames-1)):
         curr = rgb2gray(videodata[t])
         nxt = rgb2gray(videodata[t+1])
         curr = curr[0, :, :, 0]
@@ -89,7 +91,7 @@ def _scenedet_intensity(videodata, parameter1, min_scene_len=2, colorspace='hsv'
 
     numFrames, height, width, channels = videodata.shape
 
-    for t in range(0, numFrames-1):
+    for t in tqdm(range(0, numFrames-1)):
         frame0 = videodata[t].astype(np.float32)
         frame1 = videodata[t+1].astype(np.float32)
 
@@ -99,7 +101,6 @@ def _scenedet_intensity(videodata, parameter1, min_scene_len=2, colorspace='hsv'
             detected_scenes.append(t+1)
 
     return np.array(detected_scenes)
-
 
 
 def scenedet(videodata, method='histogram', parameter1=None, min_scene_length=2):
@@ -142,21 +143,12 @@ def scenedet(videodata, method='histogram', parameter1=None, min_scene_length=2)
     """
     videodata = vshape(videodata)
 
-    detected_scenes = []
-    if method == "histogram":
-        if parameter1 is None:
-            parameter1 = 1.0
-        detected_scenes = _scenedet_histogram(videodata, parameter1, min_scene_length)
-    elif method == "edges":
-        if parameter1 is None:
-            parameter1 = 0.6
-        detected_scenes = _scenedet_edges(videodata, parameter1, min_scene_length)
-    elif method == "intensity":
-        if parameter1 is None:
-            parameter1 = 1.0
-        detected_scenes = _scenedet_intensity(videodata, parameter1, min_scene_length)
-    else:
+    if default_parameter.get(method) is None:
         raise NotImplementedError
+
+    parameter1 = default_parameter[method] if parameter1 is None else parameter1
+    fn = eval('_scenedet_'.format(method))
+    detected_scenes = fn(videodata, parameter1, min_scene_length)
 
     return detected_scenes
 
