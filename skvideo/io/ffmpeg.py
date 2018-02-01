@@ -72,6 +72,7 @@ class FFmpegReader():
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
         israw = 0
+        iswebcam = 0
 
         if not inputdict:
             inputdict = {}
@@ -153,6 +154,9 @@ class FFmpegReader():
         if (str.encode(self.extension) in [b".raw", b".yuv"]):
             israw = 1
 
+        if viddict.get('@codec_name', '') == 'rawvideo':
+            iswebcam = 1
+
         if ("-vframes" in outputdict):
             self.inputframenum = np.int(outputdict["-vframes"])
         elif ("-r" in outputdict):
@@ -164,12 +168,15 @@ class FFmpegReader():
         elif israw == 1:
             # we can compute it based on the input size and color space
             self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (self.bpp/8.0)))
+        elif iswebcam == 1:
+            # webcam can stream frames endlessly, lets use the special default value of 0 to indicate that
+            self.inputframenum = 0
         else:
             self.inputframenum = -1
             if verbosity != 0:
                 warnings.warn("Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.", UserWarning) 
 
-        if israw != 0:
+        if israw != 0 or iswebcam != 0:
             inputdict['-pix_fmt'] = self.pix_fmt
         else:
             # check that the extension makes sense
@@ -293,8 +300,12 @@ class FFmpegReader():
         M is height, N is width, and C is number of channels per pixel.
 
         """
-        for i in range(self.inputframenum):
-            yield self._readFrame()
+        if self.inputframenum == 0:
+            while True:
+                yield self._readFrame()
+        else:
+            for i in range(self.inputframenum):
+                yield self._readFrame()
 
 
 class FFmpegWriter():
