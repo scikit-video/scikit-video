@@ -13,6 +13,7 @@ from .brisque import *
 from .videobliinds import *
 from .viideo import *
 from .niqe import *
+from .Li3DDCT import *
 
 __all__ = [
     'msssim',
@@ -26,5 +27,6 @@ __all__ = [
     'videobliinds_features',
     'viideo_features',
     'viideo_score',
+    'Li3DDCT_features',
     'niqe',
 ]
