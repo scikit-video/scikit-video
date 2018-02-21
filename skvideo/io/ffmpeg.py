@@ -154,7 +154,7 @@ class FFmpegReader():
         if (str.encode(self.extension) in [b".raw", b".yuv"]):
             israw = 1
 
-        if viddict.get('@codec_name', '') == 'rawvideo':
+        if not os.path.isfile(filename):
             iswebcam = 1
 
         if ("-vframes" in outputdict):
