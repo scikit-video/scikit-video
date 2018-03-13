@@ -274,7 +274,7 @@ class FFmpegReader():
 
         try:
             # Read framesize bytes
-            arr = np.fromstring(self._proc.stdout.read(framesize), dtype=np.uint8)
+            arr = np.frombuffer(self._proc.stdout.read(framesize), dtype=np.uint8)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -286,7 +286,7 @@ class FFmpegReader():
         # Read and convert to numpy array
         # t0 = time.time()
         s = self._read_frame_data()
-        result = np.fromstring(s, dtype='uint8')
+        result = np.frombuffer(s, dtype='uint8')
 
         result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
 
