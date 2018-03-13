@@ -2,8 +2,8 @@ conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose co
 
 echo $TRAVIS_PYTHON_VERSION
 if [[ "$TRAVIS_PYTHON_VERSION" == "2.6" ]]; then
-	conda install --yes python=$TRAVIS_PYTHON_VERSION unittest2 scipy=0.14.0
-  pip install -I pillow==3.4.2
+	conda install --yes python=$TRAVIS_PYTHON_VERSION unittest2 scipy==0.16.0
+    pip install -I pillow==3.4.2
 fi
 
 GIT_TRAVIS_REPO=$(pwd)
