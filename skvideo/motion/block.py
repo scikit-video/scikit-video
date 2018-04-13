@@ -638,8 +638,8 @@ def _N3SS(imgP, imgI, mbSize, p):
                                (refBlkHor < 0) or
                                (refBlkHor + mbSize > w)):
                                     continue
-                            costRow = m/stepSize + 1
-                            costCol = n/stepSize + 1
+                            costRow = np.int(m / stepSize) + 1
+                            costCol = np.int(n / stepSize) + 1
                             if ((costRow == 1) and (costCol == 1)):
                                 continue
                             costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
