@@ -990,8 +990,8 @@ def _subcomp(framedata, motionVect, mbSize):
 
     for i in range(0, M - mbSize + 1, mbSize):
         for j in range(0, N - mbSize + 1, mbSize):
-            dy = motionVect[i / mbSize, j / mbSize, 0]
-            dx = motionVect[i / mbSize, j / mbSize, 1]
+            dy = motionVect[np.int(i / mbSize), np.int(j / mbSize), 0]
+            dx = motionVect[np.int(i / mbSize), np.int(j / mbSize), 1]
 
             refBlkVer = i + dy
             refBlkHor = j + dx
