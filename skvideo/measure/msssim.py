@@ -91,7 +91,7 @@ def msssim(referenceVideoData, distortedVideoData, method='product'):
     T, M, N, C = referenceVideoData.shape
 
     assert C == 1, "MS-SSIM called with videos containing %d channels. Please supply only the luminance channel" % (C,)
-    assert (M >= 176) | (N >= 176), "You supplied a resolution of %dx%d. MS-SSIM can only be used with videos large enough having multiple scales. Please use only with resolutions >= 176x176." % (M, N)
+    assert (M >= 176) & (N >= 176), "You supplied a resolution of %dx%d. MS-SSIM can only be used with videos large enough having multiple scales. Please use only with resolutions >= 176x176." % (M, N)
 
     scores = np.zeros(T, dtype=np.float32)
     for t in range(T):
