@@ -488,7 +488,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
                     y = refBlkVerPointF
 
                 costs[:] = 65537
-                stepSize /= 2
+                stepSize = np.int(stepSize / 2)
 
             vectors[np.int(i / mbSize), np.int(j / mbSize), :] = [y - i, x - j]
 
@@ -627,7 +627,7 @@ def _N3SS(imgP, imgI, mbSize, p):
             elif NTSSFlag == 0:
                 costs[:, :] = 65537
                 costs[1, 1] = min1
-                stepSize = stepMax / 2
+                stepSize = np.int(stepMax / 2)
                 while(stepSize >= 1):
                     for m in range(-stepSize, stepSize+1, stepSize):
                         for n in range(-stepSize, stepSize+1, stepSize):
@@ -649,7 +649,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                     x += (dx - 1) * stepSize
                     y += (dy - 1) * stepSize
 
-                    stepSize /= 2
+                    stepSize = np.int(stepSize / 2)
                     costs[1, 1] = costs[dy, dx]
 
 
@@ -702,7 +702,7 @@ def _3SS(imgP, imgI, mbSize, p):
                 x += (dx - 1) * stepSize
                 y += (dy - 1) * stepSize
 
-                stepSize /= 2
+                stepSize = np.int(stepSize / 2)
                 costs[1, 1] = costs[dy, dx]
             vectors[np.int(i / mbSize), np.int(j / mbSize), :] = [y - i, x - j]
 
