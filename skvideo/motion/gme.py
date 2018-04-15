@@ -61,6 +61,15 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
     """
 
     # if type bool, then these are edge maps. No need to convert them
+    frame1 = vshape(frame1)
+    frame2 = vshape(frame2)
+    if frame1.shape[3] == 3:
+        frame1 = rgb2gray(frame1)
+    if frame2.shape[3] == 3:
+        frame2 = rgb2gray(frame2)
+    frame1 = frame1[0, ..., 0]
+    frame2 = frame2[0, ..., 0]
+
     if frame1.dtype != np.bool:
         E_1 = canny(frame1)
     else:
