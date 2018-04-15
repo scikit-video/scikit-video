@@ -3,11 +3,11 @@ import numpy as np
 import scipy.ndimage
 
 
-def mad(referenceVideoData, distortedVideoData):
-    """Computes mean absolute deviation (MAD).
+def mae(referenceVideoData, distortedVideoData):
+    """Computes mean absolute error (MAE).
 
     Both video inputs are compared frame-by-frame to obtain T
-    MAD measurements.
+    MAE measurements.
 
     Parameters
     ----------
@@ -23,8 +23,8 @@ def mad(referenceVideoData, distortedVideoData):
 
     Returns
     -------
-    mad_array : ndarray
-        The mad results, ndarray of dimension (T,), where T
+    mae_array : ndarray
+        The mae results, ndarray of dimension (T,), where T
         is the number of frames
 
     """
@@ -36,15 +36,15 @@ def mad(referenceVideoData, distortedVideoData):
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "mad called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    assert C == 1, "mae called with videos containing %d channels. Please supply only the luminance channel" % (C,)
 
     scores = np.zeros(T, dtype=np.float32)
     for t in range(T):
         referenceFrame = referenceVideoData[t].astype(np.float32)
         distortedFrame = distortedVideoData[t].astype(np.float32)
 
-        mad = np.mean(np.abs(referenceFrame - distortedFrame))
+        mae = np.mean(np.abs(referenceFrame - distortedFrame))
 
-        scores[t] = mad
+        scores[t] = mae
 
     return scores
