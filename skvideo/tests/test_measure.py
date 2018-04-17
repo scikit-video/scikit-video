@@ -152,12 +152,12 @@ def test_measure_NIQE():
     assert_almost_equal(scores[1], 11.055174827576, decimal=10)
 
 
-def test_measure_MAD():
+def test_measure_MAE():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)
     dis = skvideo.io.vread(vidpaths[1], as_grey=True)
 
-    scores = skvideo.measure.mad(ref, dis)
+    scores = skvideo.measure.mae(ref, dis)
 
     avg_score = np.mean(scores)
 
