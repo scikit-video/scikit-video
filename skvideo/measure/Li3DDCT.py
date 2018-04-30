@@ -34,7 +34,7 @@ def Li3DDCT_features(videoData):
     T, M, N, C = videoData.shape
 
     assert C == 1, "called with video having %d channels. Please supply only the luminance channel." % (C,)
-    assert T >= 4, "Not enough input frames. Please supply at least 4" % (C,)
+    assert T >= 4, "Only %d input frames. Please supply at least 4" % (T,)
 
     feats = np.zeros((63*5,), dtype=np.float32)
     newM = np.int32(np.floor(M/4)*4)
