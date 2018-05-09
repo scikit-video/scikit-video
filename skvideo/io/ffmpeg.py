@@ -60,7 +60,7 @@ class FFmpegReader():
             Input dictionary parameters, i.e. how to interpret the input file.
 
         outputdict : dict
-            Output dictionary parameters, i.e. how to encode the data 
+            Output dictionary parameters, i.e. how to encode the data
             when sending back to the python process.
 
         Returns
@@ -174,7 +174,7 @@ class FFmpegReader():
         else:
             self.inputframenum = -1
             if verbosity != 0:
-                warnings.warn("Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.", UserWarning) 
+                warnings.warn("Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.", UserWarning)
 
         if israw != 0 or iswebcam != 0:
             inputdict['-pix_fmt'] = self.pix_fmt
@@ -235,8 +235,8 @@ class FFmpegReader():
                                   stdout=sp.PIPE, stderr=None)
 
     def getShape(self):
-        """Returns a tuple (T, M, N, C) 
-        
+        """Returns a tuple (T, M, N, C)
+
         Returns the video shape in number of frames, height, width, and channels per pixel.
         """
 
@@ -294,9 +294,9 @@ class FFmpegReader():
         return result
 
     def nextFrame(self):
-        """Yields frames using a generator 
-        
-        Returns T ndarrays of size (M, N, C), where T is number of frames, 
+        """Yields frames using a generator
+
+        Returns T ndarrays of size (M, N, C), where T is number of frames,
         M is height, N is width, and C is number of channels per pixel.
 
         """
@@ -316,7 +316,7 @@ class FFmpegWriter():
     """
     def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
         """Prepares parameters for FFmpeg
-    
+
         Does not instantiate the an FFmpeg subprocess, but simply
         prepares the required parameters.
 
@@ -329,7 +329,7 @@ class FFmpegWriter():
             Input dictionary parameters, i.e. how to interpret the data coming from python.
 
         outputdict : dict
-            Output dictionary parameters, i.e. how to encode the data 
+            Output dictionary parameters, i.e. how to encode the data
             when writing to file.
 
         Returns
@@ -343,8 +343,9 @@ class FFmpegWriter():
 
         _, self.extension = os.path.splitext(filename)
 
-        # check that the extension makes sense
-        assert str.encode(self.extension).lower() in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension.lower()
+        # check that the extension makes sense, but only if we're not looking at a stream (tcp/udp/rtsp)
+        if '://' not in filename
+            assert str.encode(self.extension).lower() in _FFMPEG_SUPPORTED_ENCODERS, "Unknown encoder extension: " + self.extension.lower()
 
         basepath, _ = os.path.split(filename)
 
@@ -376,7 +377,7 @@ class FFmpegWriter():
         self.warmStarted = 1
 
         if "-pix_fmt" not in self.inputdict:
-            # check the number channels to guess 
+            # check the number channels to guess
             if C == 1:
                 self.inputdict["-pix_fmt"] = "gray"
             elif C == 2:
@@ -390,14 +391,14 @@ class FFmpegWriter():
 
         self.bpp = bpplut[self.inputdict["-pix_fmt"]][1]
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]
-        
-        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (self.inputNumChannels, self.inputdict["-pix_fmt"])  
+
+        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (self.inputNumChannels, self.inputdict["-pix_fmt"])
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')
             self.inputwidth = np.int(widthheight[0])
             self.inputheight = np.int(widthheight[1])
-        else: 
+        else:
             self.inputdict["-s"] = str(N) + "x" + str(M)
             self.inputwidth = N
             self.inputheight = M
