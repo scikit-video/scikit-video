@@ -53,7 +53,7 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
 
     .. [#f2] A. Mittal, M. A. Saad and A. C. Bovik, "A 'Completely Blind' Video Integrity Oracle", submitted to IEEE Transactions in Image Processing, 2014.
     """
-    features = viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlength=7)
+    features = viideo_features(videoData, blocksize=blocksize, blockoverlap=blockoverlap, filterlength=filterlength)
 
     features = features.reshape(features.shape[0], -1, features.shape[3])
 
