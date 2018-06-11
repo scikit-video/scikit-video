@@ -280,7 +280,7 @@ class FFmpegReader():
 
         try:
             # Read framesize bytes
-            arr = np.frombuffer(self._proc.stdout.read(framesize*self.dtype.itemsize), dtype=self.dtype)
+            arr = np.frombuffer(self._proc.stdout.read(framesize*int(self.dtype.itemsize)), dtype=self.dtype)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -482,7 +482,7 @@ class FFmpegWriter():
         if not self.warmStarted:
             self._warmStart(M, N, C, im.dtype)
 
-        vid = vid.clip(0,(1<<(self.dtype.itemsize<<3))-1).astype(self.dtype)
+        vid = vid.clip(0,(1<<int(self.dtype.itemsize<<3))-1).astype(self.dtype)
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:
@@ -501,3 +501,4 @@ class FFmpegWriter():
             msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
                   'OUTPUT:\n'.format(e, self._cmd)
             raise IOError(msg)
+

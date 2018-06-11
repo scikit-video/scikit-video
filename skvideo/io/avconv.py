@@ -243,7 +243,7 @@ class LibAVReader():
 
         try:
             # Read framesize bytes
-            arr = np.frombuffer(self._proc.stdout.read(framesize * self.dtype.itemsize), dtype=self.dtype)
+            arr = np.frombuffer(self._proc.stdout.read(framesize * int(self.dtype.itemsize)), dtype=self.dtype)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -265,6 +265,7 @@ class LibAVReader():
         """
         for i in range(self.inputframenum):
             yield self._readFrame()
+
 
 
 class LibAVWriter():
@@ -447,7 +448,7 @@ class LibAVWriter():
         if not self.warmStarted:
             self._warmStart(M, N, C, im.dtype)
 
-        vid = vid.clip(0, (1 << (self.dtype.itemsize << 3)) - 1).astype(self.dtype)
+        vid = vid.clip(0, (1 << int(self.dtype.itemsize << 3)) - 1).astype(self.dtype)
 
         if self.rgb2grayhack:
             # convert grayscale vid to 3 channel
