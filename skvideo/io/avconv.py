@@ -168,7 +168,7 @@ class LibAVReader():
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
         bitpercomponent = self.outputbpp // self.outputdepth
         if bitpercomponent == 8:
-            self.dtype = np.uint8
+            self.dtype = np.dtype('u1') #np.uint8
         elif bitpercomponent == 16:
             suffix = outputdict['-pix_fmt'][-2:]
             if suffix == 'le':
@@ -243,7 +243,7 @@ class LibAVReader():
 
         try:
             # Read framesize bytes
-            arr = np.frombuffer(self._proc.stdout.read(framesize * int(self.dtype.itemsize)), dtype=self.dtype)
+            arr = np.frombuffer(self._proc.stdout.read(framesize * self.dtype.itemsize), dtype=self.dtype)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -366,7 +366,7 @@ class LibAVWriter():
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]
         bitpercomponent = self.bpp // self.inputNumChannels
         if bitpercomponent == 8:
-            self.dtype = np.uint8
+            self.dtype = np.dtype('u1') #np.uint8
         elif bitpercomponent == 16:
             suffix = self.inputdict['-pix_fmt'][-2:]
             if suffix == 'le':
@@ -448,7 +448,7 @@ class LibAVWriter():
         if not self.warmStarted:
             self._warmStart(M, N, C, im.dtype)
 
-        vid = vid.clip(0, (1 << int(self.dtype.itemsize << 3)) - 1).astype(self.dtype)
+        vid = vid.clip(0, (1 << (self.dtype.itemsize << 3)) - 1).astype(self.dtype)
 
         if self.rgb2grayhack:
             # convert grayscale vid to 3 channel
