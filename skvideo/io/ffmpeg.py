@@ -7,26 +7,21 @@ a wide range of video formats.
 # Copyright (c) 2015, imageio contributors
 # distributed under the terms of the BSD License (included in release).
 
-import sys
 import os
-import stat
-import re
-import time
-import threading
 import subprocess as sp
-import logging
-import json
+import time
 import warnings
 
 import numpy as np
 
 from .ffprobe import ffprobe
-from ..utils import *
-from .. import _HAS_FFMPEG
+from .. import _FFMPEG_APPLICATION
 from .. import _FFMPEG_PATH
 from .. import _FFMPEG_SUPPORTED_DECODERS
 from .. import _FFMPEG_SUPPORTED_ENCODERS
-from .. import _FFMPEG_APPLICATION
+from .. import _HAS_FFMPEG
+from ..utils import *
+
 
 # uses FFmpeg to read the given file with parameters
 class FFmpegReader():
@@ -201,6 +196,17 @@ class FFmpegReader():
 
         self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
+        bitpercomponent = self.outputbpp//self.outputdepth
+        if bitpercomponent == 8:
+            self.dtype = np.uint8
+        elif bitpercomponent == 16:
+            suffix = outputdict['-pix_fmt'][-2:]
+            if suffix == 'le':
+                self.dtype = np.dtype('<u2')
+            elif suffix == 'be':
+                self.dtype = np.dtype('>u2')
+        else:
+            raise ValueError(outputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
         if '-vcodec' not in outputdict:
             outputdict['-vcodec'] = "rawvideo"
@@ -274,7 +280,7 @@ class FFmpegReader():
 
         try:
             # Read framesize bytes
-            arr = np.frombuffer(self._proc.stdout.read(framesize), dtype=np.uint8)
+            arr = np.frombuffer(self._proc.stdout.read(framesize*int(self.dtype.itemsize)), dtype=self.dtype)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -284,14 +290,8 @@ class FFmpegReader():
 
     def _readFrame(self):
         # Read and convert to numpy array
-        # t0 = time.time()
-        s = self._read_frame_data()
-        result = np.frombuffer(s, dtype='uint8')
-
-        result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
-
-        self._lastread = result
-        return result
+        self._lastread = self._read_frame_data().reshape((self.outputheight, self.outputwidth, self.outputdepth))
+        return self._lastread
 
     def nextFrame(self):
         """Yields frames using a generator 
@@ -372,24 +372,48 @@ class FFmpegWriter():
             self.inputdict["-f"] = "rawvideo"
         self.warmStarted = 0
 
-    def _warmStart(self, M, N, C):
+    def _warmStart(self, M, N, C, dtype):
         self.warmStarted = 1
 
         if "-pix_fmt" not in self.inputdict:
-            # check the number channels to guess 
-            if C == 1:
-                self.inputdict["-pix_fmt"] = "gray"
-            elif C == 2:
-                self.inputdict["-pix_fmt"] = "ya8"
-            elif C == 3:
-                self.inputdict["-pix_fmt"] = "rgb24"
-            elif C == 4:
-                self.inputdict["-pix_fmt"] = "rgba"
+            # check the number channels to guess
+            if dtype.kind == 'u' and dtype.itemsize == 2:
+                suffix = '<' if dtype.byteorder else '>'
+                if C == 1:
+                    self.inputdict["-pix_fmt"] = "gray16" + suffix
+                elif C == 2:
+                    self.inputdict["-pix_fmt"] = "ya16" + suffix
+                elif C == 3:
+                    self.inputdict["-pix_fmt"] = "rgb48" + suffix
+                elif C == 4:
+                    self.inputdict["-pix_fmt"] = "rgba64" + suffix
+                else:
+                    raise NotImplemented
             else:
-                raise NotImplemented
+                if C == 1:
+                    self.inputdict["-pix_fmt"] = "gray"
+                elif C == 2:
+                    self.inputdict["-pix_fmt"] = "ya8"
+                elif C == 3:
+                    self.inputdict["-pix_fmt"] = "rgb24"
+                elif C == 4:
+                    self.inputdict["-pix_fmt"] = "rgba"
+                else:
+                    raise NotImplemented
 
         self.bpp = bpplut[self.inputdict["-pix_fmt"]][1]
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]
+        bitpercomponent = self.bpp // self.inputNumChannels
+        if bitpercomponent == 8:
+            self.dtype = np.uint8
+        elif bitpercomponent == 16:
+            suffix = self.inputdict['-pix_fmt'][-2:]
+            if suffix == 'le':
+                self.dtype = np.dtype('<u2')
+            elif suffix == 'be':
+                self.dtype = np.dtype('>u2')
+        else:
+            raise ValueError(self.inputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
         
         assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (self.inputNumChannels, self.inputdict["-pix_fmt"])  
 
@@ -456,12 +480,9 @@ class FFmpegWriter():
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:
-            self._warmStart(M, N, C)
+            self._warmStart(M, N, C, im.dtype)
 
-        # Ensure that ndarray image is in uint8
-        vid[vid > 255] = 255
-        vid[vid < 0] = 0
-        vid = vid.astype(np.uint8)
+        vid = vid.clip(0,(1<<int(self.dtype.itemsize<<3))-1).astype(self.dtype)
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:
@@ -480,3 +501,4 @@ class FFmpegWriter():
             msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
                   'OUTPUT:\n'.format(e, self._cmd)
             raise IOError(msg)
+

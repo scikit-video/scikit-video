@@ -7,24 +7,19 @@ a wide range of video formats.
 # Copyright (c) 2015, imageio contributors
 # distributed under the terms of the BSD License (included in release).
 
-import sys
 import os
-import stat
-import re
-import time
-import threading
 import subprocess as sp
-import logging
-import json
+import time
 import warnings
 
 import numpy as np
 
 from .avprobe import avprobe
-from ..utils import *
-from .. import _HAS_AVCONV
-from .. import _AVCONV_PATH
 from .. import _AVCONV_APPLICATION
+from .. import _AVCONV_PATH
+from .. import _HAS_AVCONV
+from ..utils import *
+
 
 # uses libav to read the given file with parameters
 class LibAVReader():
@@ -171,7 +166,17 @@ class LibAVReader():
 
         self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
         self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
-
+        bitpercomponent = self.outputbpp // self.outputdepth
+        if bitpercomponent == 8:
+            self.dtype = np.uint8
+        elif bitpercomponent == 16:
+            suffix = outputdict['-pix_fmt'][-2:]
+            if suffix == 'le':
+                self.dtype = np.dtype('<u2')
+            elif suffix == 'be':
+                self.dtype = np.dtype('>u2')
+        else:
+            raise ValueError(outputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
         # Create input args
         iargs = []
@@ -238,7 +243,7 @@ class LibAVReader():
 
         try:
             # Read framesize bytes
-            arr = np.fromstring(self._proc.stdout.read(framesize), dtype=np.uint8)
+            arr = np.frombuffer(self._proc.stdout.read(framesize * int(self.dtype.itemsize)), dtype=self.dtype)
             assert len(arr) == framesize
         except Exception as err:
             self._terminate()
@@ -248,16 +253,8 @@ class LibAVReader():
 
     def _readFrame(self):
         # Read and convert to numpy array
-        # t0 = time.time()
-        s = self._read_frame_data()
-        result = np.fromstring(s, dtype='uint8')
-        result = result.reshape((self.outputheight, self.outputwidth, self.outputdepth))
-        # t1 = time.time()
-        # print('etime', t1-t0)
-
-        # Store and return
-        self._lastread = result
-        return result
+        self._lastread = self._read_frame_data().reshape((self.outputheight, self.outputwidth, self.outputdepth))
+        return self._lastread
 
     def nextFrame(self):
         """Yields frames using a generator 
@@ -268,6 +265,7 @@ class LibAVReader():
         """
         for i in range(self.inputframenum):
             yield self._readFrame()
+
 
 
 class LibAVWriter():
@@ -327,31 +325,58 @@ class LibAVWriter():
 
         self.rgb2grayhack = 0
 
-    def _warmStart(self, M, N, C):
+    def _warmStart(self, M, N, C, dtype):
         self.warmStarted = 1
 
         if "-pix_fmt" not in self.inputdict:
-            # check the number channels to guess 
-            if C == 1:
-                # unfortunately, 'gray' has a bug for avconv
-                # enable gray -> rgb hack
-                self.inputdict["-pix_fmt"] = "gray"
-                self.inputdict["-pix_fmt"] = "rgb24"
-                self.rgb2grayhack = 1
-                C = 3
-            elif C == 2:
-                self.inputdict["-pix_fmt"] = "ya8"
-            elif C == 3:
-                self.inputdict["-pix_fmt"] = "rgb24"
-            elif C == 4:
-                self.inputdict["-pix_fmt"] = "rgba"
+            # check the number channels to guess
+            if dtype.kind == 'u' and dtype.itemsize == 2:
+                suffix = '<' if dtype.byteorder else '>'
+                if C == 1:
+                    # lets assume that 'gray16?e' has the same bug as 'gray' for avconv
+                    # enable gray -> rgb hack
+                    self.inputdict["-pix_fmt"] = "rgb48" + suffix
+                    self.rgb2grayhack = 1
+                    C = 3
+                elif C == 2:
+                    self.inputdict["-pix_fmt"] = "ya16" + suffix
+                elif C == 3:
+                    self.inputdict["-pix_fmt"] = "rgb48" + suffix
+                elif C == 4:
+                    self.inputdict["-pix_fmt"] = "rgba64" + suffix
+                else:
+                    raise NotImplemented
             else:
-                raise NotImplemented
+                if C == 1:
+                    # unfortunately, 'gray' has a bug for avconv
+                    # enable gray -> rgb hack
+                    self.inputdict["-pix_fmt"] = "rgb24"
+                    self.rgb2grayhack = 1
+                    C = 3
+                elif C == 2:
+                    self.inputdict["-pix_fmt"] = "ya8"
+                elif C == 3:
+                    self.inputdict["-pix_fmt"] = "rgb24"
+                elif C == 4:
+                    self.inputdict["-pix_fmt"] = "rgba"
+                else:
+                    raise NotImplemented
 
         self.bpp = bpplut[self.inputdict["-pix_fmt"]][1]
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]
-        
-        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (self.inputNumChannels, self.inputdict["-pix_fmt"])  
+        bitpercomponent = self.bpp // self.inputNumChannels
+        if bitpercomponent == 8:
+            self.dtype = np.uint8
+        elif bitpercomponent == 16:
+            suffix = self.inputdict['-pix_fmt'][-2:]
+            if suffix == 'le':
+                self.dtype = np.dtype('<u2')
+            elif suffix == 'be':
+                self.dtype = np.dtype('>u2')
+        else:
+            raise ValueError(self.inputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
+
+        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (self.inputNumChannels, self.inputdict["-pix_fmt"])
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')
@@ -421,21 +446,18 @@ class LibAVWriter():
         vid = vshape(im)
         T, M, N, C = vid.shape
         if not self.warmStarted:
-            self._warmStart(M, N, C)
+            self._warmStart(M, N, C, im.dtype)
 
-        # Ensure that ndarray image is in uint8
-        vid[vid > 255] = 255
-        vid[vid < 0] = 0
-        vid = vid.astype(np.uint8)
+        vid = vid.clip(0, (1 << int(self.dtype.itemsize << 3)) - 1).astype(self.dtype)
 
         if self.rgb2grayhack:
             # convert grayscale vid to 3 channel
-            vid2 = np.zeros((T, M, N, 3), dtype=np.uint8)
+            vid2 = np.empty((T, M, N, 3), dtype=vid.dtype)
             vid2[:, :, :, 0] = vid[:, :, :, 0]
             vid2[:, :, :, 1] = vid[:, :, :, 0]
             vid2[:, :, :, 2] = vid[:, :, :, 0]
             vid = vid2
-            T, M, N, C = vid.shape
+            C = 3
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:

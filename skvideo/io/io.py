@@ -1,13 +1,13 @@
 import numpy as np
-import subprocess
-import os
-from ..utils import *
-from .ffmpeg import FFmpegReader
-from .ffmpeg import FFmpegWriter
+
 from .avconv import LibAVReader
 from .avconv import LibAVWriter
-from .. import _HAS_FFMPEG
+from .ffmpeg import FFmpegReader
+from .ffmpeg import FFmpegWriter
 from .. import _HAS_AVCONV
+from .. import _HAS_FFMPEG
+from ..utils import *
+
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
     """Save a video to file entirely from memory.
@@ -144,11 +144,11 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         T, M, N, C = reader.getShape()
 
-        videodata = np.zeros((T, M, N, C), dtype=np.uint8)
+        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
         for idx, frame in enumerate(reader.nextFrame()):
             videodata[idx, :, :, :] = frame
 
-        if as_grey: 
+        if as_grey:
             videodata = vshape(videodata[:, :, :, 0])
         reader.close()
 
@@ -166,7 +166,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         T, M, N, C = reader.getShape()
 
-        videodata = np.zeros((T, M, N, C), dtype=np.uint8)
+        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
         for idx, frame in enumerate(reader.nextFrame()):
             videodata[idx, :, :, :] = frame
 
