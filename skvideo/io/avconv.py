@@ -15,6 +15,7 @@ from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .avprobe import avprobe
 from .. import _AVCONV_APPLICATION
 from .. import _AVCONV_PATH
+from .. import _HAS_AVCONV
 from ..utils import *
 
 
@@ -33,6 +34,10 @@ class LibAVReader(VideoReaderAbstract):
     INFO_DURATION = "duration"
     INFO_NB_FRAMES = "nb_frames"
     OUTPUT_METHOD = "rawvideo"
+
+    def __init__(self, *args, **kwargs):
+        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        super().__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         iargs = self._dict2Args(inputdict)
@@ -69,6 +74,10 @@ class LibAVWriter(VideoWriterAbstract):
     """
 
     NEED_RGB2GRAY_HACK = True
+
+    def __init__(self, *args, **kwargs):
+        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        super().__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         iargs = self._dict2Args(inputdict)

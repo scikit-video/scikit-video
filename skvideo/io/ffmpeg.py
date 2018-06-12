@@ -17,6 +17,7 @@ from .. import _FFMPEG_APPLICATION
 from .. import _FFMPEG_PATH
 from .. import _FFMPEG_SUPPORTED_DECODERS
 from .. import _FFMPEG_SUPPORTED_ENCODERS
+from .. import _HAS_FFMPEG
 from ..utils import *
 
 
@@ -37,6 +38,10 @@ class FFmpegReader(VideoReaderAbstract):
     INFO_DURATION = "@duration" #"duration"
     INFO_NB_FRAMES = "@nb_frames" #"nb_frames"
     OUTPUT_METHOD = "image2pipe" # "rawvideo"
+
+    def __init__(self, *args, **kwargs):
+        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        super().__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         if '-vcodec' not in outputdict:
@@ -77,6 +82,10 @@ class FFmpegWriter(VideoWriterAbstract):
     Using FFmpeg as a backend, this class
     provides sane initializations for the default case.
     """
+
+    def __init__(self, *args, **kwargs):
+        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        super().__init__(*args, **kwargs)
 
     def _getSupportedEncoders(self):
         return _FFMPEG_SUPPORTED_ENCODERS
