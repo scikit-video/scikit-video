@@ -1,11 +1,13 @@
-import skvideo.io
-import skvideo.motion
-import skvideo.datasets
-
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.misc
 
+import skvideo.datasets
+
+try:
+    xrange
+except NameError:
+    xrange = range
 
 def getPlots(motionData):
     motionMagnitude = np.sqrt(np.sum(motionData**2, axis=2))

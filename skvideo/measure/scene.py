@@ -4,13 +4,11 @@ Implementation of scene detection algorithms.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
-import time
 
-from ..utils import *
 from ..motion.gme import globalEdgeMotion
+from ..utils import *
 
 
 def _percentage_distance(canny_in, canny_out, r):
@@ -121,7 +119,7 @@ def scenedet(videodata, method='histogram', parameter1=None, min_scene_length=2)
 
         "intensity" --> Detects fast cuts using changes in colour and intensity between frames. Parameter1 is the threshold used for detection, which defaults to 30.0.
 
-    parameter1 : int
+    parameter1 : float
         Number used as a tuning parameter. See method argument for details.
 
     min_scene_length : int
