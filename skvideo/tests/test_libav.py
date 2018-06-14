@@ -45,7 +45,7 @@ def test_LibAVReader_aboveversion9():
 
     assert_equal(accumulation / (T * M * N * C), 109.28332841215979)
 
-@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
+@unittest.skipIf(not skvideo._HAS_AVCONV, "FFmpeg required for this test.")
 def test_LibAVReader_16bits():
     reader16 = skvideo.io.LibAVReader(skvideo.datasets.bigbuckbunny(), outputdict={'-pix_fmt':'rgb48le'}, verbosity=0)
     reader8 = skvideo.io.LibAVReader(skvideo.datasets.bigbuckbunny(), outputdict={'-pix_fmt':'rgb24'}, verbosity=0)
@@ -55,7 +55,10 @@ def test_LibAVReader_16bits():
     N = 0
     C = 0
     accumulation = 0
+
     for frame8, frame16 in zip(reader8.nextFrame(), reader16.nextFrame()):
+        # testing with the measure module may be a better idea but would add a dependency
+
         # check that there is no more than a 3/256th defference between the 8bit and 16 bit decoded image
         assert(np.max(np.abs(frame8.astype('int32') - (frame16//256).astype('int32'))) < 4)
         # check that the mean difference is less than 1

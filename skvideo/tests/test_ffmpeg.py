@@ -49,10 +49,14 @@ def test_FFmpegReader_16bits():
     N = 0
     C = 0
     accumulation = 0
+
+
     for frame8, frame16 in zip(reader8.nextFrame(), reader16.nextFrame()):
+        # testing with the measure module may be a better idea but would add a dependency
+
         # check that there is no more than a 3/256th defference between the 8bit and 16 bit decoded image
         assert(np.max(np.abs(frame8.astype('int32') - (frame16//256).astype('int32'))) < 4)
-        # check that the mean difference is less than 1
+        # then check that the mean difference is less than 1
         assert(np.mean(np.abs(frame8.astype('float32') - (frame16//256).astype('float32'))) < 1.0)
         M, N, C = frame8.shape
         accumulation += np.sum(frame16//256)
@@ -109,4 +113,3 @@ def test_FFmpegWriter():
         writer.writeFrame(outputdata[i])
     writer.close()
     os.remove(outputfile)
-
