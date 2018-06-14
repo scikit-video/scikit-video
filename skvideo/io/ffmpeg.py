@@ -31,13 +31,13 @@ class FFmpegReader(VideoReaderAbstract):
 
     """
 
-    INFO_AVERAGE_FRAMERATE = "@r_frame_rate" #"avg_frame_rate"
-    INFO_WIDTH = "@width" #"width"
-    INFO_HEIGHT = "@height" #"height"
-    INFO_PIX_FMT = "@pix_fmt" #"pix_fmt"
-    INFO_DURATION = "@duration" #"duration"
-    INFO_NB_FRAMES = "@nb_frames" #"nb_frames"
-    OUTPUT_METHOD = "image2pipe" # "rawvideo"
+    INFO_AVERAGE_FRAMERATE = "@r_frame_rate"
+    INFO_WIDTH = "@width"
+    INFO_HEIGHT = "@height"
+    INFO_PIX_FMT = "@pix_fmt"
+    INFO_DURATION = "@duration"
+    INFO_NB_FRAMES = "@nb_frames"
+    OUTPUT_METHOD = "image2pipe"
 
     def __init__(self, *args, **kwargs):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
@@ -50,17 +50,17 @@ class FFmpegReader(VideoReaderAbstract):
         iargs = self._dict2Args(inputdict)
         oargs = self._dict2Args(outputdict)
 
-        if verbosity == 0:
-            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
-                                                                                                      self._filename] + oargs + [
-                      '-']
-            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=sp.PIPE)
-        else:
+        if verbosity > 0:
             cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
+        else:
+            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
+                                                                                                      self._filename] + oargs + [
+                      '-']
+        self._proc = sp.Popen(cmd, stdin=sp.PIPE,
+                              stdout=sp.PIPE, stderr=sp.PIPE)
         self._cmd = " ".join(cmd)
 
     def _probCountFrames(self):
@@ -99,10 +99,11 @@ class FFmpegWriter(VideoWriterAbstract):
         self._cmd = " ".join(cmd)
 
         # Launch process
-        if self.verbosity == 0:
-            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=self.DEVNULL, stderr=sp.STDOUT)
-        else:
+        if self.verbosity > 0:
             print(self._cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
+        else:
+            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
+                                  stdout=self.DEVNULL, stderr=sp.STDOUT)
+

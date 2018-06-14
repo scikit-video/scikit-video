@@ -73,8 +73,6 @@ class LibAVWriter(VideoWriterAbstract):
     provides sane initializations for the default case.
     """
 
-    NEED_RGB2GRAY_HACK = True
-
     def __init__(self, *args, **kwargs):
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
         super().__init__(*args, **kwargs)
@@ -95,3 +93,24 @@ class LibAVWriter(VideoWriterAbstract):
         else:
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
+
+    def _gray2RGB(self,data):
+        # convert grayscale vid to 3 channel
+        T,M,N,C = data.shape
+        if C < 3: # should always be True
+            vid = np.empty((T, M, N, C+2), dtype=data.dtype)
+            vid[:, :, :, 0] = data[:, :, :, 0]
+            vid[:, :, :, 1] = data[:, :, :, 0]
+            vid[:, :, :, 2] = data[:, :, :, 0]
+            if C==2:
+                vid[:, :, :, 3] = data[:, :, :, 1]
+            return vid
+        return data
+
+    def _warmStart(self, M, N, C, dtype):
+        if (C==2 or C==4) and dtype.itemsize==2:
+            raise ValueError("libAV doesnt support rgba64 formats")
+        if C < 3 and "-pix_fmt" not in self.inputdict: # pix_fmt gray, ya8 and their 16 bit equivalents have a bug in LibAV
+            C += 2
+            self._prepareData = self._gray2RGB #replace prepareData methode by the gray2RGB hack method
+        super()._warmStart(M, N, C, dtype)

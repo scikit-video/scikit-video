@@ -351,7 +351,6 @@ class VideoWriterAbstract():
         if "-f" not in self.inputdict:
             self.inputdict["-f"] = "rawvideo"
         self.warmStarted = False
-        self.rgb2grayhack = False
 
     def _warmStart(self, M, N, C, dtype):
         self.warmStarted = True
@@ -359,7 +358,7 @@ class VideoWriterAbstract():
         if "-pix_fmt" not in self.inputdict:
             # check the number channels to guess
             if dtype.kind == 'u' and dtype.itemsize == 2:
-                suffix = '<' if dtype.byteorder else '>'
+                suffix = 'le' if dtype.byteorder else 'be'
                 if C == 1:
                     if self.NEED_RGB2GRAY_HACK:
                         self.inputdict["-pix_fmt"] = "rgb48" + suffix
@@ -422,13 +421,16 @@ class VideoWriterAbstract():
         if self.extension == ".yuv":
             if "-pix_fmt" not in self.outputdict:
                 self.outputdict["-pix_fmt"] = self.DEFAULT_OUTPUT_PIX_FMT
-                if self.verbosity != 0:
+                if self.verbosity > 0:
                     warnings.warn("No output color space provided. Assuming {}.".format(self.DEFAULT_OUTPUT_PIX_FMT), UserWarning)
 
         self._createProcess(self.inputdict, self.outputdict, self.verbosity)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         pass
+
+    def _prepareData(self, data):
+        return data # general case : do nothing
 
     def close(self):
         """Closes the video and terminates FFmpeg process
@@ -455,14 +457,8 @@ class VideoWriterAbstract():
 
         vid = vid.clip(0, (1 << (self.dtype.itemsize << 3)) - 1).astype(self.dtype)
 
-        if self.rgb2grayhack:
-            # convert grayscale vid to 3 channel
-            vid2 = np.empty((T, M, N, 3), dtype=vid.dtype)
-            vid2[:, :, :, 0] = vid[:, :, :, 0]
-            vid2[:, :, :, 1] = vid[:, :, :, 0]
-            vid2[:, :, :, 2] = vid[:, :, :, 0]
-            vid = vid2
-            C = 3
+        vid = self._prepareData(vid)
+        T, M, N, C = vid.shape # in case of hack ine prepareData to change the image shape (gray2RGB in libAV for exemple)
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:
