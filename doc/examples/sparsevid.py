@@ -1,12 +1,16 @@
-import skvideo.io
-import skvideo.datasets
-
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy
-import matplotlib.pyplot as plt
-from matplotlib import gridspec
 import sklearn.linear_model
+from matplotlib import gridspec
 from sklearn.feature_extraction import image
+
+import skvideo.datasets
+
+try:
+    xrange
+except NameError:
+    xrange = range
 
 np.random.seed(0)
 
@@ -25,7 +29,7 @@ def dict_step(X, C, D):
     usedidx = np.abs(C[:, k])>0
 
     if np.sum(usedidx) <= 1:
-      print "Skipping filter #%d" % (k,)
+      print("Skipping filter #%d" % (k,))
       unused_indices.append(k)
       continue
 
@@ -109,7 +113,7 @@ X = X.reshape(X.shape[0], -1).astype(np.float)
 X = X[np.random.permutation(X.shape[0])[:10000]]
 
 for i in range(200):
-  print "Iteration %d / %d" % (i, 200)
+  print("Iteration %d / %d" % (i, 200))
   C = code_step(X, D)
   D = dict_step(X, C, D)
   frame = plot_weights(D.reshape(100, 1, 7, 7))
