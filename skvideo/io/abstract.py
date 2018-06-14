@@ -8,7 +8,7 @@ from .. import _HAS_FFMPEG
 from ..utils import *
 
 
-class VideoReaderAbstract():
+class VideoReaderAbstract(object):
     """Reads frames
     """
 
@@ -290,7 +290,7 @@ class VideoReaderAbstract():
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-class VideoWriterAbstract():
+class VideoWriterAbstract(object):
     """Writes frames
 
     this class provides sane initializations for the default case.
