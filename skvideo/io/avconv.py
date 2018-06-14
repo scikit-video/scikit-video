@@ -113,4 +113,4 @@ class LibAVWriter(VideoWriterAbstract):
         if C < 3 and "-pix_fmt" not in self.inputdict: # pix_fmt gray, ya8 and their 16 bit equivalents have a bug in LibAV
             C += 2
             self._prepareData = self._gray2RGB #replace prepareData methode by the gray2RGB hack method
-        super()._warmStart(M, N, C, dtype)
+        super(LibAVWriter,self)._warmStart(M, N, C, dtype)
