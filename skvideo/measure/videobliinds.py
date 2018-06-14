@@ -1,14 +1,16 @@
-from ..utils import *
-from ..motion import blockMotion
-import numpy as np
-import scipy.ndimage
-import scipy.fftpack
-import scipy.stats
-import scipy.io
-import sys
-
 from os.path import dirname
 from os.path import join
+
+import numpy as np
+import scipy.fftpack
+import scipy.io
+import scipy.misc
+import scipy.ndimage
+import scipy.stats
+
+from ..motion import blockMotion
+from ..utils import *
+
 
 def motion_feature_extraction(frames):
     # setup

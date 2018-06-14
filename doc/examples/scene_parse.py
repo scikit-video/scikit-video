@@ -1,12 +1,15 @@
-import skvideo.io
-import skvideo.datasets
+import matplotlib.pyplot as plt
+import numpy as np
+
 import skvideo.measure
 
-import numpy as np
-import matplotlib.pyplot as plt
+try:
+    xrange
+except NameError:
+    xrange = range
 
 def getPlot(edgelist1, edgelist2, t, w, h, T):
-    myDPI = 100.0
+    myDPI = 100
     fig = plt.figure(figsize=(w/myDPI, h/myDPI), dpi=myDPI)
     plt.subplot(211)
     plt.title("histogram algorithm")

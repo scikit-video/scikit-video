@@ -21,13 +21,9 @@ Diamond search                      25.679036 seconds
 # Author: Todd Goodall <tgoodall@utexas.edu>
 # License: BSD clause
 
-import os
 from time import time
-import numpy as np
-import skvideo.io
-import skvideo.datasets
-import skvideo.motion
 
+import skvideo.motion
 
 if __name__ == "__main__":
     # TODO: as code gets faster, make benchmark more 
@@ -51,7 +47,7 @@ if __name__ == "__main__":
     times = []
 
     for es in estimators:
-	print es
+	print(es)
         time_start = time()
 	skvideo.motion.blockMotion(vdata, method=es)
         time_end = time()

@@ -18,12 +18,16 @@ skvideo.io.vreader (LibAV)                   0.774765 seconds
 # Author: Todd Goodall <tgoodall@utexas.edu>
 # License: BSD clause
 
-import os
 from time import time
+
 import numpy as np
-import skvideo.io
+
 import skvideo.datasets
 
+try:
+    xrange
+except NameError:
+    xrange = range
 
 if __name__ == "__main__":
 
