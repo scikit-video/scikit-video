@@ -1,10 +1,12 @@
-from ..utils import *
 import numpy as np
-import scipy.ndimage
 import scipy.fftpack
-import scipy.stats
 import scipy.io
-import sys
+import scipy.misc
+import scipy.ndimage
+import scipy.stats
+
+from ..utils import *
+
 
 def _extract_subband_feats(mscncoefs):
     # alpha_m,  = extract_ggd_features(mscncoefs)

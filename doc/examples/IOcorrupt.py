@@ -1,7 +1,6 @@
-import skvideo.io
-import skvideo.datasets
-
 import numpy as np
+
+import skvideo.datasets
 
 filename = skvideo.datasets.bigbuckbunny()
 
@@ -19,7 +18,7 @@ vid_out = skvideo.io.FFmpegWriter("corrupted_video.mp4", inputdict={
       '-r': rate,
 })
 for idx, frame in enumerate(vid_in.nextFrame()):
-  print "Writing frame %d/%d" % (idx, T)
+  print("Writing frame %d/%d" % (idx, T))
   if (idx >= (T/2)) & (idx <= (T/2 + 10)):
     frame = np.random.normal(128, 128, size=frame.shape).astype(np.uint8)
   vid_out.writeFrame(frame)
