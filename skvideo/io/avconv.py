@@ -82,7 +82,6 @@ class LibAVWriter(VideoWriterAbstract):
         oargs = self._dict2Args(outputdict)
 
         cmd = [_AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
-        print(cmd)
 
         self._cmd = " ".join(cmd)
 
@@ -91,6 +90,7 @@ class LibAVWriter(VideoWriterAbstract):
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
+            print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 

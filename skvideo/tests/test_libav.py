@@ -92,7 +92,7 @@ def test_LibAVWriter_aboveversion9():
     outputdata = np.random.random(size=(5, 480, 640, 3)) * 255
     outputdata = outputdata.astype(np.uint8)
 
-    writer = skvideo.io.LibAVWriter(outputfile)
+    writer = skvideo.io.LibAVWriter(outputfile,verbosity=0)
     for i in range(5):
         writer.writeFrame(outputdata[i])
     writer.close()
@@ -142,7 +142,7 @@ def _Gray2RGBHack_Helper(pix_fmt):
 
     T,N,M,C = outputdata.shape
 
-    writer = skvideo.io.LibAVWriter(outputfile)
+    writer = skvideo.io.LibAVWriter(outputfile,verbosity=0)
     for i in range(T):
         writer.writeFrame(outputdata[i])
     writer.close()
