@@ -37,7 +37,7 @@ class LibAVReader(VideoReaderAbstract):
 
     def __init__(self, *args, **kwargs):
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
-        super().__init__(*args, **kwargs)
+        super(LibAVReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         iargs = self._dict2Args(inputdict)
@@ -75,7 +75,7 @@ class LibAVWriter(VideoWriterAbstract):
 
     def __init__(self, *args, **kwargs):
         assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
-        super().__init__(*args, **kwargs)
+        super(LibAVWriter,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         iargs = self._dict2Args(inputdict)

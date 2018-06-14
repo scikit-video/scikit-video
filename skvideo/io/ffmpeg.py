@@ -41,7 +41,7 @@ class FFmpegReader(VideoReaderAbstract):
 
     def __init__(self, *args, **kwargs):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
-        super().__init__(*args, **kwargs)
+        super(FFmpegReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         if '-vcodec' not in outputdict:
@@ -85,7 +85,7 @@ class FFmpegWriter(VideoWriterAbstract):
 
     def __init__(self, *args, **kwargs):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
-        super().__init__(*args, **kwargs)
+        super(FFmpegWriter,self).__init__(*args, **kwargs)
 
     def _getSupportedEncoders(self):
         return _FFMPEG_SUPPORTED_ENCODERS
