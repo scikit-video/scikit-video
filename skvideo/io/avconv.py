@@ -108,7 +108,7 @@ class LibAVWriter(VideoWriterAbstract):
         return data
 
     def _warmStart(self, M, N, C, dtype):
-        if (C==2 or C==4) and dtype.itemsize==2 and ('-pix_fmt' not in self.inputdict) or (self.inputdict['-pix_fmt'][0:6]=='rgba64'):
+        if (C==2 or C==4) and dtype.itemsize==2 and (('-pix_fmt' not in self.inputdict) or (self.inputdict['-pix_fmt'][0:6]=='rgba64')):
             raise ValueError('libAV doesnt support rgba64 formats')
         if C < 3 and "-pix_fmt" not in self.inputdict: # pix_fmt gray, ya8 and their 16 bit equivalents have a bug in LibAV
             C += 2

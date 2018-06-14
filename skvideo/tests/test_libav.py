@@ -45,7 +45,7 @@ def test_LibAVReader_aboveversion9():
 
     assert_equal(accumulation / (T * M * N * C), 109.28332841215979)
 
-@unittest.skipIf(not skvideo._HAS_AVCONV, "FFmpeg required for this test.")
+@unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_LibAVReader_16bits():
     reader16 = skvideo.io.LibAVReader(skvideo.datasets.bigbuckbunny(), outputdict={'-pix_fmt':'rgb48le'}, verbosity=0)
     reader8 = skvideo.io.LibAVReader(skvideo.datasets.bigbuckbunny(), outputdict={'-pix_fmt':'rgb24'}, verbosity=0)
