@@ -3,18 +3,17 @@
 """
 
 
-from .ffmpeg import *
 from .avconv import *
-from .mprobe import *
-from .ffprobe import *
 from .avprobe import *
+from .ffmpeg import *
+from .ffprobe import *
 from .io import *
+from .mprobe import *
 
 __all__ = [
     'vread',
     'vreader',
     'vwrite',
-    'vwriter',
     'mprobe',
     'ffprobe',
     'avprobe',
