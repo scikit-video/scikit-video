@@ -277,8 +277,9 @@ class VideoReaderAbstract(object):
         elif self.output_pix_fmt == 'rgb24':
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
 
-        elif self.verbosity > 0:
-            warnings.warn('Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(self.output_pix_fmt), UserWarning)
+        else:
+            if self.verbosity > 0:
+                warnings.warn('Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(self.output_pix_fmt), UserWarning)
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
 
         return self._lastread
