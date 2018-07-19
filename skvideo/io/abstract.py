@@ -56,6 +56,7 @@ class VideoReaderAbstract(object):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
         self._filename = filename
+        self.verbosity = verbosity
 
         if not inputdict:
             inputdict = {}
