@@ -267,7 +267,18 @@ class VideoReaderAbstract(object):
 
     def _readFrame(self):
         # Read and convert to numpy array
-        self._lastread = self._read_frame_data().reshape((self.outputheight, self.outputwidth, self.outputdepth))
+        frame = self._read_frame_data()
+
+        if self.output_pix_fmt.startswith('yuv444p'):
+            self._lastread = frame.reshape((self.outputdepth, self.outputheight, self.outputwidth)).transpose((1, 2, 0))
+
+        elif self.output_pix_fmt == 'rgb24':
+            self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
+
+        elif self.verbosity > 0:
+            warnings.warn('Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(self.output_pix_fmt), UserWarning)
+            self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
+        
         return self._lastread
 
     def nextFrame(self):
