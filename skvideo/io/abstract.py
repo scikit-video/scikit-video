@@ -271,12 +271,10 @@ class VideoReaderAbstract(object):
         # Read and convert to numpy array
         frame = self._read_frame_data()
 
-        if self.output_pix_fmt.startswith('yuv444p'):
-            self._lastread = frame.reshape((self.outputdepth, self.outputheight, self.outputwidth)).transpose((1, 2, 0))
-
-        elif self.output_pix_fmt == 'rgb24':
+        if self.output_pix_fmt == 'rgb24':
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
-
+        elif self.output_pix_fmt.startswith('yuv444p') or self.output_pix_fmt.startswith('yuvj444p') or self.output_pix_fmt.startswith('yuva444p'):
+            self._lastread = frame.reshape((self.outputdepth, self.outputheight, self.outputwidth)).transpose((1, 2, 0))
         else:
             if self.verbosity > 0:
                 warnings.warn('Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(self.output_pix_fmt), UserWarning)
@@ -470,9 +468,13 @@ class VideoWriterAbstract(object):
             self._warmStart(M, N, C, im.dtype)
 
         vid = vid.clip(0, (1 << (self.dtype.itemsize << 3)) - 1).astype(self.dtype)
-
         vid = self._prepareData(vid)
         T, M, N, C = vid.shape # in case of hack ine prepareData to change the image shape (gray2RGB in libAV for exemple)
+
+        # check if we need to do some bit-plane swapping
+        # for the raw data format
+        if self.inputdict["-pix_fmt"].startswith('yuv444p') or self.inputdict["-pix_fmt"].startswith('yuvj444p') or self.inputdict["-pix_fmt"].startswith('yuva444p'):
+            vid = vid.transpose((0, 3, 1, 2))
 
         # Check size of image
         if M != self.inputheight or N != self.inputwidth:
