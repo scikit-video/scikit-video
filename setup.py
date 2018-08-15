@@ -86,5 +86,5 @@ if __name__ == "__main__":
           include_package_data=True,
           test_suite="nose.collector",
           cmdclass=cmdclass,
-          version=skvideo.__version__, install_requires=['scikit-image', 'numpy', 'scipy'],
+          version=skvideo.__version__,
           **EXTRA_INFO)
