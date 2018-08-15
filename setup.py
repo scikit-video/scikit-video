@@ -16,7 +16,7 @@ LICENSE             = 'BSD'
 DOWNLOAD_URL        = 'https://github.com/scikit-video/scikit-video'
 PACKAGE_NAME        = 'scikit-video'
 EXTRA_INFO          = dict(
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy', 'scipy', 'pillow'],
     classifiers=['Development Status :: 3 - Alpha',
                  'Intended Audience :: Developers',
                  'Intended Audience :: Science/Research',
@@ -86,5 +86,5 @@ if __name__ == "__main__":
           include_package_data=True,
           test_suite="nose.collector",
           cmdclass=cmdclass,
-          version=skvideo.__version__,
+          version=skvideo.__version__, install_requires=['scikit-image', 'numpy', 'scipy'],
           **EXTRA_INFO)
