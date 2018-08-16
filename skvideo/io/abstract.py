@@ -12,15 +12,15 @@ class VideoReaderAbstract(object):
     """Reads frames
     """
 
-    INFO_AVERAGE_FRAMERATE = None #"avg_frame_rate"
-    INFO_WIDTH = None #"width"
-    INFO_HEIGHT = None #"height"
-    INFO_PIX_FMT = None #"pix_fmt"
-    INFO_DURATION = None #"duration"
-    INFO_NB_FRAMES = None #"nb_frames"
+    INFO_AVERAGE_FRAMERATE = None  # "avg_frame_rate"
+    INFO_WIDTH = None  # "width"
+    INFO_HEIGHT = None  # "height"
+    INFO_PIX_FMT = None  # "pix_fmt"
+    INFO_DURATION = None  # "duration"
+    INFO_NB_FRAMES = None  # "nb_frames"
     DEFAULT_FRAMERATE = 25.
     DEFAULT_INPUT_PIX_FMT = "yuvj444p"
-    OUTPUT_METHOD = None # "rawvideo"
+    OUTPUT_METHOD = None  # "rawvideo"
 
     def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
         """Initializes FFmpeg in reading mode with the given parameters
@@ -70,7 +70,7 @@ class VideoReaderAbstract(object):
         self.probeInfo = self._probe()
 
         # smartphone video data is weird
-        self.rotationAngle = '0' #specific FFMPEG
+        self.rotationAngle = '0'  # specific FFMPEG
 
         viddict = {}
         if "video" in self.probeInfo:
@@ -131,7 +131,8 @@ class VideoReaderAbstract(object):
         else:
             self.pix_fmt = self.DEFAULT_INPUT_PIX_FMT
             if verbosity != 0:
-                warnings.warn("No input color space detected. Assuming {}.".format(self.DEFAULT_INPUT_PIX_FMT), UserWarning)
+                warnings.warn("No input color space detected. Assuming {}.".format(self.DEFAULT_INPUT_PIX_FMT),
+                              UserWarning)
 
         self.inputdepth = np.int(bpplut[self.pix_fmt][0])
         self.bpp = np.int(bpplut[self.pix_fmt][1])
@@ -199,6 +200,9 @@ class VideoReaderAbstract(object):
             raise ValueError(outputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
         self._createProcess(inputdict, outputdict, verbosity)
+
+    def __next__(self):
+        return next(self.nextFrame())
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         pass
@@ -273,11 +277,14 @@ class VideoReaderAbstract(object):
 
         if self.output_pix_fmt == 'rgb24':
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
-        elif self.output_pix_fmt.startswith('yuv444p') or self.output_pix_fmt.startswith('yuvj444p') or self.output_pix_fmt.startswith('yuva444p'):
+        elif self.output_pix_fmt.startswith('yuv444p') or self.output_pix_fmt.startswith(
+                'yuvj444p') or self.output_pix_fmt.startswith('yuva444p'):
             self._lastread = frame.reshape((self.outputdepth, self.outputheight, self.outputwidth)).transpose((1, 2, 0))
         else:
             if self.verbosity > 0:
-                warnings.warn('Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(self.output_pix_fmt), UserWarning)
+                warnings.warn(
+                    'Unsupported reshaping from raw buffer to images frames  for format {:}. Assuming HEIGHTxWIDTHxCOLOR'.format(
+                        self.output_pix_fmt), UserWarning)
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
 
         return self._lastread
@@ -301,6 +308,7 @@ class VideoReaderAbstract(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
 
 class VideoWriterAbstract(object):
     """Writes frames
@@ -418,7 +426,7 @@ class VideoWriterAbstract(object):
             raise ValueError(self.inputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
         assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (
-        self.inputNumChannels, self.inputdict["-pix_fmt"])
+            self.inputNumChannels, self.inputdict["-pix_fmt"])
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')
@@ -434,7 +442,8 @@ class VideoWriterAbstract(object):
             if "-pix_fmt" not in self.outputdict:
                 self.outputdict["-pix_fmt"] = self.DEFAULT_OUTPUT_PIX_FMT
                 if self.verbosity > 0:
-                    warnings.warn("No output color space provided. Assuming {}.".format(self.DEFAULT_OUTPUT_PIX_FMT), UserWarning)
+                    warnings.warn("No output color space provided. Assuming {}.".format(self.DEFAULT_OUTPUT_PIX_FMT),
+                                  UserWarning)
 
         self._createProcess(self.inputdict, self.outputdict, self.verbosity)
 
@@ -442,7 +451,7 @@ class VideoWriterAbstract(object):
         pass
 
     def _prepareData(self, data):
-        return data # general case : do nothing
+        return data  # general case : do nothing
 
     def close(self):
         """Closes the video and terminates FFmpeg process
@@ -469,11 +478,12 @@ class VideoWriterAbstract(object):
 
         vid = vid.clip(0, (1 << (self.dtype.itemsize << 3)) - 1).astype(self.dtype)
         vid = self._prepareData(vid)
-        T, M, N, C = vid.shape # in case of hack ine prepareData to change the image shape (gray2RGB in libAV for exemple)
+        T, M, N, C = vid.shape  # in case of hack ine prepareData to change the image shape (gray2RGB in libAV for exemple)
 
         # check if we need to do some bit-plane swapping
         # for the raw data format
-        if self.inputdict["-pix_fmt"].startswith('yuv444p') or self.inputdict["-pix_fmt"].startswith('yuvj444p') or self.inputdict["-pix_fmt"].startswith('yuva444p'):
+        if self.inputdict["-pix_fmt"].startswith('yuv444p') or self.inputdict["-pix_fmt"].startswith('yuvj444p') or \
+                self.inputdict["-pix_fmt"].startswith('yuva444p'):
             vid = vid.transpose((0, 3, 1, 2))
 
         # Check size of image
