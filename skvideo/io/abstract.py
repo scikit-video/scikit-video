@@ -268,7 +268,9 @@ class VideoReaderAbstract(object):
         try:
             # Read framesize bytes
             arr = np.frombuffer(self._proc.stdout.read(framesize * self.dtype.itemsize), dtype=self.dtype)
-            assert len(arr) == framesize
+            if len(arr) != framesize:
+                return np.array([])
+            # assert len(arr) == framesize
         except Exception as err:
             self._terminate()
             err1 = str(err)
@@ -278,6 +280,8 @@ class VideoReaderAbstract(object):
     def _readFrame(self):
         # Read and convert to numpy array
         frame = self._read_frame_data()
+        if len(frame) == 0:
+            return frame
 
         if self.output_pix_fmt == 'rgb24':
             self._lastread = frame.reshape((self.outputheight, self.outputwidth, self.outputdepth))
@@ -302,10 +306,16 @@ class VideoReaderAbstract(object):
         """
         if self.inputframenum == 0:
             while True:
-                yield self._readFrame()
+                frame = self._readFrame()
+                if len(frame) == 0:
+                    break
+                yield frame
         else:
             for i in range(self.inputframenum):
-                yield self._readFrame()
+                frame = self._readFrame()
+                if len(frame) == 0:
+                    break
+                yield frame
 
     def __enter__(self):
         return self
