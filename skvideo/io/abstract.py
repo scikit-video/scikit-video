@@ -204,6 +204,10 @@ class VideoReaderAbstract(object):
     def __next__(self):
         return next(self.nextFrame())
 
+    def __iter__(self):
+        for frame in self.nextFrame():
+            yield frame
+    
     def _createProcess(self, inputdict, outputdict, verbosity):
         pass
 
