@@ -175,7 +175,7 @@ def scan_ffmpeg():
         b'.al', b'.amr', b'.ans', b'.ape', b'.apl', b'.apng', b'.aqt', b'.art', b'.asc', b'.asf',
         b'.ass', b'.ast', b'.au', b'.avc', b'.avi', b'.avr', b'.bcstm', b'.bfstm', b'.bin', b'.bit',
         b'.bmp', b'.bmv', b'.brstm', b'.caf', b'.cavs', b'.cdata', b'.cdg', b'.cdxl', b'.cgi',
-        b'.cif', b'.daud', b'.dif', b'.diz', b'.dnxhd', b'.dpx', b'.drc', b'.dss', b'.dtk', b'.dts',
+        b'.cif', b'.daud', b'.dav', b'.dif', b'.diz', b'.dnxhd', b'.dpx', b'.drc', b'.dss', b'.dtk', b'.dts',
         b'.dtshd', b'.dv', b'.eac3', b'.fap', b'.ffm', b'.ffmeta', b'.flac', b'.flm', b'.flv',
         b'.fsb', b'.g722', b'.g723_1', b'.g729', b'.genh', b'.gif', b'.gsm', b'.gxf', b'.h261',
         b'.h263', b'.h264', b'.h265', b'.h26l', b'.hevc', b'.ice', b'.ico', b'.idf', b'.idx', b'.im1',
@@ -193,7 +193,7 @@ def scan_ffmpeg():
         b'.txt', b'.ub', b'.ul', b'.uw', b'.v', b'.v210', b'.vag', b'.vb', b'.vc1', b'.viv', b'.voc',
         b'.vpk', b'.vqe', b'.vqf', b'.vql', b'.vt', b'.vtt', b'.w64', b'.wav', b'.webm', b'.wma',
         b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xl', b'.xml', b'.xvag', b'.xwd', b'.y',
-        b'.y4m', b'.yop', b'.yuv', b'.yuv10', b'.dav',
+        b'.y4m', b'.yop', b'.yuv', b'.yuv10',
 
         # extra extensions that are known container formats
         b'.raw',
@@ -204,7 +204,7 @@ def scan_ffmpeg():
         b'., A64', b'.264', b'.265', b'.302', b'.3g2', b'.3gp', b'.722', b'.a64', b'.aa3', b'.aac',
         b'.ac3', b'.adts', b'.adx', b'.afc', b'.aif', b'.aifc', b'.aiff', b'.al', b'.amr', b'.apng',
         b'.asf', b'.ass', b'.ast', b'.au', b'.avc', b'.avi', b'.bit', b'.bmp', b'.caf', b'.cavs',
-        b'.chk', b'.cif', b'.daud', b'.dif', b'.dnxhd', b'.dpx', b'.drc', b'.dts', b'.dv', b'.dvd',
+        b'.chk', b'.cif', b'.daud', b'.dav', b'.dif', b'.dnxhd', b'.dpx', b'.drc', b'.dts', b'.dv', b'.dvd',
         b'.eac3', b'.f4v', b'.ffm', b'.ffmeta', b'.flac', b'.flm', b'.flv', b'.g722', b'.g723_1',
         b'.gif', b'.gxf', b'.h261', b'.h263', b'.h264', b'.h265', b'.h26l', b'.hevc', b'.ico',
         b'.im1', b'.im24', b'.im8', b'.ircam', b'.isma', b'.ismv', b'.ivf', b'.j2c', b'.j2k', b'.jls',
@@ -218,7 +218,7 @@ def scan_ffmpeg():
         b'.ssa', b'.sub', b'.sun', b'.sunras', b'.sw', b'.swf', b'.tco', b'.tga', b'.thd', b'.tif',
         b'.tiff', b'.ts', b'.ub', b'.ul', b'.uw', b'.vc1', b'.vob', b'.voc', b'.vtt', b'.w64', b'.wav',
         b'.webm', b'.webp', b'.wma', b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xml', b'.xwd',
-        b'.y', b'.y4m', b'.yuv', b'.dav',
+        b'.y', b'.y4m', b'.yuv',
 
         # extra extensions that are known container formats
         b'.raw'
