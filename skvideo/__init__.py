@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Run a program-based check to see if all install
-# requirements have been met. 
+# requirements have been met.
 # Sets environment variables based on programs
 # found.
 
@@ -193,7 +193,7 @@ def scan_ffmpeg():
         b'.txt', b'.ub', b'.ul', b'.uw', b'.v', b'.v210', b'.vag', b'.vb', b'.vc1', b'.viv', b'.voc',
         b'.vpk', b'.vqe', b'.vqf', b'.vql', b'.vt', b'.vtt', b'.w64', b'.wav', b'.webm', b'.wma',
         b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xl', b'.xml', b'.xvag', b'.xwd', b'.y',
-        b'.y4m', b'.yop', b'.yuv', b'.yuv10',
+        b'.y4m', b'.yop', b'.yuv', b'.yuv10', b'.dav',
 
         # extra extensions that are known container formats
         b'.raw',
@@ -218,7 +218,7 @@ def scan_ffmpeg():
         b'.ssa', b'.sub', b'.sun', b'.sunras', b'.sw', b'.swf', b'.tco', b'.tga', b'.thd', b'.tif',
         b'.tiff', b'.ts', b'.ub', b'.ul', b'.uw', b'.vc1', b'.vob', b'.voc', b'.vtt', b'.w64', b'.wav',
         b'.webm', b'.webp', b'.wma', b'.wmv', b'.wtv', b'.wv', b'.xbm', b'.xface', b'.xml', b'.xwd',
-        b'.y', b'.y4m', b'.yuv',
+        b'.y', b'.y4m', b'.yuv', b'.dav',
 
         # extra extensions that are known container formats
         b'.raw'
@@ -265,7 +265,7 @@ if _MEDIAINFO_PATH is not None:
 
 # allow library configuration checking
 def getFFmpegPath():
-    """ Returns the path to the directory containing both ffmpeg and ffprobe 
+    """ Returns the path to the directory containing both ffmpeg and ffprobe
     """
     return _FFMPEG_PATH
 
@@ -325,8 +325,8 @@ def getLibAVPath():
 
 def getLibAVVersion():
     """ Returns the version of LibAV that is currently being used
-    """ 
-    return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
+    """
+    return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION)
 
 
 def setLibAVPath(path):
@@ -344,7 +344,7 @@ def setLibAVPath(path):
         -------
         none
 
-    """ 
+    """
     global _AVCONV_PATH
     global _HAS_AVCONV
     _AVCONV_PATH = path
