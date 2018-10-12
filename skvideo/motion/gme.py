@@ -29,15 +29,15 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
     """Global motion estimation using edge features
     
     Given two frames, find a robust global translation vector
-    found using edge information.
+    found using edge information. Frames must be luminance, RGB, or edge masks.
 
     Parameters
     ----------
     frame1 : ndarray
-        first input frame, shape (1, M, N, C), (1, M, N), (M, N, C) or (M, N)
+        first input frame. Edge mask if dtype=bool, else luminance or rgb image. shape (1, M, N, C), (1, M, N), (M, N, C) or (M, N)
 
     frame2 : ndarray
-        second input frame, shape (1, M, N, C), (1, M, N), (M, N, C) or (M, N)
+        second input frame. Edge mask if dtype=bool, else luminance or rgb image. shape (1, M, N, C), (1, M, N), (M, N, C) or (M, N)
 
     r : int
         Search radius for measuring correspondences.
@@ -67,15 +67,20 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
 
     T, M, N, C = frame1.shape
 
-    assert C == 1, "called with frames having %d channels. Please supply only the luminance channel." % (C,)
+    if C == 3:
+        frame1 = rgb2gray(frame1)
+        frame2 = rgb2gray(frame2)
+    else:
+        assert C == 1, "called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,)
+
     # if type bool, then these are edge maps. No need to convert them
     if frame1.dtype != np.bool:
-        E_1 = canny(frame1)
+        E_1 = canny(frame1.squeeze())
     else:
         E_1 = frame1
 
     if frame2.dtype != np.bool:
-        E_2 = canny(frame2)
+        E_2 = canny(frame2.squeeze())
     else:
         E_2 = frame2
 
