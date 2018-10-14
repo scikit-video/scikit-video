@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 # Run a program-based check to see if all install
-# requirements have been met. 
+# requirements have been met.
 # Sets environment variables based on programs
 # found.
 
@@ -175,7 +175,7 @@ def scan_ffmpeg():
         b'.al', b'.amr', b'.ans', b'.ape', b'.apl', b'.apng', b'.aqt', b'.art', b'.asc', b'.asf',
         b'.ass', b'.ast', b'.au', b'.avc', b'.avi', b'.avr', b'.bcstm', b'.bfstm', b'.bin', b'.bit',
         b'.bmp', b'.bmv', b'.brstm', b'.caf', b'.cavs', b'.cdata', b'.cdg', b'.cdxl', b'.cgi',
-        b'.cif', b'.daud', b'.dif', b'.diz', b'.dnxhd', b'.dpx', b'.drc', b'.dss', b'.dtk', b'.dts',
+        b'.cif', b'.daud', b'.dav', b'.dif', b'.diz', b'.dnxhd', b'.dpx', b'.drc', b'.dss', b'.dtk', b'.dts',
         b'.dtshd', b'.dv', b'.eac3', b'.fap', b'.ffm', b'.ffmeta', b'.flac', b'.flm', b'.flv',
         b'.fsb', b'.g722', b'.g723_1', b'.g729', b'.genh', b'.gif', b'.gsm', b'.gxf', b'.h261',
         b'.h263', b'.h264', b'.h265', b'.h26l', b'.hevc', b'.ice', b'.ico', b'.idf', b'.idx', b'.im1',
@@ -204,7 +204,7 @@ def scan_ffmpeg():
         b'., A64', b'.264', b'.265', b'.302', b'.3g2', b'.3gp', b'.722', b'.a64', b'.aa3', b'.aac',
         b'.ac3', b'.adts', b'.adx', b'.afc', b'.aif', b'.aifc', b'.aiff', b'.al', b'.amr', b'.apng',
         b'.asf', b'.ass', b'.ast', b'.au', b'.avc', b'.avi', b'.bit', b'.bmp', b'.caf', b'.cavs',
-        b'.chk', b'.cif', b'.daud', b'.dif', b'.dnxhd', b'.dpx', b'.drc', b'.dts', b'.dv', b'.dvd',
+        b'.chk', b'.cif', b'.daud', b'.dav', b'.dif', b'.dnxhd', b'.dpx', b'.drc', b'.dts', b'.dv', b'.dvd',
         b'.eac3', b'.f4v', b'.ffm', b'.ffmeta', b'.flac', b'.flm', b'.flv', b'.g722', b'.g723_1',
         b'.gif', b'.gxf', b'.h261', b'.h263', b'.h264', b'.h265', b'.h26l', b'.hevc', b'.ico',
         b'.im1', b'.im24', b'.im8', b'.ircam', b'.isma', b'.ismv', b'.ivf', b'.j2c', b'.j2k', b'.jls',
@@ -265,7 +265,7 @@ if _MEDIAINFO_PATH is not None:
 
 # allow library configuration checking
 def getFFmpegPath():
-    """ Returns the path to the directory containing both ffmpeg and ffprobe 
+    """ Returns the path to the directory containing both ffmpeg and ffprobe
     """
     return _FFMPEG_PATH
 
@@ -325,8 +325,8 @@ def getLibAVPath():
 
 def getLibAVVersion():
     """ Returns the version of LibAV that is currently being used
-    """ 
-    return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION) 
+    """
+    return "%s.%s" % (_LIBAV_MAJOR_VERSION, _LIBAV_MINOR_VERSION)
 
 
 def setLibAVPath(path):
@@ -344,7 +344,7 @@ def setLibAVPath(path):
         -------
         none
 
-    """ 
+    """
     global _AVCONV_PATH
     global _HAS_AVCONV
     _AVCONV_PATH = path
