@@ -76,14 +76,14 @@ def test_measure_BRISQUE():
     ])
 
     for i in range(features.shape[1]):
-      assert_almost_equal(features[0, i], output[i], decimal=10)
+      assert_almost_equal(features[0, i], output[i], decimal=5)
 
 def test_measure_Viideo():
     vidpaths = skvideo.datasets.bigbuckbunny()
     dis = skvideo.io.vread(vidpaths, as_grey=True)
     dis = dis[:80, :200, :200]
     score = skvideo.measure.viideo_score(dis)
-    assert_almost_equal(score, 0.72179317, decimal=8)
+    assert_almost_equal(score, 0.72179317, decimal=5)
 
 def test_measure_VideoBliinds():
     vidpaths = skvideo.datasets.bigbuckbunny()
@@ -108,7 +108,7 @@ def test_measure_VideoBliinds():
 
 
     for i in range(features.shape[0]):
-      assert_almost_equal(features[i], output[i], decimal=10)
+      assert_almost_equal(features[i], output[i], decimal=5)
 
 def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
@@ -148,8 +148,8 @@ def test_measure_NIQE():
 
     scores = skvideo.measure.niqe(ref)
 
-    assert_almost_equal(scores[0], 11.197661399841, decimal=10)
-    assert_almost_equal(scores[1], 11.055174827576, decimal=10)
+    assert_almost_equal(scores[0], 11.197661399841, decimal=5)
+    assert_almost_equal(scores[1], 11.055174827576, decimal=5)
 
 
 def test_measure_MAE():
