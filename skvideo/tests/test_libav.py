@@ -180,7 +180,7 @@ def _Gray2RGBHack_Helper(pix_fmt):
     writer.close()
 
     reader = skvideo.io.LibAVReader(
-        outputfile, inputdict={'-s': '{}x{}'.format(M, N)}, verbosity=0)
+        outputfile, inputdict={'-s': '{0}x{1}'.format(M, N)}, verbosity=0)
     assert_equal(reader.getShape()[0:3], outputdata.shape[0:3])
 
     inputdata = np.empty(reader.getShape(), dtype=np.uint16)
