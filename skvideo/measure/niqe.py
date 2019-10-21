@@ -3,11 +3,13 @@ from ..utils import *
 import numpy as np
 import scipy.misc
 import scipy.io
+import PIL
+from PIL import Image
 
 from os.path import dirname
 from os.path import join
 
-# only used during training 
+# only used during training
 #from skimage.util.shape import view_as_windows
 
 def _niqe_extract_subband_feats(mscncoefs):
@@ -41,7 +43,7 @@ def extract_on_patches(img, patch_size):
             patches.append(patch)
 
     patches = np.array(patches)
-    
+
     patch_features = []
     for p in patches:
         patch_features.append(_niqe_extract_subband_feats(p))
@@ -59,14 +61,17 @@ def _get_patches_generic(img, patch_size, is_train, stride):
     hoffset = (h % patch_size)
     woffset = (w % patch_size)
 
-    if hoffset > 0: 
+    if hoffset > 0:
         img = img[:-hoffset, :]
     if woffset > 0:
         img = img[:, :-woffset]
 
 
     img = img.astype(np.float32)
-    img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
+    img2 = np.array(Image.fromarray(img).resize(
+        (int(0.5 * img.shape[0]), int(img.shape[1] * 0.5)),
+        resample=PIL.Image.BICUBIC)
+    )
 
     mscn1, var, mu = compute_image_mscn_transform(img)
     mscn1 = mscn1.astype(np.float32)
