@@ -9,20 +9,6 @@ from PIL import Image
 
 from ..utils import *
 
-def im_resize()
-    im = toimage(arr, mode=mode)
-    ts = type(size)
-    if issubdtype(ts, int):
-        percent = size / 100.0
-        size = tuple((array(im.size)*percent).astype(int))
-    elif issubdtype(type(size), float):
-        size = tuple((array(im.size)*size).astype(int))
-    else:
-        size = (size[1], size[0])
-    func = {'nearest': 0, 'lanczos': 1, 'bilinear': 2, 'bicubic': 3, 'cubic': 3}
-    imnew = im.resize(size, resample=func[interp])
-    return fromimage(imnew)
-
 
 def _extract_subband_feats(mscncoefs):
     # alpha_m,  = extract_ggd_features(mscncoefs)
