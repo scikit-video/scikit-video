@@ -68,7 +68,7 @@ def _get_patches_generic(img, patch_size, is_train, stride):
 
 
     img = img.astype(np.float32)
-    img2 = np.array(Image.fromarray(img).resize(
+    img2 = np.array(Image.fromarray(img, mode="F").resize(
         (int(0.5 * img.shape[0]), int(img.shape[1] * 0.5)),
         resample=PIL.Image.BICUBIC)
     )

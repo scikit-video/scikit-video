@@ -9,6 +9,20 @@ from PIL import Image
 
 from ..utils import *
 
+def im_resize()
+    im = toimage(arr, mode=mode)
+    ts = type(size)
+    if issubdtype(ts, int):
+        percent = size / 100.0
+        size = tuple((array(im.size)*percent).astype(int))
+    elif issubdtype(type(size), float):
+        size = tuple((array(im.size)*size).astype(int))
+    else:
+        size = (size[1], size[0])
+    func = {'nearest': 0, 'lanczos': 1, 'bilinear': 2, 'bicubic': 3, 'cubic': 3}
+    imnew = im.resize(size, resample=func[interp])
+    return fromimage(imnew)
+
 
 def _extract_subband_feats(mscncoefs):
     # alpha_m,  = extract_ggd_features(mscncoefs)
@@ -62,7 +76,7 @@ def brisque_features(videoData):
     feats = np.zeros((T, 36), dtype=np.float32)
     for i in range(T):
       full_scale = videoData[i, :, :, 0].astype(np.float32)
-      half_scale = np.array(Image.fromarray(full_scale).resize(
+      half_scale = np.array(Image.fromarray(full_scale, mode="F").resize(
         (int(0.5 * full_scale.shape[0]), int(full_scale.shape[1] * 0.5)),
         resample=PIL.Image.BICUBIC)
       )
