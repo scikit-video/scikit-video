@@ -10,6 +10,7 @@ import scipy.stats
 
 from ..motion import blockMotion
 from ..utils import *
+from ..utils.image import imresize
 
 
 def motion_feature_extraction(frames):

@@ -2,7 +2,7 @@ import numpy as np
 import scipy.misc as sc
 import scipy.signal
 import scipy.io
-from ..utils.image import *
+from ..utils.image import imresize
 
 
 def mean_cov(X):

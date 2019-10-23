@@ -1,4 +1,5 @@
 from ..utils import *
+from ..utils.image import imresize
 
 import numpy as np
 import scipy.misc

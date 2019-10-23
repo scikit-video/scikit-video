@@ -6,6 +6,7 @@ import scipy.ndimage
 import scipy.stats
 
 from ..utils import *
+from ..utils.image import imresize
 
 
 def _extract_subband_feats(mscncoefs):
