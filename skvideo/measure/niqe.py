@@ -3,8 +3,6 @@ from ..utils import *
 import numpy as np
 import scipy.misc
 import scipy.io
-import PIL
-from PIL import Image
 
 from os.path import dirname
 from os.path import join
@@ -68,10 +66,7 @@ def _get_patches_generic(img, patch_size, is_train, stride):
 
 
     img = img.astype(np.float32)
-    img2 = np.array(Image.fromarray(img, mode="F").resize(
-        (int(0.5 * img.shape[0]), int(img.shape[1] * 0.5)),
-        resample=PIL.Image.BICUBIC)
-    )
+    img2 = imresize(img, 0.5, interp=PIL.Image.BICUBIC, mode="F")
 
     mscn1, var, mu = compute_image_mscn_transform(img)
     mscn1 = mscn1.astype(np.float32)

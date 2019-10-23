@@ -29,11 +29,11 @@ def motion_feature_extraction(frames):
       upper_left = np.zeros_like(motion_frame[:, :, 0])
       lower_right= np.zeros_like(motion_frame[:, :, 0])
       off_diag = np.zeros_like(motion_frame[:, :, 0])
-      scipy.ndimage.correlate1d(motion_frame[:, :, 0]**2, h, 0, upper_left, mode='reflect') 
-      scipy.ndimage.correlate1d(upper_left, h, 1, upper_left, mode='reflect') 
-      scipy.ndimage.correlate1d(motion_frame[:, :, 1]**2, h, 0, lower_right, mode='reflect') 
-      scipy.ndimage.correlate1d(lower_right, h, 1, lower_right, mode='reflect') 
-      scipy.ndimage.correlate1d(motion_frame[:, :, 1]*motion_frame[:, :, 0], h, 0, off_diag, mode='reflect') 
+      scipy.ndimage.correlate1d(motion_frame[:, :, 0]**2, h, 0, upper_left, mode='reflect')
+      scipy.ndimage.correlate1d(upper_left, h, 1, upper_left, mode='reflect')
+      scipy.ndimage.correlate1d(motion_frame[:, :, 1]**2, h, 0, lower_right, mode='reflect')
+      scipy.ndimage.correlate1d(lower_right, h, 1, lower_right, mode='reflect')
+      scipy.ndimage.correlate1d(motion_frame[:, :, 1]*motion_frame[:, :, 0], h, 0, off_diag, mode='reflect')
       scipy.ndimage.correlate1d(off_diag, h, 1, off_diag, mode='reflect')
 
       for y in range(motion_vectors.shape[1]):
@@ -43,7 +43,7 @@ def motion_feature_extraction(frames):
             [off_diag[y, x], lower_right[y, x]],
           ])
           w, _ = np.linalg.eig(mat)
-          Eigens[i, y, x] = w 
+          Eigens[i, y, x] = w
 
     num = (Eigens[:, :, :, 0] - Eigens[:, :, :, 1])**2
     den = (Eigens[:, :, :, 0] + Eigens[:, :, :, 1])**2
@@ -58,7 +58,7 @@ def motion_feature_extraction(frames):
     mean10x10 = np.zeros((motion_vectors.shape[0]), dtype=np.float32)
     for i in range(motion_vectors.shape[0]):
       motion_frame = motion_vectors[i]
-      motion_amplitude = np.sqrt(motion_vectors[i, :, :, 0]**2 + motion_vectors[i, :, :, 1]**2) 
+      motion_amplitude = np.sqrt(motion_vectors[i, :, :, 0]**2 + motion_vectors[i, :, :, 1]**2)
       mode10x10[i] = scipy.stats.mode(motion_amplitude, axis=None)[0]
       mean10x10[i] = np.mean(motion_amplitude)
 
@@ -98,7 +98,7 @@ def extract_on_patches(img, blocksizerow, blocksizecol):
             patches.append(patch)
 
     patches = np.array(patches)
-    
+
     patch_features = []
     for p in patches:
         mscn_features, pp_features = _extract_subband_feats(p)
@@ -119,13 +119,13 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
     hoffset = (h % blocksizerow)
     woffset = (w % blocksizecol)
 
-    if hoffset > 0: 
+    if hoffset > 0:
         img = img[:-hoffset, :]
     if woffset > 0:
         img = img[:, :-woffset]
 
     img = img.astype(np.float32)
-    img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
+    img2 = imresize(img, 0.5, interp='bicubic', mode='F')
 
     mscn1, var, mu = compute_image_mscn_transform(img, extend_mode='nearest')
     mscn1 = mscn1.astype(np.float32)
@@ -144,7 +144,7 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
 
     invcov_param = np.linalg.pinv((cov_prisparam + cov_distparam)/2)
 
-    xd = mu_prisparam - mu_distparam 
+    xd = mu_prisparam - mu_distparam
     quality = np.sqrt(np.dot(np.dot(xd, invcov_param), xd.T))[0][0]
 
     return np.hstack((mu_distparam, [quality]))
@@ -188,10 +188,10 @@ def temporal_dc_variation_feature_extraction(frames):
           patchI = frames[i, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0].astype(np.float32)
           diff = patchP - patchI
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
-          #dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t 
-          dct_motion_comp_diff[i, y, x] = t[0, 0] 
+          #dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t
+          dct_motion_comp_diff[i, y, x] = t[0, 0]
 
-    dct_motion_comp_diff = dct_motion_comp_diff.reshape(motion_vectors.shape[0], -1) 
+    dct_motion_comp_diff = dct_motion_comp_diff.reshape(motion_vectors.shape[0], -1)
 
     std_dc = np.std(dct_motion_comp_diff, axis=1)
     dt_dc_temp = np.abs(std_dc[1:] - std_dc[:-1])
@@ -212,7 +212,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     for i in range(dct_diff5x5.shape[0]):
       for y in range(dct_diff5x5.shape[1]):
         for x in range(dct_diff5x5.shape[2]):
-          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32) - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32)  
+          diff = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32) - frames[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock].astype(np.float32)
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
           dct_diff5x5[i, y, x] = t.ravel()
     dct_diff5x5 = dct_diff5x5.reshape(dct_diff5x5.shape[0],dct_diff5x5.shape[1] * dct_diff5x5.shape[2], -1)
@@ -221,7 +221,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     g = np.arange(0.03, 10+0.001, 0.001)
     r = (scipy.special.gamma(1/g) * scipy.special.gamma(3/g)) / (scipy.special.gamma(2/g)**2)
 
-    gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float32) 
+    gamma_matrix = np.zeros((dct_diff5x5.shape[0], mblock**2), dtype=np.float32)
     for i in range(dct_diff5x5.shape[0]):
       for s in range(mblock**2):
         temp = dct_diff5x5[i, :, s]
@@ -243,7 +243,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
 
     freq_bands = np.zeros((dct_diff5x5.shape[0], mblock**2))
     for i in range(dct_diff5x5.shape[0]):
-      freq_bands[i] = zigzag(gamma_matrix[i]) 
+      freq_bands[i] = zigzag(gamma_matrix[i])
 
     lf_gamma5x5 = freq_bands[:, 1:np.int((mblock**2-1)/3)+1]
     mf_gamma5x5 = freq_bands[:, np.int((mblock**2-1)/3)+1:2*np.int((mblock**2-1)/3)+1]
@@ -259,9 +259,9 @@ def NSS_spectral_ratios_feature_extraction(frames):
     geo_HM_ratio = scipy.stats.mstats.gmean(geomean_hf_gam/(0.1 + geomean_mf_gam))
     geo_hh_ratio = scipy.stats.mstats.gmean(((geomean_hf_gam + geomean_mf_gam)/2)/(0.1 + geomean_lf_gam))
 
-    mean_dc = np.mean(dct_diff5x5[:, :, 0], axis=1) 
+    mean_dc = np.mean(dct_diff5x5[:, :, 0], axis=1)
     dt_dc_measure2 = np.mean(np.abs(mean_dc[1:] - mean_dc[:-1]))
-    
+
     return np.array([dt_dc_measure2, geo_HL_ratio, geo_HM_ratio, geo_hh_ratio, geo_high_ratio, geo_low_ratio])
 
 def videobliinds_features(videoData):
@@ -281,7 +281,7 @@ def videobliinds_features(videoData):
     -------
     features : ndarray, shape (46,)
         |  The individual features of the algorithm. The features are arranged as follows:
-        |  
+        |
         |    features[:36] : spatial niqe vector averaged over the video, shape (36,)
         |    features[36] : niqe naturalness score, shape (1,)
         |    features[37:39] : DC measurements between frames, shape (2,)
