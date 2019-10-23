@@ -237,12 +237,10 @@ class Steerable:
                 parent = []
                 w, h = np.shape(sublevel[cband])
                 if pyr_h > 0:
-                    #child = scipy.misc.imresize(coef[pyr_h][cband], 50, interp='bilinear', mode='F')
-                    child = imresize(coef[pyr_h][cband], 0.5, interp=PIL.Image.BILINEAR, mode="F")
+                    child = imresize(coef[pyr_h][cband], 0.5, interp="bilinear", mode="F")
 
                 if pyr_h+3 < height:
-                    #parent = scipy.misc.imresize(coef[pyr_h+2][cband], 200, interp='bilinear', mode='F')
-                    parent = imresize(coef[pyr_h+2][cband], 2, interp=PIL.Image.BILINEAR, mode="F")
+                    parent = imresize(coef[pyr_h+2][cband], 2, interp="bilinear", mode="F")
                     parent = parent[1:-1, 1:-1]
                     wp, hp = np.shape(parent)
                     #print np.shape(parent)

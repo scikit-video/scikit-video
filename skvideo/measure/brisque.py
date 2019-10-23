@@ -61,7 +61,7 @@ def brisque_features(videoData):
     feats = np.zeros((T, 36), dtype=np.float32)
     for i in range(T):
       full_scale = videoData[i, :, :, 0].astype(np.float32)
-      half_scale = imresize(full_scale, 0.5, interp=PIL.Image.BICUBIC, mode="F")
+      half_scale = imresize(full_scale, 0.5, interp="bicubic", mode="F")
 
       full_scale, _, _ = compute_image_mscn_transform(full_scale)
       half_scale, _, _ = compute_image_mscn_transform(half_scale)

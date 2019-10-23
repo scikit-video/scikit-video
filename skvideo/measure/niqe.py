@@ -67,7 +67,7 @@ def _get_patches_generic(img, patch_size, is_train, stride):
 
 
     img = img.astype(np.float32)
-    img2 = imresize(img, 0.5, interp=PIL.Image.BICUBIC, mode="F")
+    img2 = imresize(img, 0.5, interp="bicubic", mode="F")
 
     mscn1, var, mu = compute_image_mscn_transform(img)
     mscn1 = mscn1.astype(np.float32)
