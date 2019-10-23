@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.misc
+import PIL
 
 import skvideo.datasets
+import skvideo.io
+import skvideo.motion
 
 try:
     xrange
@@ -18,7 +20,7 @@ def getPlots(motionData):
     fig.axes[0].get_yaxis().set_visible(False)
     plt.tight_layout()
     fig.canvas.draw()
- 
+
     # Get the RGBA buffer from the figure
     w,h = fig.canvas.get_width_height()
     buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
@@ -77,8 +79,9 @@ writer = skvideo.io.FFmpegWriter("motion.mp4", inputdict={
 
 for i in xrange(T-1):
     a, b, c = getPlots(motionData[i])
-    frame = scipy.misc.imresize(videodata[i+1], (a.shape[0], a.shape[1], 3))
-
+    frame = np.array(PIL.Image.fromarray(videodata[i + 1]).resize(
+        (a.shape[0], a.shape[1], 3))
+    )
     outputframe = np.zeros((frame.shape[0]*2, frame.shape[1]*2, 3), dtype=np.uint8)
 
     outputframe[:frame.shape[0], :frame.shape[1]] = frame
