@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import PIL
 
 import skvideo.datasets
 import skvideo.io
 import skvideo.motion
+from skvideo.utils.image import imresize
+
 
 try:
     xrange
@@ -79,9 +80,7 @@ writer = skvideo.io.FFmpegWriter("motion.mp4", inputdict={
 
 for i in xrange(T-1):
     a, b, c = getPlots(motionData[i])
-    frame = np.array(PIL.Image.fromarray(videodata[i + 1]).resize(
-        (a.shape[0], a.shape[1], 3))
-    )
+    frame = imresize(videodata[i + 1], (a.shape[0], a.shape[1]))
     outputframe = np.zeros((frame.shape[0]*2, frame.shape[1]*2, 3), dtype=np.uint8)
 
     outputframe[:frame.shape[0], :frame.shape[1]] = frame
