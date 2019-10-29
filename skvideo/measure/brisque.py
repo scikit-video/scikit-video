@@ -6,6 +6,7 @@ import scipy.ndimage
 import scipy.stats
 
 from ..utils import *
+from ..utils.image import imresize
 
 
 def _extract_subband_feats(mscncoefs):
@@ -46,7 +47,7 @@ def brisque_features(videoData):
     References
     ----------
 
-    .. [#f1] A. Mittal, A. K. Moorthy and A. C. Bovik, "No-Reference Image Quality Assessment in the Spatial Domain" IEEE Transactions on Image Processing, 2012. 
+    .. [#f1] A. Mittal, A. K. Moorthy and A. C. Bovik, "No-Reference Image Quality Assessment in the Spatial Domain" IEEE Transactions on Image Processing, 2012.
     .. [#f2] A. Mittal, A. K. Moorthy and A. C. Bovik, "Referenceless Image Spatial Quality Evaluation Engine," 45th Asilomar Conference on Signals, Systems and Computers , November 2011.
 
     """
@@ -60,7 +61,7 @@ def brisque_features(videoData):
     feats = np.zeros((T, 36), dtype=np.float32)
     for i in range(T):
       full_scale = videoData[i, :, :, 0].astype(np.float32)
-      half_scale = scipy.misc.imresize(full_scale, 0.5, interp='bicubic', mode='F')
+      half_scale = imresize(full_scale, 0.5, interp="bicubic", mode="F")
 
       full_scale, _, _ = compute_image_mscn_transform(full_scale)
       half_scale, _, _ = compute_image_mscn_transform(half_scale)
