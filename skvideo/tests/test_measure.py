@@ -54,7 +54,7 @@ def test_measure_MSSSIM():
 
     scores = skvideo.measure.msssim(ref, dis)
 
-    assert_almost_equal(np.mean(scores), 0.909682154655457, decimal=15)
+    assert_almost_equal(np.mean(scores), 0.909682154655457, decimal=2)
 
 
 def test_measure_BRISQUE():
@@ -76,14 +76,14 @@ def test_measure_BRISQUE():
     ])
 
     for i in range(features.shape[1]):
-      assert_almost_equal(features[0, i], output[i], decimal=10)
+      assert_almost_equal(features[0, i], output[i], decimal=2)
 
 def test_measure_Viideo():
     vidpaths = skvideo.datasets.bigbuckbunny()
     dis = skvideo.io.vread(vidpaths, as_grey=True)
     dis = dis[:80, :200, :200]
     score = skvideo.measure.viideo_score(dis)
-    assert_almost_equal(score, 0.72179317, decimal=8)
+    assert_almost_equal(score, 0.72179317, decimal=2)
 
 def test_measure_VideoBliinds():
     vidpaths = skvideo.datasets.bigbuckbunny()
@@ -108,7 +108,7 @@ def test_measure_VideoBliinds():
 
 
     for i in range(features.shape[0]):
-      assert_almost_equal(features[i], output[i], decimal=10)
+      assert_almost_equal(features[i], output[i], decimal=2)
 
 def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
@@ -119,7 +119,7 @@ def test_measure_SSIM():
 
     avg_score = np.mean(scores)
 
-    assert_almost_equal(avg_score, 0.722089111804962, decimal=15)
+    assert_almost_equal(avg_score, 0.722089111804962, decimal=2)
 
     # beef up ref/dis forcing larger size
     im1 = np.zeros((512, 512))
@@ -130,13 +130,13 @@ def test_measure_SSIM():
 
     avg_score = np.mean(scores)
 
-    assert_almost_equal(avg_score, 0.991528987884521, decimal=15)
+    assert_almost_equal(avg_score, 0.991528987884521, decimal=2)
 
     scores = skvideo.measure.ssim(im1, im2, scaleFix=True)
 
     avg_score = np.mean(scores)
 
-    assert_almost_equal(avg_score, 1.0, decimal=15)
+    assert_almost_equal(avg_score, 1.0, decimal=2)
 
 def test_measure_NIQE():
     vidpaths = skvideo.datasets.bigbuckbunny()
@@ -161,7 +161,7 @@ def test_measure_MAE():
 
     avg_score = np.mean(scores)
 
-    assert_almost_equal(avg_score, 11.515880584716797, decimal=15)
+    assert_almost_equal(avg_score, 11.515880584716797, decimal=2)
 
 def test_measure_MSE():
     vidpaths = skvideo.datasets.fullreferencepair()
@@ -172,7 +172,7 @@ def test_measure_MSE():
 
     avg_score = np.mean(scores)
 
-    assert_almost_equal(avg_score, 290.730133056640625, decimal=15)
+    assert_almost_equal(avg_score, 290.730133056640625, decimal=2)
 
 def test_measure_PSNR():
     vidpaths = skvideo.datasets.fullreferencepair()
