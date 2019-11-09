@@ -47,7 +47,7 @@ Dependencies and Installation
 Here are the requirements needed to use scikit-video.
 
 - Either ffmpeg (version >= 2.8) or libav (either version 10 or 11)
-- python (2.6, 2.7, 3.3, and 3.5)
+- python (2.7, 3.3<=)
 - numpy (version >= 1.9.2)
 - scipy (version >= 0.16.0)
 - PIL/Pillow (version >= 3.1)
@@ -114,4 +114,4 @@ After installation, you can launch the test suite from outside the source direct
     $ nosetests2 -v skvideo
     $ nosetests3 -v skvideo
 
-Copyright 2015-2018, scikit-video developers (BSD license).
+Copyright 2015-2019, scikit-video developers (BSD license).

@@ -1,7 +1,7 @@
 """
 Replaces scipy.imresize because it is now deprecated
 
-Steve Göring 2019
+Steve Goring 2019
 """
 import numpy as np
 import PIL
