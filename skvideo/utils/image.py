@@ -24,7 +24,9 @@ def imresize(image, factor, interp="nearest", mode=None):
     else:
         assert(len(factor) == 2)
         new_shape = factor
+
+    h, w = new_shape
     return np.array(Image.fromarray(image, mode=mode).resize(
-        new_shape,
+        (w, h),
         resample=interp_methods[interp.lower()])
     )

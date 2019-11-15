@@ -148,8 +148,8 @@ def test_measure_NIQE():
 
     scores = skvideo.measure.niqe(ref)
 
-    assert_almost_equal(scores[0], 11.197661399841, decimal=10)
-    assert_almost_equal(scores[1], 11.055174827576, decimal=10)
+    assert_almost_equal(scores[0], 11.19, decimal=2)
+    assert_almost_equal(scores[1], 11.05, decimal=2)
 
 
 def test_measure_MAE():
