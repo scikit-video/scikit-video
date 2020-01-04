@@ -1,5 +1,6 @@
 
 import skvideo.io
+import skvideo.measure
 import skvideo.datasets
 import numpy
 import matplotlib.pyplot as plt
@@ -63,6 +64,9 @@ def test_compare():
     distorted = skvideo.io.vread(distortedLoc)
     assert pristine.shape == distorted.shape
     combined = numpy.empty((pristine.shape[0], 480, 640, 3)) # need to figure out what size will be
+    differenceVector = skvideo.measure.mse(pristine[:, :, :, 0], distorted[:, :, :, 0])
+    assert len(differenceVector.shape) == 1
+    assert differenceVector.shape[0] == pristine.shape[0]
     for frameIndex, (pristineFrame, distortedFrame) in enumerate(zip(pristine, distorted)):
         # https://matplotlib.org/tutorials/intermediate/gridspec.html
         figure = plt.figure(constrained_layout=True)
@@ -75,14 +79,22 @@ def test_compare():
         upperRightAx.margins(0)
         upperRightAx.set_title('distorted')
         upperRightAx.imshow(distortedFrame)
+        upperMiddleAx = figure.add_subplot(gridspec[0,1])
+        upperMiddleAx.margins(0)
+        upperMiddleAx.set_title('difference')
+        upperMiddleAx.imshow(distortedFrame - pristineFrame)
         bottomAx = figure.add_subplot(gridspec[1,:])
         bottomAx.margins(0)
         bottomAx.set_title('difference')
+        bottomAx.plot(differenceVector)
+        bottomAx.plot(frameIndex, differenceVector[frameIndex], 'ro')
+        print(frameIndex)
         #plt.show()
         data = fig2data_alt(figure)
         combined[frameIndex, :] = data
         plt.close(figure)
     skvideo.io.vwrite('test.ogg', combined)
+    skvideo.io.vwrite('test.mp4', combined)
 
 if __name__ == "__main__":
     test_compare()
