@@ -2,11 +2,14 @@
 import skvideo.io
 import skvideo.measure
 import skvideo.datasets
+from PIL import Image, ImageChops
 import numpy
 import matplotlib.pyplot as plt
 
 # https://github.com/stoyanovgeorge/ffmpeg/wiki/How-to-Compare-Video
 # https://www.pyimagesearch.com/2017/06/19/image-difference-with-opencv-and-python/
+# http://www.blog.pythonlibrary.org/2016/10/11/how-to-create-a-diff-of-an-image-in-python/
+#     diff = ImageChops.difference(image_one, image_two)
 # https://stackoverflow.com/questions/28935851/how-to-compare-a-video-with-a-reference-video-using-opencv-and-python/30507468
 # https://stackoverflow.com/questions/25774996/how-to-compare-show-the-difference-between-2-videos-in-ffmpeg
 # http://www.scikit-video.org/stable/measure.html
@@ -82,7 +85,7 @@ def test_compare():
         upperMiddleAx = figure.add_subplot(gridspec[0,1])
         upperMiddleAx.margins(0)
         upperMiddleAx.set_title('difference')
-        upperMiddleAx.imshow(distortedFrame - pristineFrame)
+        upperMiddleAx.imshow(ImageChops.difference(Image.fromarray(distortedFrame), Image.fromarray(pristineFrame)))
         bottomAx = figure.add_subplot(gridspec[1,:])
         bottomAx.margins(0)
         bottomAx.set_title('difference')
@@ -92,6 +95,7 @@ def test_compare():
         #plt.show()
         data = fig2data_alt(figure)
         combined[frameIndex, :] = data
+        if frameIndex == 32: figure.savefig('test.png')
         plt.close(figure)
     skvideo.io.vwrite('test.ogg', combined)
     skvideo.io.vwrite('test.mp4', combined)
