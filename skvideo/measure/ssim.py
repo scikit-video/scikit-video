@@ -204,6 +204,12 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
 
     assert C == 1, "ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,)
 
+    factor = np.int(np.max((1, np.round(np.min((M, N))/256.0))))
+
+    if scaleFix:
+      M = np.int(np.round(np.float(M) / factor + 1e-9))
+      N = np.int(np.round(np.float(N) / factor + 1e-9))
+
     ssim_maps = np.zeros((T, M-10, N-10), dtype=np.float32)
     contrast_maps = np.zeros((T, M-10, N-10), dtype=np.float32)
     ssim_scores = np.zeros(T, dtype=np.float32)
