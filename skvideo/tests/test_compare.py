@@ -15,10 +15,10 @@ def test_compare():
     pristineLoc, distortedLoc = skvideo.datasets.fullreferencepair()
     pristine = skvideo.io.vread(pristineLoc)
     distorted = skvideo.io.vread(distortedLoc)
-    combined = skvideo.measure.view_diff.make_comparison_video(distorted, pristine, ImageChops_on_ndarrays, skvideo.measure.mse_rgb)
-    skvideo.io.vwrite('test.ogg', combined)
-    skvideo.io.vwrite('test.mp4', combined)
+    return skvideo.measure.view_diff.make_comparison_video(distorted, pristine, ImageChops_on_ndarrays, skvideo.measure.mse_rgb)
 
 if __name__ == "__main__":
-    test_compare()
+    combined = test_compare()
+    skvideo.io.vwrite('test.ogg', combined)
+    skvideo.io.vwrite('test.mp4', combined)
 
