@@ -40,6 +40,7 @@ import setuptools
 from setuptools import setup
 
 # https://packaging.python.org/guides/single-sourcing-package-version/
+import codecs
 here = os.path.abspath(os.path.dirname(__file__))
 
 def read(*parts):
