@@ -1,6 +1,7 @@
 from ..utils import *
 import numpy as np
 import scipy.ndimage
+from PIL import Image
 
 
 def mse(referenceVideoData, distortedVideoData):
@@ -48,3 +49,17 @@ def mse(referenceVideoData, distortedVideoData):
         scores[t] = mse
 
     return scores
+
+
+def mse_rgb(referenceVideoData: np.ndarray, distortedVideoData: np.ndarray):
+    """Convenience wrapper to allow calling mse on multi-channel videos.
+    """
+    # It would be preferable to use a vreader-like generator to avoid doubling memory usage,
+    # but currently mse() itself takes only a raw ndarray.
+    referenceVideoLuminance = np.empty(referenceVideoData.shape[:-1])
+    distortedVideoLuminance = np.empty(distortedVideoData.shape[:-1])
+    for frameIndex in range(referenceVideoData.shape[0]):
+        referenceVideoLuminance[frameIndex, :, :] = Image.fromarray(referenceVideoData[frameIndex, :, :, :]).convert('L')
+        distortedVideoLuminance[frameIndex, :, :] = Image.fromarray(distortedVideoData[frameIndex, :, :, :]).convert('L')
+    return mse(referenceVideoLuminance, distortedVideoLuminance)
+
