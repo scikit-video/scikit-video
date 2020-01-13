@@ -91,6 +91,7 @@ except ImportError:
 # Call the setup function
 if __name__ == "__main__":
     setup(configuration=configuration,
+          packages=setuptools.find_packages(),
           name=DISTNAME,
           maintainer=MAINTAINER,
           maintainer_email=MAINTAINER_EMAIL,
