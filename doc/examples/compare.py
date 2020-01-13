@@ -7,6 +7,9 @@ import numpy
 import matplotlib.pyplot as plt
 
 
+# do like http://www.scikit-video.org/stable/examples/motion.html ?
+
+
 def ImageChops_on_ndarrays(distortedFrame, pristineFrame):
     return ImageChops.difference(Image.fromarray(distortedFrame), Image.fromarray(pristineFrame))
 
