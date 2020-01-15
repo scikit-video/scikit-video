@@ -6,7 +6,6 @@ import platform
 import itertools
 from .xmltodict import parse as xmltodictparser
 import subprocess as sp
-import numpy as np
 from .edge import canny
 from .stpyr import SpatialSteerablePyramid, rolling_window
 from .mscn import compute_image_mscn_transform, gen_gauss_window
@@ -299,6 +298,7 @@ def vshape(videodata):
         Standardized version of videodata, shape (T, M, N, C)
 
     """
+    import numpy as np
     if not isinstance(videodata, np.ndarray):
         videodata = np.array(videodata)
 
