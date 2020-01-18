@@ -17,12 +17,12 @@ matrix:
           osx_image: xcode8.2
           env: TRAVIS_PYTHON_VERSION=3.5 FFMPEG=snapshot LIBAV=none
         - os: osx
-          python: "2.7"
+          python: "3.8"
           osx_image: xcode8.2
           env: TRAVIS_PYTHON_VERSION=3.8 FFMPEG=2.8 LIBAV=none
         - os: osx
           osx_image: xcode8.2
-          python: "2.7"
+          python: "3.8"
           env: TRAVIS_PYTHON_VERSION=3.8 FFMPEG=snapshot LIBAV=none
         - os: linux
           python: "3.5"
@@ -33,11 +33,11 @@ matrix:
           language: python
           env: FFMPEG=snapshot LIBAV=none
         - os: linux
-          python: "2.7"
+          python: "3.7"
           language: python
           env: FFMPEG=2.8 LIBAV=11.4
         - os: linux
-          python: "2.7"
+          python: "3.7"
           language: python
           env: FFMPEG=snapshot LIBAV=none
 

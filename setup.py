@@ -37,9 +37,25 @@ import sys
 import subprocess
 
 import setuptools
-from numpy.distutils.core import setup
+from setuptools import setup
 
-import skvideo
+# https://packaging.python.org/guides/single-sourcing-package-version/
+import codecs
+import re
+here = os.path.abspath(os.path.dirname(__file__))
+
+def read(*parts):
+    with codecs.open(os.path.join(here, *parts), 'r') as fp:
+        return fp.read()
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
 
 def configuration(parent_package='', top_path=None, package_name=PACKAGE_NAME):
     if os.path.exists('MANIFEST'): os.remove('MANIFEST')
@@ -75,6 +91,7 @@ except ImportError:
 # Call the setup function
 if __name__ == "__main__":
     setup(configuration=configuration,
+          packages=setuptools.find_packages(),
           name=DISTNAME,
           maintainer=MAINTAINER,
           maintainer_email=MAINTAINER_EMAIL,
@@ -86,5 +103,5 @@ if __name__ == "__main__":
           include_package_data=True,
           test_suite="nose.collector",
           cmdclass=cmdclass,
-          version=skvideo.__version__,
+          version=find_version("skvideo", "__init__.py"),
           **EXTRA_INFO)
