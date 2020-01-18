@@ -110,4 +110,18 @@ def make_comparison_video(video: np.ndarray, referenceVideo: np.ndarray,
     return compositeVideo
 
 
+def make_prediction_comparison_video(video: np.ndarray,
+                                     nextFramePredictor: typing.Callable[[np.ndarray], np.ndarray],
+                                     differenceImgFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray],
+                                     numericalDifferenceFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray] = None,
+                                    ) -> np.ndarray:
+    """
+    The next-frame-predictor is typed as a video-to-video function, because in general prediction might depend on a sequence of frames.
+    """
+    predictionForNextFrameAfterEach = nextFramePredictor(video)
+    assert predictionForNextFrameAfterEach.shape == video.shape
+    return make_comparison_video(video[1:], predictionForNextFrameAfterEach[:-1],
+                                 differenceImgFunc=differenceImgFunc, numericalDifferenceFunc=numericalDifferenceFunc,
+                                 showReferenceImage=False)
+
 
