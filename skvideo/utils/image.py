@@ -3,6 +3,10 @@ Replaces scipy.imresize because it is now deprecated
 
 Steve Goring 2019
 """
+import platform
+if platform.system() == 'Darwin':
+    import matplotlib
+    matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import PIL
