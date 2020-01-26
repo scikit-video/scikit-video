@@ -44,10 +44,19 @@ def make_comparison_image(image: np.ndarray, referenceImage: np.ndarray,
         where M is the height, N is width,
         and C is number of channels.
 
+    differenceImgFunc: Callable
+        Function that takes two images and returns an image showing their differences.
+
     numericalDifferenceVector : ndarray
         Single number measuring the difference for each frame of a video, ndarray of dimension (T,),
         where T is the number of frames.
         This does not make sense for all measurements, such as ST-RRED.
+
+    frameIndex: int
+        The index of this frame in the video, if applicable.
+
+    showReferenceImage: bool
+        Whether the original reference image should be displayed.
 
     Returns
     -------
@@ -90,7 +99,43 @@ def combined_frame_shape(image: np.ndarray, referenceImage: np.ndarray,
                          numericalDifferenceVector: np.ndarray = None,
                          frameIndex: int = None,
                          showReferenceImage: bool = False) -> typing.Tuple[int]:
-    """There's probably a better way to do this, but this tells us what shape we'll need for the combined video.
+    """Calculates the final size of a frame that :func:`skvideo.measure.view_diff.make_comparison_image` will make.
+
+    There's probably a better way to do this, but for now this just actually constructs a single frame and gets its shape.
+
+    Parameters
+    ----------
+    image : ndarray
+        Image to display, ndarray of dimension (M, N, C), or (M, N),
+        where M is the height, N is width,
+        and C is number of channels.
+
+    referenceImage : ndarray
+        Reference image, ndarray of dimension (M, N, C), or (M, N),
+        where M is the height, N is width,
+        and C is number of channels.
+
+    differenceImgFunc: Callable
+        Function that takes two images and returns an image showing their differences.
+
+    numericalDifferenceVector : ndarray
+        Single number measuring the difference for each frame of a video, ndarray of dimension (T,),
+        where T is the number of frames.
+        This does not make sense for all measurements, such as ST-RRED.
+
+    frameIndex: int
+        The index of this frame in the video, if applicable.
+
+    showReferenceImage: bool
+        Whether the original reference image should be displayed.
+
+    Returns
+    -------
+    shape : Tuple[int]
+        dimension (M, N, C) or (M, N),
+        where M is the height, N is width,
+        and C is number of channels.
+        If the current frame is highlighted with a red dot, then C will be 3 even if the original images are grayscale.
     """
     return make_comparison_image(image, referenceImage, differenceImgFunc, numericalDifferenceVector, frameIndex, showReferenceImage).shape
 

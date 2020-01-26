@@ -52,7 +52,29 @@ def mse(referenceVideoData, distortedVideoData):
 
 
 def mse_rgb(referenceVideoData: np.ndarray, distortedVideoData: np.ndarray):
-    """Convenience wrapper to allow calling mse on multi-channel videos.
+    """Convenience wrapper to allow computing mean-squared error (MSE) on multi-channel videos.
+
+    Both video inputs are compared frame-by-frame to obtain T
+    MSE measurements.
+
+    Parameters
+    ----------
+    referenceVideoData : ndarray
+        Reference video, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    distortedVideoData : ndarray
+        Distorted video, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    Returns
+    -------
+    mse_array : ndarray
+        The mse results, ndarray of dimension (T,), where T
+        is the number of frames
+
     """
     # It would be preferable to use a vreader-like generator to avoid doubling memory usage,
     # but currently mse() itself takes only a raw ndarray.
