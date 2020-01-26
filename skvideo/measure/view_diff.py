@@ -144,6 +144,41 @@ def make_comparison_video(video: np.ndarray, referenceVideo: np.ndarray,
                           differenceImgFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray],
                           numericalDifferenceFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray] = None,
                           showReferenceImage: bool = False) -> np.ndarray:
+    """Constructs a faceted composite video showing an video alongside its diff from a reference video.
+
+    If available, a plot of the differences in over time is shown below, with the current frame labeled.
+
+    Parameters
+    ----------
+    video : ndarray
+        Video to display, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    referenceVideo : ndarray
+        Reference video, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    differenceImgFunc: Callable
+        Function that takes two images and returns an image showing their differences.
+
+    numericalDifferenceVector : ndarray
+        Single number measuring the difference for each frame of a video, ndarray of dimension (T,),
+        where T is the number of frames.
+        This does not make sense for all measurements, such as ST-RRED.
+
+    showReferenceImage: bool
+        Whether the original reference image should be displayed.
+
+    Returns
+    -------
+    composite_array : ndarray
+        The comparison video, (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+        If the current frame is highlighted with a red dot, then C will be 3 even if the original images are grayscale.
+    """
     assert video.shape == referenceVideo.shape
     differenceVector = numericalDifferenceFunc(referenceVideo, video)
     assert len(differenceVector.shape) == 1
@@ -160,8 +195,34 @@ def make_prediction_comparison_video(video: np.ndarray,
                                      differenceImgFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray],
                                      numericalDifferenceFunc: typing.Callable[[np.ndarray, np.ndarray], np.ndarray] = None,
                                     ) -> np.ndarray:
-    """
-    The next-frame-predictor is typed as a video-to-video function, because in general prediction might depend on a sequence of frames.
+    """Constructs a faceted composite video showing an video alongside its diff from expected based on a predictor.
+
+    Parameters
+    ----------
+    video : ndarray
+        Video to display, ndarray of dimension (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+
+    nextFramePredictor : Callable
+        The next-frame-predictor is taken as a video-to-video function,
+        because in general prediction might depend on a sequence of frames.
+
+    differenceImgFunc: Callable
+        Function that takes two images and returns an image showing their differences.
+
+    numericalDifferenceVector : ndarray
+        Single number measuring the difference for each frame of a video, ndarray of dimension (T,),
+        where T is the number of frames.
+        This does not make sense for all measurements, such as ST-RRED.
+
+    Returns
+    -------
+    composite_array : ndarray
+        The comparison video, (T, M, N, C), (T, M, N), (M, N, C), or (M, N),
+        where T is the number of frames, M is the height, N is width,
+        and C is number of channels.
+        If the current frame is highlighted with a red dot, then C will be 3 even if the original images are grayscale.
     """
     predictionForNextFrameAfterEach = nextFramePredictor(video)
     assert predictionForNextFrameAfterEach.shape == video.shape
