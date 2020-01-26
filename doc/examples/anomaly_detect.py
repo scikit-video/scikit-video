@@ -4,6 +4,8 @@ import skvideo.datasets
 import skvideo.io
 import skvideo.measure.view_diff
 
+from PIL import Image, ImageChops
+
 
 def ImageChops_on_ndarrays(distortedFrame, pristineFrame):
     return ImageChops.difference(Image.fromarray(distortedFrame), Image.fromarray(pristineFrame))
