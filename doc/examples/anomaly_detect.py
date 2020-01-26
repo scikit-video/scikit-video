@@ -2,7 +2,7 @@
 import prednet.evaluate
 import skvideo.datasets
 import skvideo.io
-import skvideo.measure
+import skvideo.measure.view_diff
 
 
 def ImageChops_on_ndarrays(distortedFrame, pristineFrame):
