@@ -16,4 +16,4 @@ Since the video we use in this example contains scene changes, naturally those s
 
 .. raw:: html 
 
-   <center><video controls width=75% src="../images/anomaly_detection.mpg"></video></center> 
+   <center><video controls width=75% src="../_static/anomaly_detection.mpg"></video></center>
