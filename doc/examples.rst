@@ -12,6 +12,7 @@ Follow any of the below links to see scikit-video in action.
 - :ref:`ioexamplevideo`
 - :ref:`sceneexample`
 - :ref:`motionexample`
+- :ref:`anomalyexample`
 - :ref:`didacticexample`
 
 .. toctree::
