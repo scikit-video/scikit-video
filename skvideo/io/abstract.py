@@ -32,7 +32,7 @@ class VideoReaderAbstract(object):
         such as "Height" is not found in the inputdict, it is found through
         scanning the file's header information. If not in the header, ffprobe
         is used to decode the file to determine the information. In the case
-        that the information is not supplied and connot be inferred from the
+        that the information is not supplied and cannot be inferred from the
         input file, a ValueError exception is thrown.
 
         Parameters
