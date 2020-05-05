@@ -468,7 +468,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
                         costs[3] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVerPointD:refBlkVerPointD + mbSize, refBlkHorPointD:refBlkHorPointD + mbSize])
                         computations += 1
 
-                dxy = np.argmin(costs)
+                dxy = np.argmin(costs) + 1
                 cost = costs[dxy]
 
                 if dxy == 2:
