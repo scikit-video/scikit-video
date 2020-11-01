@@ -6,6 +6,19 @@ website for more details.
 
 """
 
+import os
+import sys
+import subprocess
+
+from setuptools import setup, find_packages
+
+# https://packaging.python.org/guides/single-sourcing-package-version/
+import io
+import re
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+
 DISTNAME = 'scikit-video'
 DESCRIPTION = 'Video Processing in Python'
 LONG_DESCRIPTION = descr
@@ -37,17 +50,6 @@ EXTRA_INFO = dict(
         ]
 )
 
-
-import os
-import sys
-import subprocess
-
-from setuptools import setup, find_packages
-
-# https://packaging.python.org/guides/single-sourcing-package-version/
-import io
-import re
-here = os.path.abspath(os.path.dirname(__file__))
 
 def read(*parts):
     return io.open(os.path.join(here, *parts), 'r')
