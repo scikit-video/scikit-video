@@ -41,7 +41,7 @@ def canny(frame):
     frame = frame.astype(np.float)
 
     # do a better threshood job lol
-    mu = np.zeros((M, N), dtype=np.float)
+    mu = np.zeros((M, N), dtype=np.float32)
 
     scipy.ndimage.correlate1d(frame, avg_window, 0, mu, mode='constant')
     scipy.ndimage.correlate1d(mu, avg_window, 1, mu, mode='constant')

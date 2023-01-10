@@ -23,8 +23,8 @@ def _ssim_core(referenceVideoFrame, distortedVideoFrame, K_1, K_2, bitdepth, sca
     factor_lpf /= np.sum(factor_lpf)
 
     if scaleFix:
-      M = np.int(np.round(np.float(M) / factor + 1e-9))
-      N = np.int(np.round(np.float(N) / factor + 1e-9))
+      M = np.int(np.round(np.float32(M) / factor + 1e-9))
+      N = np.int(np.round(np.float32(N) / factor + 1e-9))
 
     mu1 = np.zeros((M, N), dtype=np.float32)
     mu2 = np.zeros((M, N), dtype=np.float32)
@@ -207,8 +207,8 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
     factor = np.int(np.max((1, np.round(np.min((M, N))/256.0))))
 
     if scaleFix:
-      M = np.int(np.round(np.float(M) / factor + 1e-9))
-      N = np.int(np.round(np.float(N) / factor + 1e-9))
+      M = np.int(np.round(np.float32(M) / factor + 1e-9))
+      N = np.int(np.round(np.float32(N) / factor + 1e-9))
 
     ssim_maps = np.zeros((T, M-10, N-10), dtype=np.float32)
     contrast_maps = np.zeros((T, M-10, N-10), dtype=np.float32)

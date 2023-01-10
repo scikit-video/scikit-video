@@ -84,12 +84,12 @@ class VideoReaderAbstract(object):
             frtxt = viddict[self.INFO_AVERAGE_FRAMERATE]
             parts = frtxt.split('/')
             if len(parts) > 1:
-                if np.float(parts[1]) == 0.:
+                if np.float32(parts[1]) == 0.:
                     self.inputfps = self.DEFAULT_FRAMERATE
                 else:
-                    self.inputfps = np.float(parts[0]) / np.float(parts[1])
+                    self.inputfps = np.float32(parts[0]) / np.float32(parts[1])
             else:
-                self.inputfps = np.float(frtxt)
+                self.inputfps = np.float32(frtxt)
         else:
             self.inputfps = self.DEFAULT_FRAMERATE
 
