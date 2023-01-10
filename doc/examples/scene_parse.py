@@ -42,9 +42,9 @@ filename = skvideo.datasets.bikes()
 videodata = skvideo.io.vread(filename)
 videometadata = skvideo.io.ffprobe(filename)
 frame_rate = videometadata['video']['@avg_frame_rate']
-num_frames = np.int(videometadata['video']['@nb_frames'])
-width = np.int(videometadata['video']['@width'])
-height = np.int(videometadata['video']['@height'])
+num_frames = np.int64(videometadata['video']['@nb_frames'])
+width = np.int64(videometadata['video']['@width'])
+height = np.int64(videometadata['video']['@height'])
 
 # using the "edge" algorithm
 scene_edge_idx = skvideo.measure.scenedet(videodata, method='edges')

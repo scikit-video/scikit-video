@@ -35,7 +35,7 @@ def psnr(referenceVideoData, distortedVideoData, bitdepth=8):
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    bitdepth = np.int(bitdepth)
+    bitdepth = np.int64(bitdepth)
 
     assert(referenceVideoData.shape == distortedVideoData.shape)
 
@@ -43,7 +43,7 @@ def psnr(referenceVideoData, distortedVideoData, bitdepth=8):
 
     assert C == 1, "psnr called with videos containing %d channels. Please supply only the luminance channel" % (C,)
 
-    maxvalue = np.int(2**bitdepth - 1)
+    maxvalue = np.int64(2**bitdepth - 1)
     maxsq = maxvalue**2
 
     scores = np.zeros(T, dtype=np.float)
