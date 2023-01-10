@@ -152,7 +152,7 @@ def canny(frame):
         return low_mask
 
     sums = (np.array(scipy.ndimage.sum(high_mask, labels,
-                             np.arange(count, dtype=np.int32) + 1),
+                             np.arange(count, dtype=int32) + 1),
                      copy=False, ndmin=1))
     good_label = np.zeros((count + 1,), bool)
     good_label[1:] = sums > 0

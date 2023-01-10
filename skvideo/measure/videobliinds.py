@@ -19,7 +19,7 @@ def motion_feature_extraction(frames):
     mblock=10
     h = gen_gauss_window(2, 0.5)
     # step 1: motion vector calculation
-    motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=np.int(1.5*mblock))
+    motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=int(1.5*mblock))
     motion_vectors = motion_vectors.astype(np.float32)
 
     # step 2: compute coherency
@@ -90,11 +90,11 @@ def _extract_subband_feats(mscncoefs):
 
 def extract_on_patches(img, blocksizerow, blocksizecol):
     h, w = img.shape
-    blocksizerow = np.int(blocksizerow)
-    blocksizecol = np.int(blocksizecol)
+    blocksizerow = int(blocksizerow)
+    blocksizecol = int(blocksizecol)
     patches = []
-    for j in range(0, np.int(h-blocksizerow+1), np.int(blocksizerow)):
-        for i in range(0, np.int(w-blocksizecol+1), np.int(blocksizecol)):
+    for j in range(0, int(h-blocksizerow+1), int(blocksizerow)):
+        for i in range(0, int(w-blocksizecol+1), int(blocksizecol)):
             patch = img[j:j+blocksizerow, i:i+blocksizecol]
             patches.append(patch)
 
@@ -176,8 +176,8 @@ def temporal_dc_variation_feature_extraction(frames):
     frames = frames.astype(np.float32)
     mblock=16
     mbsize=16
-    ih = np.int(frames.shape[1]/mbsize)*mbsize
-    iw = np.int(frames.shape[2]/mbsize)*mbsize
+    ih = int(frames.shape[1]/mbsize)*mbsize
+    iw = int(frames.shape[2]/mbsize)*mbsize
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
     # step 2: compensated temporal dct differences
@@ -209,7 +209,7 @@ def NSS_spectral_ratios_feature_extraction(frames):
     mblock=5
 
     # step 1: compute local dct frame differences
-    dct_diff5x5 = np.zeros((frames.shape[0]-1, np.int(frames.shape[1]/mblock), np.int(frames.shape[2]/mblock),mblock**2), dtype=np.float32)
+    dct_diff5x5 = np.zeros((frames.shape[0]-1, int(frames.shape[1]/mblock), int(frames.shape[2]/mblock),mblock**2), dtype=np.float32)
     for i in range(dct_diff5x5.shape[0]):
       for y in range(dct_diff5x5.shape[1]):
         for x in range(dct_diff5x5.shape[2]):
@@ -246,9 +246,9 @@ def NSS_spectral_ratios_feature_extraction(frames):
     for i in range(dct_diff5x5.shape[0]):
       freq_bands[i] = zigzag(gamma_matrix[i])
 
-    lf_gamma5x5 = freq_bands[:, 1:np.int((mblock**2-1)/3)+1]
-    mf_gamma5x5 = freq_bands[:, np.int((mblock**2-1)/3)+1:2*np.int((mblock**2-1)/3)+1]
-    hf_gamma5x5 = freq_bands[:, np.int(2*(mblock**2-1)/3)+1:]
+    lf_gamma5x5 = freq_bands[:, 1:int((mblock**2-1)/3)+1]
+    mf_gamma5x5 = freq_bands[:, int((mblock**2-1)/3)+1:2*int((mblock**2-1)/3)+1]
+    hf_gamma5x5 = freq_bands[:, int(2*(mblock**2-1)/3)+1:]
 
     geomean_lf_gam = scipy.stats.mstats.gmean(lf_gamma5x5.T)
     geomean_mf_gam = scipy.stats.mstats.gmean(mf_gamma5x5.T)

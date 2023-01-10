@@ -34,7 +34,7 @@ def get_patches_test_features(img, patch_size, stride=8):
 
 def extract_on_patches(img, patch_size):
     h, w = img.shape
-    patch_size = np.int(patch_size)
+    patch_size = int(patch_size)
     patches = []
     for j in range(0, h-patch_size+1, patch_size):
         for i in range(0, w-patch_size+1, patch_size):

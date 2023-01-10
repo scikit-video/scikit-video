@@ -7,7 +7,7 @@ filename = skvideo.datasets.bigbuckbunny()
 vid_in = skvideo.io.FFmpegReader(filename)
 data = skvideo.io.ffprobe(filename)['video']
 rate = data['@r_frame_rate']
-T = np.int(data['@nb_frames'])
+T = int(data['@nb_frames'])
 
 vid_out = skvideo.io.FFmpegWriter("corrupted_video.mp4", inputdict={
       '-r': rate,
