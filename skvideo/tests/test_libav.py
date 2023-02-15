@@ -19,7 +19,7 @@ def test_LibAVReader_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if np.int(skvideo._LIBAV_MAJOR_VERSION) < 9:
+    if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
         return 0
 
     reader = skvideo.io.LibAVReader(
@@ -114,7 +114,7 @@ def test_LibAVWriter_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if np.int(skvideo._LIBAV_MAJOR_VERSION) < 9:
+    if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
         return 0
 
     # generate random data for 5 frames
@@ -154,7 +154,7 @@ def _Gray2RGBHack_Helper(pix_fmt):
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
         return 0
-    if np.int(skvideo._LIBAV_MAJOR_VERSION) < 9:
+    if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
         return 0
 
     # generate random data for 5 frames

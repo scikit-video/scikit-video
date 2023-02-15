@@ -107,7 +107,7 @@ for i in range(D.shape[0]):
 
 
 X = image.extract_patches_2d(vidframe, (7, 7))
-X = X.reshape(X.shape[0], -1).astype(np.float)
+X = X.reshape(X.shape[0], -1).astype(float)
 
 # sumsample about 10000 patches
 X = X[np.random.permutation(X.shape[0])[:10000]]

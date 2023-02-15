@@ -74,12 +74,12 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
         assert C == 1, "called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,)
 
     # if type bool, then these are edge maps. No need to convert them
-    if frame1.dtype != np.bool:
+    if frame1.dtype != bool:
         E_1 = canny(frame1.squeeze())
     else:
         E_1 = frame1
 
-    if frame2.dtype != np.bool:
+    if frame2.dtype != bool:
         E_2 = canny(frame2.squeeze())
     else:
         E_2 = frame2

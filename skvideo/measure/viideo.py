@@ -63,10 +63,10 @@ def viideo_score(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterlengt
       step_size = 1
 
     scores = []
-    for itr in range(0, np.int(n_len+1), np.int(step_size)):
+    for itr in range(0, int(n_len+1), int(step_size)):
       f1_cum = []
       f2_cum = []
-      for itr_param in range(itr, np.int(np.min((itr+gap+1, n_len)))):
+      for itr_param in range(itr, int(np.min((itr+gap+1, n_len)))):
         low_Fr1 = features[itr_param, :, 2:14]
         low_Fr2 = features[itr_param+1, :, 2:14]
 
@@ -137,13 +137,13 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
     blockstrideY = blocksize[0]# - blockoverlap[0]
     blockstrideX = blocksize[1]# - blockoverlap[1]
 
-    Mn = np.int(np.round((M+blockoverlap[0])/np.float32(blocksize[0])))
-    Nn = np.int(np.round((N+blockoverlap[1])/np.float32(blocksize[1])))
+    Mn = int(np.round((M+blockoverlap[0])/np.float32(blocksize[0])))
+    Nn = int(np.round((N+blockoverlap[1])/np.float32(blocksize[1])))
 
     # compute every 2 frames
-    features = np.zeros((np.int(T/2), Mn, Nn, 28), dtype=np.float32)
+    features = np.zeros((int(T/2), Mn, Nn, 28), dtype=np.float32)
 
-    for k in range(np.int(T/2)):
+    for k in range(int(T/2)):
       frame1 = videoData[k*2, :, :, 0].astype(np.float32)
       frame2 = videoData[k*2+1, :, :, 0].astype(np.float32)
 

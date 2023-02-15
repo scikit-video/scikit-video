@@ -13,18 +13,18 @@ def _ssim_core(referenceVideoFrame, distortedVideoFrame, K_1, K_2, bitdepth, sca
     if avg_window is None:
       avg_window = gen_gauss_window(5, 1.5)
     
-    L = np.int(2**bitdepth - 1)
+    L = int(2**bitdepth - 1)
 
     C1 = (K_1 * L)**2
     C2 = (K_2 * L)**2
 
-    factor = np.int(np.max((1, np.round(np.min((M, N))/256.0))))
+    factor = int(np.max((1, np.round(np.min((M, N))/256.0))))
     factor_lpf = np.ones((factor,factor), dtype=np.float32)
     factor_lpf /= np.sum(factor_lpf)
 
     if scaleFix:
-      M = np.int(np.round(np.float(M) / factor + 1e-9))
-      N = np.int(np.round(np.float(N) / factor + 1e-9))
+      M = int(np.round(float(M) / factor + 1e-9))
+      N = int(np.round(float(N) / factor + 1e-9))
 
     mu1 = np.zeros((M, N), dtype=np.float32)
     mu2 = np.zeros((M, N), dtype=np.float32)
@@ -204,11 +204,11 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
 
     assert C == 1, "ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,)
 
-    factor = np.int(np.max((1, np.round(np.min((M, N))/256.0))))
+    factor = int(np.max((1, np.round(np.min((M, N))/256.0))))
 
     if scaleFix:
-      M = np.int(np.round(np.float(M) / factor + 1e-9))
-      N = np.int(np.round(np.float(N) / factor + 1e-9))
+      M = int(np.round(float(M) / factor + 1e-9))
+      N = int(np.round(float(N) / factor + 1e-9))
 
     ssim_maps = np.zeros((T, M-10, N-10), dtype=np.float32)
     contrast_maps = np.zeros((T, M-10, N-10), dtype=np.float32)
