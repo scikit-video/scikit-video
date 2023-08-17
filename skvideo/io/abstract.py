@@ -78,18 +78,18 @@ class VideoReaderAbstract(object):
 
         self.inputfps = -1
         if ("-r" in inputdict):
-            self.inputfps = np.int(inputdict["-r"])
+            self.inputfps = int(inputdict["-r"])
         elif self.INFO_AVERAGE_FRAMERATE in viddict:
             # check for the slash
             frtxt = viddict[self.INFO_AVERAGE_FRAMERATE]
             parts = frtxt.split('/')
             if len(parts) > 1:
-                if np.float(parts[1]) == 0.:
+                if float(parts[1]) == 0.:
                     self.inputfps = self.DEFAULT_FRAMERATE
                 else:
-                    self.inputfps = np.float(parts[0]) / np.float(parts[1])
+                    self.inputfps = float(parts[0]) / float(parts[1])
             else:
-                self.inputfps = np.float(frtxt)
+                self.inputfps = float(frtxt)
         else:
             self.inputfps = self.DEFAULT_FRAMERATE
 
@@ -106,11 +106,11 @@ class VideoReaderAbstract(object):
         # if we don't have width or height at all, raise exception
         if ("-s" in inputdict):
             widthheight = inputdict["-s"].split('x')
-            self.inputwidth = np.int(widthheight[0])
-            self.inputheight = np.int(widthheight[1])
+            self.inputwidth = int(widthheight[0])
+            self.inputheight = int(widthheight[1])
         elif ((self.INFO_WIDTH in viddict) and (self.INFO_HEIGHT in viddict)):
-            self.inputwidth = np.int(viddict[self.INFO_WIDTH])
-            self.inputheight = np.int(viddict[self.INFO_HEIGHT])
+            self.inputwidth = int(viddict[self.INFO_WIDTH])
+            self.inputheight = int(viddict[self.INFO_HEIGHT])
         else:
             raise ValueError(
                 "No way to determine width or height from video. Need `-s` in `inputdict`. Consult documentation on I/O.")
@@ -134,23 +134,23 @@ class VideoReaderAbstract(object):
                 warnings.warn("No input color space detected. Assuming {}.".format(self.DEFAULT_INPUT_PIX_FMT),
                               UserWarning)
 
-        self.inputdepth = np.int(bpplut[self.pix_fmt][0])
-        self.bpp = np.int(bpplut[self.pix_fmt][1])
+        self.inputdepth = int(bpplut[self.pix_fmt][0])
+        self.bpp = int(bpplut[self.pix_fmt][1])
 
         israw = str.encode(self.extension) in [b".raw", b".yuv"]
         iswebcam = not os.path.isfile(filename)
 
         if ("-vframes" in outputdict):
-            self.inputframenum = np.int(outputdict["-vframes"])
+            self.inputframenum = int(outputdict["-vframes"])
         elif ("-r" in outputdict):
-            inputfps = np.int(outputdict["-r"])
-            inputduration = np.float(viddict[self.INFO_DURATION])
-            self.inputframenum = np.int(round(inputfps * inputduration) + 1)
+            inputfps = int(outputdict["-r"])
+            inputduration = float(viddict[self.INFO_DURATION])
+            self.inputframenum = int(round(inputfps * inputduration) + 1)
         elif (self.INFO_NB_FRAMES in viddict):
-            self.inputframenum = np.int(viddict[self.INFO_NB_FRAMES])
+            self.inputframenum = int(viddict[self.INFO_NB_FRAMES])
         elif israw:
             # we can compute it based on the input size and color space
-            self.inputframenum = np.int(self.size / (self.inputwidth * self.inputheight * (self.bpp / 8.0)))
+            self.inputframenum = int(self.size / (self.inputwidth * self.inputheight * (self.bpp / 8.0)))
         elif iswebcam:
             # webcam can stream frames endlessly, lets use the special default value of 0 to indicate that
             self.inputframenum = 0
@@ -179,14 +179,14 @@ class VideoReaderAbstract(object):
 
         if '-s' in outputdict:
             widthheight = outputdict["-s"].split('x')
-            self.outputwidth = np.int(widthheight[0])
-            self.outputheight = np.int(widthheight[1])
+            self.outputwidth = int(widthheight[0])
+            self.outputheight = int(widthheight[1])
         else:
             self.outputwidth = self.inputwidth
             self.outputheight = self.inputheight
 
-        self.outputdepth = np.int(bpplut[outputdict['-pix_fmt']][0])
-        self.outputbpp = np.int(bpplut[outputdict['-pix_fmt']][1])
+        self.outputdepth = int(bpplut[outputdict['-pix_fmt']][0])
+        self.outputbpp = int(bpplut[outputdict['-pix_fmt']][1])
         bitpercomponent = self.outputbpp // self.outputdepth
         if bitpercomponent == 8:
             self.dtype = np.dtype('u1')  # np.uint8
@@ -444,8 +444,8 @@ class VideoWriterAbstract(object):
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')
-            self.inputwidth = np.int(widthheight[0])
-            self.inputheight = np.int(widthheight[1])
+            self.inputwidth = int(widthheight[0])
+            self.inputheight = int(widthheight[1])
         else:
             self.inputdict["-s"] = str(N) + "x" + str(M)
             self.inputwidth = N
