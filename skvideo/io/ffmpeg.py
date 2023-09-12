@@ -68,7 +68,7 @@ class FFmpegReader(VideoReaderAbstract):
         probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
-        return np.int(check_output(probecmd).decode().split('\n')[0])
+        return int(check_output(probecmd).decode().split('\n')[0])
 
     def _probe(self):
         return ffprobe(self._filename)

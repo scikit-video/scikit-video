@@ -222,7 +222,7 @@ class Steerable:
         return X, Y
 
     def pointOp(self, im, Y, X):
-        out = np.interp(im.flatten(), X, Y)
+        out = interp(im.flatten(), X, Y)
         return np.reshape(out, im.shape)
 
     #divisive normalization (same as DIIVINE)
@@ -424,8 +424,8 @@ class SpatialSteerablePyramid():
   def corr(self, A, fw):
     h, w = A.shape
 
-    sy2 = np.int(np.floor((fw.shape[0] - 1) / 2))
-    sx2 = np.int(np.floor((fw.shape[1] - 1) / 2))
+    sy2 = int(np.floor((fw.shape[0] - 1) / 2))
+    sx2 = int(np.floor((fw.shape[1] - 1) / 2))
 
     # pad the same as the matlabpyrtools
     newpad = np.vstack((A[1:fw.shape[0]-sy2, :][::-1], A, A[h-(fw.shape[0]-sy2):h-1, :][::-1]))#,

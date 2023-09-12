@@ -41,7 +41,7 @@ def canny(frame):
     frame = frame.astype(np.float)
 
     # do a better threshood job lol
-    mu = np.zeros((M, N), dtype=np.float)
+    mu = np.zeros((M, N), dtype=np.float32)
 
     scipy.ndimage.correlate1d(frame, avg_window, 0, mu, mode='constant')
     scipy.ndimage.correlate1d(mu, avg_window, 1, mu, mode='constant')
@@ -152,7 +152,7 @@ def canny(frame):
         return low_mask
 
     sums = (np.array(scipy.ndimage.sum(high_mask, labels,
-                             np.arange(count, dtype=np.int32) + 1),
+                             np.arange(count, dtype=int32) + 1),
                      copy=False, ndmin=1))
     good_label = np.zeros((count + 1,), bool)
     good_label[1:] = sums > 0

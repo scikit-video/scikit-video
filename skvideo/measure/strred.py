@@ -6,7 +6,7 @@ import scipy.linalg
 def est_params(frame, blk, sigma_nn):
     h, w = frame.shape
     sizeim = np.floor(np.array(frame.shape)/blk) * blk
-    sizeim = sizeim.astype(np.int)
+    sizeim = sizeim.astype(int)
 
     frame = frame[:sizeim[0], :sizeim[1]]
 
@@ -37,7 +37,7 @@ def est_params(frame, blk, sigma_nn):
     V = V.astype(np.float32)
 
     # Estimate local variance
-    sizeim_reduced = (sizeim/blk).astype(np.int)
+    sizeim_reduced = (sizeim/blk).astype(int)
     ss = np.zeros((sizeim_reduced[0], sizeim_reduced[1]), dtype=np.float32)
     if np.max(V) > 0:
       # avoid the matrix inverse for extra speed/accuracy
