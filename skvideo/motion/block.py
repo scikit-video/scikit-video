@@ -947,7 +947,7 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
     # luminance is 1 channel, so flatten for computation
     luminancedata = luminancedata.reshape((numFrames, height, width))
 
-    motionData = np.zeros((numFrames - 1, int(height / mbSize), int(width / mbSize), 2), int8)
+    motionData = np.zeros((numFrames - 1, int(height / mbSize), int(width / mbSize), 2), np.int8)
 
     if method == "ES":
         for i in range(numFrames - 1):

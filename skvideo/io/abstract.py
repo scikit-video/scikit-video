@@ -84,7 +84,6 @@ class VideoReaderAbstract(object):
             frtxt = viddict[self.INFO_AVERAGE_FRAMERATE]
             parts = frtxt.split('/')
             if len(parts) > 1:
-
                 if float(parts[1]) == 0.:
                     self.inputfps = self.DEFAULT_FRAMERATE
                 else:
@@ -145,7 +144,6 @@ class VideoReaderAbstract(object):
             self.inputframenum = int(outputdict["-vframes"])
         elif ("-r" in outputdict):
             inputfps = int(outputdict["-r"])
-
             inputduration = float(viddict[self.INFO_DURATION])
 
             self.inputframenum = int(round(inputfps * inputduration) + 1)

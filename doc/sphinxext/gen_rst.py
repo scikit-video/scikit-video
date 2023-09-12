@@ -552,13 +552,13 @@ def line_count_sort(file_list, target_dir):
     # Sort the list of examples by line-count
     new_list = [x for x in file_list if x.endswith('.py')]
     unsorted = np.zeros(shape=(len(new_list), 2))
-    unsorted = unsorted.astype(np.object)
+    unsorted = unsorted.astype(object)
     for count, exmpl in enumerate(new_list):
         docstr_lines, total_lines = extract_line_count(exmpl, target_dir)
         unsorted[count][1] = total_lines - docstr_lines
         unsorted[count][0] = exmpl
-    index = np.lexsort((unsorted[:, 0].astype(np.str),
-                        unsorted[:, 1].astype(np.float)))
+    index = np.lexsort((unsorted[:, 0].astype(str),
+                        unsorted[:, 1].astype(float)))
     if not len(unsorted):
         return []
     return np.array(unsorted[index][:, 0]).tolist()

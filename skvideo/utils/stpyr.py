@@ -48,8 +48,8 @@ class Steerable:
     #this should just return the levels at angle
     #a lvl x images array
     def steerAngle(self, im, angle):
-        #anglemask = self.pointOp(angle, Ycosn, Xcosn + (np.pi*b)/self.nbands).astype(np.complex)
-        #banddft = (np.complex(0,-1)**order) * lodft
+        #anglemask = self.pointOp(angle, Ycosn, Xcosn + (np.pi*b)/self.nbands).astype(complex)
+        #banddft = (complex(0,-1)**order) * lodft
         #banddft *= anglemask
         #banddft *= himask
         pass
@@ -98,8 +98,8 @@ class Steerable:
             M, N = np.shape(lodft)
             orients = np.zeros((int(self.nbands), M, N))
             for b in range(int(self.nbands)):
-                anglemask = self.pointOp(angle, Ycosn, Xcosn + (np.pi*b)/self.nbands).astype(np.complex)
-                banddft = (np.complex(0,-1)**order) * lodft
+                anglemask = self.pointOp(angle, Ycosn, Xcosn + (np.pi*b)/self.nbands).astype(complex)
+                banddft = (complex(0,-1)**order) * lodft
                 banddft *= anglemask
                 banddft *= himask
                 orients[b, :, :] = np.fft.ifft2(np.fft.ifftshift(banddft)).real
@@ -145,7 +145,7 @@ class Steerable:
             for b in range(int(self.nbands)):
                 anglemask = self.pointOp(angle, Ycosn, Xcosn + (np.pi*b)/self.nbands)
                 banddft = np.fft.fftshift(np.fft.fft2(coeff[0][b]))
-                orientdft += ((np.complex(0,1)**(order)) * banddft * anglemask * himask)
+                orientdft += ((complex(0,1)**(order)) * banddft * anglemask * himask)
 
             # ============== Lowpass component are upsampled and convoluted ============
             dims = np.array(coeff[0][0].shape)
