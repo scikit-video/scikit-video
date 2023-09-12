@@ -145,6 +145,7 @@ class VideoReaderAbstract(object):
         elif ("-r" in outputdict):
             inputfps = int(outputdict["-r"])
             inputduration = float(viddict[self.INFO_DURATION])
+
             self.inputframenum = int(round(inputfps * inputduration) + 1)
         elif (self.INFO_NB_FRAMES in viddict):
             self.inputframenum = int(viddict[self.INFO_NB_FRAMES])

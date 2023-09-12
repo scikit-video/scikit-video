@@ -78,8 +78,8 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
         E_1 = canny(frame1.squeeze())
     else:
         E_1 = frame1
-
     if frame2.dtype != bool:
+
         E_2 = canny(frame2.squeeze())
     else:
         E_2 = frame2

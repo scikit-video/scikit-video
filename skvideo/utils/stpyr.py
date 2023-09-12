@@ -222,7 +222,7 @@ class Steerable:
         return X, Y
 
     def pointOp(self, im, Y, X):
-        out = np.interp(im.flatten(), X, Y)
+        out = interp(im.flatten(), X, Y)
         return np.reshape(out, im.shape)
 
     #divisive normalization (same as DIIVINE)

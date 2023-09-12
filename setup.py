@@ -70,8 +70,6 @@ def configuration(parent_package='', top_path=None, package_name=PACKAGE_NAME):
                        quiet=True)
 
     config.add_subpackage('skvideo')
-    config.add_data_dir('skvideo/datasets/data')
-    config.add_data_dir('skvideo/measure/data')
     return config
 
 # Documentation building command
@@ -104,4 +102,5 @@ if __name__ == "__main__":
           test_suite="nose.collector",
           cmdclass=cmdclass,
           version=find_version("skvideo", "__init__.py"),
+          package_data={'': ['data/*']},
           **EXTRA_INFO)

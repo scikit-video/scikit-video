@@ -37,8 +37,8 @@ def Li3DDCT_features(videoData):
     assert T >= 4, "Only %d input frames. Please supply at least 4" % (T,)
 
     feats = np.zeros((63*5,), dtype=np.float32)
-    newM = np.int32(np.floor(M/4)*4)
-    newN = np.int32(np.floor(N/4)*4)
+    newM = int32(np.floor(M/4)*4)
+    newN = int32(np.floor(N/4)*4)
 
     frameSlices = np.arange(0, T-4, 4)
     Sfeats = np.zeros((len(frameSlices), 63), dtype=np.float32)
