@@ -41,5 +41,10 @@ Scene detection
 
 Use :func:`skvideo.measure.scenedet` to find frames that start scene boundaries. Check the documentation on selecting the specific detection algorithm.
 
+View differences
+---------------------------------
+
+Use :func:`skvideo.measure.view_diff` to view frame-by-frame differences between two videos. This can be used for a form of anomaly detection if you supply a video predictor.
+
 .. toctree::
     :hidden:
