@@ -2,6 +2,7 @@ from ..utils import *
 from ..utils.image import imresize
 
 import numpy as np
+import cv2
 import scipy.misc
 import scipy.io
 
@@ -67,7 +68,7 @@ def _get_patches_generic(img, patch_size, is_train, stride):
 
 
     img = img.astype(np.float32)
-    img2 = imresize(img, 0.5, interp="bicubic", mode="F")
+    img2 = cv2.resize(img, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
 
     mscn1, var, mu = compute_image_mscn_transform(img)
     mscn1 = mscn1.astype(np.float32)
