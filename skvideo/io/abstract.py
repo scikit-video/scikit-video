@@ -66,7 +66,13 @@ class VideoReaderAbstract(object):
 
         # General information
         _, self.extension = os.path.splitext(filename)
-        self.size = os.path.getsize(filename)
+
+        # Don't calculate size for url path.
+        if filename.startswith('https') or filename.startswith('http'):
+            self.size = None
+        else:
+            self.size = os.path.getsize(filename)
+
         self.probeInfo = self._probe()
 
         # smartphone video data is weird
@@ -151,7 +157,7 @@ class VideoReaderAbstract(object):
             self.inputframenum = int(round(inputfps * inputduration) + 1)
         elif (self.INFO_NB_FRAMES in viddict):
             self.inputframenum = int(viddict[self.INFO_NB_FRAMES])
-        elif israw:
+        elif israw and self.size is not None:
             # we can compute it based on the input size and color space
             self.inputframenum = int(self.size / (self.inputwidth * self.inputheight * (self.bpp / 8.0)))
         elif iswebcam:
