@@ -6,6 +6,8 @@ import numpy as np
 
 from .. import _HAS_FFMPEG
 from ..utils import *
+from urllib.parse import urlparse
+
 
 
 class VideoReaderAbstract(object):
@@ -65,7 +67,7 @@ class VideoReaderAbstract(object):
             outputdict = {}
 
         # General information
-        _, self.extension = os.path.splitext(filename)
+        self.extension = self.get_video_extension(filename)
 
         # Don't calculate size for url path.
         if filename.startswith('https') or filename.startswith('http'):
@@ -209,6 +211,12 @@ class VideoReaderAbstract(object):
             raise ValueError(outputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
         self._createProcess(inputdict, outputdict, verbosity)
+
+    def get_video_extension(self, video):
+        parsed_url = urlparse(video)
+        file_path = parsed_url.path
+        _, extension = os.path.splitext(file_path)
+        return extension
 
     def __next__(self):
         return next(self.nextFrame())
