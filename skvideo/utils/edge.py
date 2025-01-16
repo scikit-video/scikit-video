@@ -38,10 +38,10 @@ def canny(frame):
 
     avg_window = gauss_window(4, 1.2) 
 
-    frame = frame.astype(np.float)
+    frame = frame.astype(float)
 
     # do a better threshood job lol
-    mu = np.zeros((M, N), dtype=np.float32)
+    mu = np.zeros((M, N), dtype=float)
 
     scipy.ndimage.correlate1d(frame, avg_window, 0, mu, mode='constant')
     scipy.ndimage.correlate1d(mu, avg_window, 1, mu, mode='constant')
