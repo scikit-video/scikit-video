@@ -8,7 +8,7 @@ cd $HOME/download
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
     brew update;
-    wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-MacOSX-x86_64.sh -O miniconda.sh
+    wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
 
     # brew outdated <package-name> || brew upgrade <package-name>;
 else

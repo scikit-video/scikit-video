@@ -29,7 +29,7 @@ from github_link import make_linkcode_resolve
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.imgmath',
               'sphinx.ext.viewcode',
               #'youtube.youtube',
               #'sphinx.ext.linkcode',
