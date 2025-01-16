@@ -67,7 +67,7 @@ class VideoReaderAbstract(object):
             outputdict = {}
 
         # General information
-        self.extension = self.get_video_extension(filename)
+        _, self.extension = os.path.splitext(filename)
 
         # Don't calculate size for url path.
         if filename.startswith('https') or filename.startswith('http'):
