@@ -2,6 +2,7 @@ from os.path import dirname
 from os.path import join
 
 import numpy as np
+import cv2
 import scipy.fftpack
 import scipy.io
 import scipy.misc
@@ -126,7 +127,7 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
         img = img[:, :-woffset]
 
     img = img.astype(np.float32)
-    img2 = imresize(img, 0.5, interp='bicubic', mode='F')
+    img2 = cv2.resize(img, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
 
     mscn1, var, mu = compute_image_mscn_transform(img, extend_mode='nearest')
     mscn1 = mscn1.astype(np.float32)
