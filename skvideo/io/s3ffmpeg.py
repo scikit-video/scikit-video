@@ -65,16 +65,13 @@ class S3FFmpegReader:
 
     def get_input_height_and_width(self):
         if ("-s" in self.inputdict):
-            print('rohit if')
             widthheight = self.inputdict["-s"].split('x')
             self.inputwidth = np.int(widthheight[0])
             self.inputheight = np.int(widthheight[1])
         elif (("width" in self.video_info) and ("height" in self.video_info)):
-            print('rohit else if')
             self.inputwidth = np.int(self.video_info["width"])
             self.inputheight = np.int(self.video_info["height"])
         else:
-            print('rohit else')
             raise ValueError("No way to determine width or height from video. Need `-s` in `inputdict`. Consult documentation on I/O.")
 
     def get_output_height_and_width(self):
@@ -91,7 +88,6 @@ class S3FFmpegReader:
         
         Returns the video shape in number of frames, height, width, and channels per pixel.
         """
-        print(f'GET Shape {self.inputframenum} {self.outputheight} {self.outputwidth} {self.outputdepth}')
         return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
     def _configure_streaming_options(self):
