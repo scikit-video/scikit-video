@@ -144,19 +144,21 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             outputdict['-pix_fmt'] = 'gray'
 
         if fname.startswith('https') or fname.startswith('http'):
-            reader = S3FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+            with S3FFmpegReader(fname) as reader:
+                videodata = reader.read_frames()
+                if as_grey:
+                    videodata = videodata[:, :, :, 0]
         else:
             reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+            T, M, N, C = reader.getShape()
 
-        T, M, N, C = reader.getShape()
+            videodata = np.zeros((T, M, N, C), dtype=np.uint8)
+            for idx, frame in enumerate(reader.nextFrame()):
+                if idx < T:
+                    videodata[idx, :, :, :] = frame
 
-        videodata = np.zeros((T, M, N, C), dtype=np.uint8)
-        for idx, frame in enumerate(reader.nextFrame()):
-            if idx < T:
-                videodata[idx, :, :, :] = frame
-
-        if as_grey: 
-            videodata = vshape(videodata[:, :, :, 0])
+            if as_grey:
+                videodata = vshape(videodata[:, :, :, 0])
         reader.close()
 
         return videodata
