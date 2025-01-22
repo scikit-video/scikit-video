@@ -6,7 +6,6 @@
 from .ffmpeg import *
 from .avconv import *
 from .s3ffmpeg import *
-from .s3ffprobe import *
 from .mprobe import *
 from .ffprobe import *
 from .avprobe import *
@@ -19,7 +18,6 @@ __all__ = [
     'vwriter',
     'mprobe',
     'ffprobe',
-    's3ffprobe',
     'avprobe',
     'FFmpegReader',
     'FFmpegWriter',
