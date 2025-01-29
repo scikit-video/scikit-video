@@ -60,6 +60,12 @@ class S3FFmpegReader:
             
             # Input
             '-i', self._url,
+            # QUality set to 2. (1 is the highest and 31 is the lowest)
+            '-q:v', '2',
+            # Frame rate set to 10
+            '-r', '10',
+            # Disable Audio Stream
+            '-an',
             
             # Output options - direct to BGR
             '-f', 'rawvideo',
