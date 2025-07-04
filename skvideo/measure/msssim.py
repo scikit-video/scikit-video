@@ -42,7 +42,7 @@ def compute_msssim(frame1, frame2, method='product'):
         overall_mssim2.append(mcs_array*weight2[i])
 
     if method == "product":
-      overall_mssim = np.product(overall_mssim1) * mssim_array
+      overall_mssim = np.prod(overall_mssim1) * mssim_array
     else:
       overall_mssim = np.sum(overall_mssim2) + mssim_array
 
