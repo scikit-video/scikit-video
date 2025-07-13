@@ -12,4 +12,4 @@ Video output shows that the luminance scene detector captures all the scene chan
 
 .. raw:: html 
 
-   <center><video controls width=75% src="../_static/scene_cuts.mp4"></video></center> 
+   <center><video controls width=75% src="../_static/scene_cuts.mp4"></video></center>
