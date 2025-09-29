@@ -512,7 +512,7 @@ class VideoWriterAbstract(object):
 
         # Write
         try:
-            self._proc.stdin.write(vid.tostring())
+            self._proc.stdin.write(vid.tobytes())
         except IOError as e:
             # Show the command and stderr from pipe
             msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
