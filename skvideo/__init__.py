@@ -1,4 +1,4 @@
-__version__ = "1.1.11"
+__version__ = "1.1.12.dev0"
 
 from .utils import check_output, where
 import os

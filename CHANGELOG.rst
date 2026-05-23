@@ -1,3 +1,20 @@
+1.1.12 (unreleased)
+-------------------
+- Replaced setup.py / numpy.distutils packaging with pyproject.toml + setuptools.
+  Restores ``pip install`` compatibility with Python 3.12+ and NumPy >= 1.26.
+- Replaced deprecated ``ndarray.tostring()`` with ``tobytes()`` (NumPy 2.x; PR #182).
+- Removed vestigial ``scipy.misc`` imports left behind by PR #177; switched
+  ``skvideo.utils.stpyr`` to ``scipy.special.factorial`` (SciPy >= 1.3).
+- Declared ``opencv-python-headless`` as a hard dependency so
+  ``import skvideo.measure`` works on a fresh install.
+- Dropped Python 2.7 and Python <= 3.9 support. Now supports Python 3.10–3.13.
+- Migrated tests from nose to pytest.
+- Replaced Travis CI / CircleCI configs with a GitHub Actions workflow.
+
+1.1.11
+------
+- Year revision and product->prod naming cleanup; int8 -> int32 in motion estimation.
+
 1.1.10
 -----
 - Adding BSD license file

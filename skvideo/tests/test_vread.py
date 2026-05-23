@@ -5,7 +5,7 @@ import skvideo.io
 import skvideo.utils
 import skvideo.datasets
 import os
-import nose
+import pytest
 
 
 # test read twice
@@ -128,7 +128,7 @@ def test_vread_raw1_ffmpeg():
 
 
 # disabled test for now since libav has a pixel-drift issue
-@nose.tools.nottest
+@pytest.mark.skip(reason="libav has a pixel-drift issue")
 def test_vread_raw1_libav_aboveversion9():
     if not skvideo._HAS_AVCONV:
         return 0
