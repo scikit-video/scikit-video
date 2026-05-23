@@ -81,11 +81,38 @@ class FFmpegWriter(VideoWriterAbstract):
 
     Using FFmpeg as a backend, this class
     provides sane initializations for the default case.
+
+    Parameters
+    ----------
+    filename : string
+        Video file path for writing.
+
+    inputdict : dict
+        How to interpret the frames piped in from Python.
+
+    outputdict : dict
+        How to encode the output file.
+
+    audiosrc : string, optional
+        Path to a media file whose audio track should be muxed into the
+        output. Used to preserve audio across a ``vread`` / ``vwrite``
+        round-trip (issues #173, #176). By default the audio is stream-
+        copied with ``-c:a copy`` (no re-encoding); set ``-c:a`` (or
+        ``-codec:a`` / ``-acodec``) in ``outputdict`` to override. The
+        output is also trimmed to the shorter of video/audio via
+        ``-shortest``, which is the intuitive behavior when the video
+        is a subset of the original.
+
+    verbosity : int
+        0 (default) for quiet, 1 to print the ffmpeg command.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, filename, inputdict=None, outputdict=None,
+                 audiosrc=None, verbosity=0):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
-        super(FFmpegWriter,self).__init__(*args, **kwargs)
+        self._audiosrc = audiosrc
+        super(FFmpegWriter, self).__init__(
+            filename, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
 
     def _getSupportedEncoders(self):
         return _FFMPEG_SUPPORTED_ENCODERS
@@ -94,7 +121,23 @@ class FFmpegWriter(VideoWriterAbstract):
         iargs = self._dict2Args(inputdict)
         oargs = self._dict2Args(outputdict)
 
-        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"]
+
+        if self._audiosrc is not None:
+            # Mux audio from a separate source. stdin (raw video) is input #0;
+            # the audio source becomes input #1. -map forces the output to use
+            # video from #0 and audio from #1, ignoring any video the audio
+            # source might also contain.
+            cmd += ["-i", self._audiosrc, "-map", "0:v:0", "-map", "1:a"]
+            # Only set the default codec/duration policy if the user hasn't
+            # already specified their own audio codec.
+            user_audio_codec_keys = ("-c:a", "-codec:a", "-acodec")
+            if not any(k in outputdict for k in user_audio_codec_keys):
+                cmd += ["-c:a", "copy"]
+            if "-shortest" not in outputdict:
+                cmd += ["-shortest"]
+
+        cmd += oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 

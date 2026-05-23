@@ -10,6 +10,16 @@
 - Dropped Python 2.7 and Python <= 3.9 support. Now supports Python 3.10–3.13.
 - Migrated tests from nose to pytest.
 - Replaced Travis CI / CircleCI configs with a GitHub Actions workflow.
+- ``inputdict`` / ``outputdict`` flag values can now be lists/tuples to emit
+  the same flag repeatedly (e.g. ``{'-metadata': ['title=foo', 'artist=bar']}``
+  becomes ``-metadata title=foo -metadata artist=bar``). Fixes #168.
+- ``skvideo.io.ffprobe`` now exposes every stream of each codec type at
+  ``info['<type>_streams']`` (e.g. ``info['audio_streams']``) in addition to
+  the existing single-stream key. Fixes #165.
+- ``FFmpegWriter`` and ``vwrite`` accept an ``audiosrc`` argument: a path to
+  a media file whose audio is muxed into the output via ``-c:a copy`` and
+  ``-shortest``. This restores audio across a ``vread`` / ``vwrite``
+  passthrough. Fixes #173, #176.
 
 1.1.11
 ------

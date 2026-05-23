@@ -9,7 +9,7 @@ from .. import _HAS_FFMPEG
 from ..utils import *
 
 
-def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
+def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, audiosrc=None):
     """Save a video to file entirely from memory.
 
     Parameters
@@ -39,6 +39,11 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         Setting to 1 enables all debugging output.
         Useful to see if the backend is behaving properly.
 
+    audiosrc : string, optional
+        Path to a media file whose audio track should be muxed into the
+        output, allowing audio to be preserved across a ``vread`` /
+        ``vwrite`` round-trip (issues #173, #176). FFmpeg backend only.
+
     Returns
     -------
     none
@@ -59,11 +64,14 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         # check if FFMPEG exists in the path
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
-        writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict,
+                              audiosrc=audiosrc, verbosity=verbosity)
         for t in range(T):
             writer.writeFrame(videodata[t])
         writer.close()
     elif backend == "libav":
+        if audiosrc is not None:
+            raise NotImplementedError("audiosrc passthrough is only supported with backend='ffmpeg'")
         # check if FFMPEG exists in the path
         assert _HAS_AVCONV, "Cannot find installation of libav."
         writer = LibAVWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
