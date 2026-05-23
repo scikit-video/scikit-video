@@ -35,17 +35,17 @@ def _vwrite(backend):
 
 def test_vreader_ffmpeg():
     if not skvideo._HAS_FFMPEG:
-        return 0
+        return
     _vwrite("ffmpeg")
 
 def test_vreader_libav():
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     try:
         if int(skvideo._LIBAV_MAJOR_VERSION) < 12:
-            return 0
+            return
     except:
-        return 0
+        return
 
     _vwrite("libav")
 

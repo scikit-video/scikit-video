@@ -44,9 +44,9 @@ def test_vreader_ffmpeg():
 def test_vreader_libav_version12():
     try:
         if int(skvideo._LIBAV_MAJOR_VERSION) < 12:
-            return 0
+            return
     except:
-        return 0
+        return
 
     _vreader("libav")
 

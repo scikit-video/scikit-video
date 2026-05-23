@@ -18,9 +18,9 @@ else:
 def test_LibAVReader_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
-        return 0
+        return
 
     reader = skvideo.io.LibAVReader(
         skvideo.datasets.bigbuckbunny(), verbosity=0)
@@ -113,9 +113,9 @@ def test_LibAVReader_16bits():
 def test_LibAVWriter_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
-        return 0
+        return
 
     # generate random data for 5 frames
     outputfile = sys._getframe().f_code.co_name + ".mp4"
@@ -153,9 +153,9 @@ def test_LibAVWriter_Gray2RGBHack_gray16be():
 def _Gray2RGBHack_Helper(pix_fmt):
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
-        return 0
+        return
 
     # generate random data for 5 frames
     outputfile = sys._getframe().f_code.co_name + ".yuv"

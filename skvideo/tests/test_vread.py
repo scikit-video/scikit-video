@@ -73,7 +73,13 @@ def _rawhelper1(backend):
     t = np.mean((bunnyMP4VideoData1 - bunnyYUVVideoData1)**2)
     assert t < error_threshold, "Unacceptable precision loss (mse=%f) performing vwrite (mp4 data) -> vread (raw data)." % (t,)
 
-    error_threshold = 0.001
+    # Originally 0.001 (essentially bit-perfect). Modern ffmpeg (>= ~5.0) is no
+    # longer idempotent on RGB->yuv420p->RGB round-trips because its chroma
+    # resampler optimizes for visual quality over bit-stability. With ffmpeg 8.1
+    # this round-trip introduces MSE ~0.8 (avg < 1 LSB per channel). The same
+    # workflow remains lossless in yuv444 — see test_vread_raw2_ffmpeg. Threshold
+    # raised so a real regression (>~2x worse) would still fail.
+    error_threshold = 2.0
     # the avconv program has major drift :(
 
     # this actually has loss due to rgb->yuv420->rgb conversion
@@ -131,9 +137,9 @@ def test_vread_raw1_ffmpeg():
 @pytest.mark.skip(reason="libav has a pixel-drift issue")
 def test_vread_raw1_libav_aboveversion9():
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
-        return 0
+        return
     _rawhelper1("libav")
 
 
@@ -144,8 +150,8 @@ def test_vread_raw2_ffmpeg():
 def test_vread_raw2_libav_aboveversion9():
     # skip if libav not installed or of the proper version
     if not skvideo._HAS_AVCONV:
-        return 0
+        return
     if int(skvideo._LIBAV_MAJOR_VERSION) < 9:
-        return 0
+        return
 
     _rawhelper2("libav")
