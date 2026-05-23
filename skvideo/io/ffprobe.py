@@ -19,8 +19,24 @@ def ffprobe(filename):
     Returns
     -------
     metaDict : dict
-       Dictionary containing all header-based information 
+       Dictionary containing all header-based information
        about the passed-in source video.
+
+       For each codec type present in the file (e.g. ``video``, ``audio``,
+       ``subtitle``), the dictionary contains two entries:
+
+       - ``<type>`` — the first stream of that type (backward-compatible
+         with the pre-#165 single-stream behavior).
+       - ``<type>_streams`` — a list of *all* streams of that type, in the
+         order ffprobe reported them. Use this when the file contains
+         multiple streams of the same codec type (issue #165).
+
+       Example for a file with one video stream and two audio streams::
+
+           info = ffprobe("foo.mkv")
+           info["video"]            # first (and only) video stream
+           info["audio"]            # first audio stream
+           info["audio_streams"]    # list of both audio streams
 
     """
     # check if FFMPEG exists in the path
@@ -29,26 +45,24 @@ def ffprobe(filename):
     try:
         command = [_FFMPEG_PATH + "/" + _FFPROBE_APPLICATION, "-v", "error", "-show_streams", "-print_format", "xml", filename]
 
-        # simply get std output
         xml = check_output(command)
+        d = xmltodictparser(xml)["ffprobe"]["streams"]
 
-        d = xmltodictparser(xml)["ffprobe"]
+        # ffprobe's XML output produces either a single "stream" dict or a list of them
+        # depending on stream count. Normalize to a list.
+        streams = d["stream"]
+        if not isinstance(streams, list):
+            streams = [streams]
 
-        d = d["streams"]
+        result = {}
+        for stream in streams:
+            codec_type = stream["@codec_type"].lower()
+            # First stream of each type lives at the unindexed key (backward-compat)
+            if codec_type not in result:
+                result[codec_type] = stream
+            # All streams of each type live at the plural key (issue #165)
+            result.setdefault(codec_type + "_streams", []).append(stream)
 
-        #import json
-        #print json.dumps(d, indent = 4)
-        #exit(0)
-
-        # check type
-        streamsbytype = {}
-        if type(d["stream"]) is list:
-            # go through streams
-            for stream in d["stream"]:
-                streamsbytype[stream["@codec_type"].lower()] = stream
-        else:
-            streamsbytype[d["stream"]["@codec_type"].lower()] = d["stream"]
-
-        return streamsbytype
-    except:
+        return result
+    except Exception:
         return {}

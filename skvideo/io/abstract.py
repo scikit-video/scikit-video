@@ -222,10 +222,19 @@ class VideoReaderAbstract(object):
         return NotImplemented
 
     def _dict2Args(self, dict):
+        # Flatten {key: value} into [key, value, ...].
+        # If value is a list/tuple, repeat the key for each entry — this is
+        # how ffmpeg flags like `-metadata key1=val1 -metadata key2=val2`
+        # are expressed (issue #168).
         args = []
-        for key in dict.keys():
-            args.append(key)
-            args.append(dict[key])
+        for key, value in dict.items():
+            if isinstance(value, (list, tuple)):
+                for v in value:
+                    args.append(key)
+                    args.append(v)
+            else:
+                args.append(key)
+                args.append(value)
         return args
 
     def getShape(self):
@@ -523,10 +532,19 @@ class VideoWriterAbstract(object):
         return NotImplemented
 
     def _dict2Args(self, dict):
+        # Flatten {key: value} into [key, value, ...].
+        # If value is a list/tuple, repeat the key for each entry — this is
+        # how ffmpeg flags like `-metadata key1=val1 -metadata key2=val2`
+        # are expressed (issue #168).
         args = []
-        for key in dict.keys():
-            args.append(key)
-            args.append(dict[key])
+        for key, value in dict.items():
+            if isinstance(value, (list, tuple)):
+                for v in value:
+                    args.append(key)
+                    args.append(v)
+            else:
+                args.append(key)
+                args.append(value)
         return args
 
     def __enter__(self):
