@@ -97,15 +97,32 @@ class FFmpegWriter(VideoWriterAbstract):
     audiosrc : string, optional
         Path to a media file whose audio track should be muxed into the
         output. Used to preserve audio across a ``vread`` / ``vwrite``
-        round-trip (issues #173, #176). By default only the **first**
-        audio stream from ``audiosrc`` is copied (``-map 1:a:0``); to
-        copy all audio streams instead, override the mapping with
-        ``outputdict={'-map': '1:a'}``. The audio is stream-copied with
-        ``-c:a copy`` (no re-encoding); set ``-c:a`` (or ``-codec:a`` /
-        ``-acodec``) in ``outputdict`` to override the codec. The output
-        is also trimmed to the shorter of video/audio via ``-shortest``,
-        which is the intuitive behavior when the video is a subset of
-        the original.
+        round-trip (issues #173, #176). By default the output contains
+        the video from the piped-in frames plus the **first** audio
+        stream from ``audiosrc`` (equivalent to passing
+        ``-map 0:v:0 -map 1:a:0`` to ffmpeg).
+
+        To take full control of stream selection, supply your own
+        ``-map`` in ``outputdict``. When ``outputdict`` contains a
+        ``-map`` entry, our default ``-map`` arguments yield entirely;
+        this is in line with ffmpeg's additive ``-map`` semantics (a
+        second ``-map`` adds streams rather than overriding earlier
+        ones). Examples (note the list form for multiple ``-map``
+        values):
+
+          - Copy all audio streams::
+
+                outputdict={'-map': ['0:v:0', '1:a']}
+
+          - Pick a specific audio stream::
+
+                outputdict={'-map': ['0:v:0', '1:a:5']}
+
+        The audio is stream-copied with ``-c:a copy`` (no re-encoding);
+        set ``-c:a`` (or ``-codec:a`` / ``-acodec``) in ``outputdict``
+        to override the codec. The output is also trimmed to the shorter
+        of video/audio via ``-shortest``, which is the intuitive
+        behavior when the video is a subset of the original.
 
     verbosity : int
         0 (default) for quiet, 1 to print the ffmpeg command.
@@ -145,15 +162,17 @@ class FFmpegWriter(VideoWriterAbstract):
 
         if self._audiosrc is not None:
             # Mux audio from a separate source. stdin (raw video) is input #0;
-            # the audio source becomes input #1. -map forces the output to use
-            # video from #0 and the first audio stream from #1. We deliberately
-            # copy only the first audio stream (1:a:0) rather than all streams
-            # (1:a) — most users expect "the audio," and surprise-multiplexing
-            # 4 audio tracks because the source happened to be a multi-language
-            # mux would be confusing. Override with outputdict={'-map': '1:a'}
-            # to keep all streams. User-supplied -map in outputdict wins because
-            # it is appended after these defaults.
-            cmd += ["-i", self._audiosrc, "-map", "0:v:0", "-map", "1:a:0"]
+            # the audio source becomes input #1.
+            cmd += ["-i", self._audiosrc]
+            # ffmpeg's -map is ADDITIVE: a second -map adds streams rather than
+            # overriding earlier ones. So if the user supplies any -map in
+            # outputdict, our defaults must yield entirely — otherwise the user
+            # gets unexpected duplicated streams. Default behavior (no user
+            # -map): copy video from input 0 and the first audio stream from
+            # input 1; we pick :0 over :a to avoid surprise-multiplexing all
+            # audio tracks from a multi-language source.
+            if "-map" not in outputdict:
+                cmd += ["-map", "0:v:0", "-map", "1:a:0"]
             # Only set the default codec/duration policy if the user hasn't
             # already specified their own audio codec.
             user_audio_codec_keys = ("-c:a", "-codec:a", "-acodec")

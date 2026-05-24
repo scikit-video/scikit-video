@@ -375,6 +375,36 @@ class TestAudioPassthrough:
                 audiosrc=str(tmp_path / "does-not-exist.mp4"),
             )
 
+    def test_user_map_in_outputdict_replaces_default_audiosrc_map(
+        self, skvideo_modules, bunny_path, short_rgb_frames, tmp_path
+    ):
+        """User -map in outputdict must override our defaults, not stack with them.
+
+        Regression test for v1.1.12 BLOCKER: ffmpeg's -map is additive, so the
+        old implementation emitted '-map 0:v:0 -map 1:a:0' before appending the
+        user's -map. A 2-audio source with outputdict={'-map': ['0:v:0', '1:a']}
+        produced audio_streams=3 (the first audio duplicated) instead of the
+        expected 2. After the fix, when the user supplies any -map, our default
+        maps yield entirely.
+        """
+        multi_audio = _make_two_audio_clip(skvideo_modules, bunny_path, tmp_path)
+        out_path = tmp_path / "user_map_override.mp4"
+
+        skvideo_modules.io.vwrite(
+            str(out_path),
+            short_rgb_frames[:3],
+            audiosrc=str(multi_audio),
+            outputdict={"-map": ["0:v:0", "1:a"]},
+        )
+
+        info = skvideo_modules.io.ffprobe(str(out_path))
+        assert len(info["video_streams"]) == 1
+        assert len(info["audio_streams"]) == 2, (
+            "expected 2 audio streams from user's -map; got %d (likely the "
+            "default -map 1:a:0 stacked with the user's -map 1:a, duplicating "
+            "the first audio stream)" % len(info["audio_streams"])
+        )
+
 
 class TestModernStackCompatibility:
     def test_public_submodules_import_without_numpy_or_scipy_warnings(self):
