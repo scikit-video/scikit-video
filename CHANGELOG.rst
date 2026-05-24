@@ -2,24 +2,35 @@
 -------------------
 - Replaced setup.py / numpy.distutils packaging with pyproject.toml + setuptools.
   Restores ``pip install`` compatibility with Python 3.12+ and NumPy >= 1.26.
+- Switched the project license declaration to a PEP 639 SPDX expression
+  (``license = "BSD-3-Clause"``) and bumped the build-system setuptools floor
+  to ``>= 77``. Eliminates the deprecation warning emitted by recent setuptools.
 - Replaced deprecated ``ndarray.tostring()`` with ``tobytes()`` (NumPy 2.x; PR #182).
 - Removed vestigial ``scipy.misc`` imports left behind by PR #177; switched
   ``skvideo.utils.stpyr`` to ``scipy.special.factorial`` (SciPy >= 1.3).
 - Declared ``opencv-python-headless`` as a hard dependency so
-  ``import skvideo.measure`` works on a fresh install.
+  ``import skvideo.measure`` works on a fresh install. A new
+  ``scripts/smoke_clean_install.sh`` verifies this in a fresh venv before
+  each release.
 - Dropped Python 2.7 and Python <= 3.9 support. Now supports Python 3.10–3.13.
 - Migrated tests from nose to pytest.
 - Replaced Travis CI / CircleCI configs with a GitHub Actions workflow.
 - ``inputdict`` / ``outputdict`` flag values can now be lists/tuples to emit
   the same flag repeatedly (e.g. ``{'-metadata': ['title=foo', 'artist=bar']}``
-  becomes ``-metadata title=foo -metadata artist=bar``). Fixes #168.
+  becomes ``-metadata title=foo -metadata artist=bar``). Empty list/tuple
+  values raise ``ValueError`` instead of silently dropping the flag. Fixes #168.
 - ``skvideo.io.ffprobe`` now exposes every stream of each codec type at
   ``info['<type>_streams']`` (e.g. ``info['audio_streams']``) in addition to
-  the existing single-stream key. Fixes #165.
+  the existing single-stream key. The plural keys are always present —
+  files with no audio streams return ``info['audio_streams'] == []`` instead
+  of raising ``KeyError``. Fixes #165.
 - ``FFmpegWriter`` and ``vwrite`` accept an ``audiosrc`` argument: a path to
-  a media file whose audio is muxed into the output via ``-c:a copy`` and
-  ``-shortest``. This restores audio across a ``vread`` / ``vwrite``
-  passthrough. Fixes #173, #176.
+  a media file whose first audio stream is muxed into the output via
+  ``-c:a copy`` and ``-shortest``, restoring audio across a ``vread`` /
+  ``vwrite`` passthrough. Pass ``outputdict={'-map': '1:a'}`` to copy all
+  audio streams instead of just the first. A missing path or an ``audiosrc``
+  with no audio stream raises at construction time rather than producing a
+  silent videoless output. Fixes #173, #176.
 
 1.1.11
 ------
