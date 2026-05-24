@@ -54,7 +54,10 @@ def ffprobe(filename):
         if not isinstance(streams, list):
             streams = [streams]
 
-        result = {}
+        # Seed the well-known plural keys so callers can iterate without
+        # defensive `info.get('audio_streams', [])` — empty list is the
+        # documented "no streams of this type" signal (issue #165).
+        result = {"audio_streams": [], "video_streams": []}
         for stream in streams:
             codec_type = stream["@codec_type"].lower()
             # First stream of each type lives at the unindexed key (backward-compat)
