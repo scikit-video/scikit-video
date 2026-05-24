@@ -78,8 +78,12 @@ What's new in 1.1.12
 --------------------
 
 This release modernizes scikit-video to work with current Python, NumPy, and
-SciPy. There are no API changes; existing code that worked with 1.1.11 should
-continue to work unchanged.
+SciPy. There are **no breaking API changes**; existing code that worked with
+1.1.11 should continue to work unchanged. Three new opt-in additions are
+described below.
+
+Compatibility and packaging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Replaced ``setup.py`` / ``numpy.distutils`` packaging with a ``pyproject.toml``
   using standard setuptools. This restores ``pip install`` on Python 3.12+ and
@@ -98,11 +102,31 @@ continue to work unchanged.
 - Replaced Travis CI / CircleCI configuration with a GitHub Actions workflow
   that runs the test suite on Linux and macOS across Python 3.10–3.13.
 
+New opt-in features
+~~~~~~~~~~~~~~~~~~~
+
+- **Audio passthrough in ``vwrite`` / ``FFmpegWriter``** (issues #173, #176).
+  Pass ``audiosrc='source.mp4'`` to mux the first audio stream from a source
+  file into the output. Default is lossless stream-copy
+  (``-c:a copy -shortest``); override with ``outputdict={'-c:a': 'aac'}``
+  to re-encode, or ``outputdict={'-map': '1:a'}`` to keep all source audio
+  streams instead of just the first. Missing or audio-less ``audiosrc`` paths
+  raise at construction time rather than producing a silent videoless output.
+- **Multi-stream ``ffprobe`` support** (issue #165). Returned metadata dict
+  now always includes ``audio_streams`` and ``video_streams`` lists (empty
+  list when none), in addition to the existing single-stream ``audio`` and
+  ``video`` keys. Use the plural keys for files with multiple audio or video
+  streams.
+- **Repeated ffmpeg flags via list values** (issue #168). ``outputdict`` and
+  ``inputdict`` accept ``list``/``tuple`` values to emit a flag multiple
+  times. Example: ``outputdict={'-metadata': ['title=foo', 'artist=bar']}``
+  produces ``-metadata title=foo -metadata artist=bar`` on the ffmpeg command
+  line. Empty list values raise ``ValueError`` to surface programmer errors
+  early.
+
 
 TODO/Roadmap
 ------------
-- Audio passthrough in ``FFmpegReader`` / ``FFmpegWriter`` (issues #173, #176)
-- Multi-stream support in ``ffprobe`` (issue #165)
 - Spatial-Temporal filtering helper functions
 - Speedup routines (using cython and/or opencl)
 - More ffmpeg/avconv interfacing
