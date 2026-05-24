@@ -147,6 +147,11 @@ class FFmpegWriter(VideoWriterAbstract):
                     "from a file without audio. Remove the audiosrc argument "
                     "to write a video-only output." % audiosrc
                 )
+            # Resolve to an absolute path now. FFmpegWriter's subprocess is
+            # launched lazily on the first writeFrame() call; if the user's
+            # cwd changes between construction and first write, a relative
+            # path would silently resolve against the wrong directory.
+            audiosrc = os.path.abspath(audiosrc)
         self._audiosrc = audiosrc
         super(FFmpegWriter, self).__init__(
             filename, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
