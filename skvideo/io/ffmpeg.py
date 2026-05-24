@@ -97,12 +97,15 @@ class FFmpegWriter(VideoWriterAbstract):
     audiosrc : string, optional
         Path to a media file whose audio track should be muxed into the
         output. Used to preserve audio across a ``vread`` / ``vwrite``
-        round-trip (issues #173, #176). By default the audio is stream-
-        copied with ``-c:a copy`` (no re-encoding); set ``-c:a`` (or
-        ``-codec:a`` / ``-acodec``) in ``outputdict`` to override. The
-        output is also trimmed to the shorter of video/audio via
-        ``-shortest``, which is the intuitive behavior when the video
-        is a subset of the original.
+        round-trip (issues #173, #176). By default only the **first**
+        audio stream from ``audiosrc`` is copied (``-map 1:a:0``); to
+        copy all audio streams instead, override the mapping with
+        ``outputdict={'-map': '1:a'}``. The audio is stream-copied with
+        ``-c:a copy`` (no re-encoding); set ``-c:a`` (or ``-codec:a`` /
+        ``-acodec``) in ``outputdict`` to override the codec. The output
+        is also trimmed to the shorter of video/audio via ``-shortest``,
+        which is the intuitive behavior when the video is a subset of
+        the original.
 
     verbosity : int
         0 (default) for quiet, 1 to print the ffmpeg command.
@@ -143,9 +146,14 @@ class FFmpegWriter(VideoWriterAbstract):
         if self._audiosrc is not None:
             # Mux audio from a separate source. stdin (raw video) is input #0;
             # the audio source becomes input #1. -map forces the output to use
-            # video from #0 and audio from #1, ignoring any video the audio
-            # source might also contain.
-            cmd += ["-i", self._audiosrc, "-map", "0:v:0", "-map", "1:a"]
+            # video from #0 and the first audio stream from #1. We deliberately
+            # copy only the first audio stream (1:a:0) rather than all streams
+            # (1:a) — most users expect "the audio," and surprise-multiplexing
+            # 4 audio tracks because the source happened to be a multi-language
+            # mux would be confusing. Override with outputdict={'-map': '1:a'}
+            # to keep all streams. User-supplied -map in outputdict wins because
+            # it is appended after these defaults.
+            cmd += ["-i", self._audiosrc, "-map", "0:v:0", "-map", "1:a:0"]
             # Only set the default codec/duration policy if the user hasn't
             # already specified their own audio codec.
             user_audio_codec_keys = ("-c:a", "-codec:a", "-acodec")
