@@ -377,7 +377,7 @@ class TestModernStackCompatibility:
         with warnings.catch_warnings():
             warnings.simplefilter("error", DeprecationWarning)
             warnings.simplefilter("error", FutureWarning)
-            frames = skvideo_modules.io.vread(bunny_path, num_frames=2)
+            frames = skvideo_modules.io.vread(bunny_path, num_frames=2, as_grey=True)
             score = skvideo_modules.measure.mse(frames, frames)
 
         assert np.isfinite(float(np.mean(score)))
