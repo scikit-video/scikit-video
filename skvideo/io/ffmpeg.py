@@ -7,6 +7,7 @@ a wide range of video formats.
 # Copyright (c) 2015, imageio contributors
 # distributed under the terms of the BSD License (included in release).
 
+import os
 import subprocess as sp
 
 import numpy as np
@@ -110,6 +111,22 @@ class FFmpegWriter(VideoWriterAbstract):
     def __init__(self, filename, inputdict=None, outputdict=None,
                  audiosrc=None, verbosity=0):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if audiosrc is not None:
+            # Fail fast at construction time rather than letting ffmpeg
+            # produce a silent videoless output that the user discovers
+            # later. Both the missing-file and no-audio-stream cases would
+            # otherwise be invisible.
+            if not os.path.isfile(audiosrc):
+                raise FileNotFoundError(
+                    "audiosrc not found: %r" % audiosrc
+                )
+            probe = ffprobe(audiosrc)
+            if not probe.get("audio_streams"):
+                raise ValueError(
+                    "audiosrc %r contains no audio stream; cannot mux audio "
+                    "from a file without audio. Remove the audiosrc argument "
+                    "to write a video-only output." % audiosrc
+                )
         self._audiosrc = audiosrc
         super(FFmpegWriter, self).__init__(
             filename, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
