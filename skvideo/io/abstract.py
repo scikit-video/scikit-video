@@ -229,6 +229,12 @@ class VideoReaderAbstract(object):
         args = []
         for key, value in dict.items():
             if isinstance(value, (list, tuple)):
+                if len(value) == 0:
+                    raise ValueError(
+                        "Empty list/tuple for flag %r in ffmpeg dict — "
+                        "silently dropping the flag would hide a programmer "
+                        "error. Pass at least one value, or omit the key." % key
+                    )
                 for v in value:
                     args.append(key)
                     args.append(v)
@@ -539,6 +545,12 @@ class VideoWriterAbstract(object):
         args = []
         for key, value in dict.items():
             if isinstance(value, (list, tuple)):
+                if len(value) == 0:
+                    raise ValueError(
+                        "Empty list/tuple for flag %r in ffmpeg dict — "
+                        "silently dropping the flag would hide a programmer "
+                        "error. Pass at least one value, or omit the key." % key
+                    )
                 for v in value:
                     args.append(key)
                     args.append(v)
