@@ -123,9 +123,9 @@ def _synthetic_rgb_frames():
     y, x = np.indices((32, 32))
     frames = np.empty((4, 32, 32, 3), dtype=np.uint8)
     for t in range(frames.shape[0]):
-        frames[t, :, :, 0] = (x * 7 + t * 11) % 256
-        frames[t, :, :, 1] = (y * 5 + t * 17) % 256
-        frames[t, :, :, 2] = ((x + y) * 3 + t * 23) % 256
+        frames[t, :, :, 0] = (x + t * 11) % 256
+        frames[t, :, :, 1] = (y + t * 17) % 256
+        frames[t, :, :, 2] = (x + y + t * 23) % 256
     return frames
 
 
