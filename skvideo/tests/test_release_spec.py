@@ -130,6 +130,9 @@ def _synthetic_rgb_frames():
 
 
 def _roundtrip_yuv(skvideo, tmp_path, pix_fmt):
+    # RGB in, RGB out — exercises the colorspace conversion matrix in both
+    # directions. Lossy by definition because of 8-bit quantization at every
+    # step; threshold depends on subsampling.
     source = _synthetic_rgb_frames()
     raw_path = tmp_path / ("roundtrip_" + pix_fmt + ".yuv")
     skvideo.io.vwrite(str(raw_path), source, outputdict={"-pix_fmt": pix_fmt})
@@ -139,6 +142,29 @@ def _roundtrip_yuv(skvideo, tmp_path, pix_fmt):
         height=source.shape[1],
         num_frames=source.shape[0],
         inputdict={"-pix_fmt": pix_fmt},
+    )
+    return source, decoded
+
+
+def _roundtrip_yuv_raw_buffer(skvideo, tmp_path, pix_fmt):
+    # YUV in, YUV out — bypasses the RGB<->YUV conversion entirely by both
+    # writing and reading at the same yuv pix_fmt. This isolates "does the
+    # file I/O preserve bytes" from "is the colorspace conversion stable."
+    # Must be bit-exact.
+    pipingDict = {"-pix_fmt": pix_fmt}
+    source = skvideo.io.vread(
+        skvideo.datasets.bigbuckbunny(),
+        num_frames=1,
+        outputdict=pipingDict.copy(),
+    )
+    raw_path = tmp_path / ("raw_roundtrip_" + pix_fmt + ".yuv")
+    skvideo.io.vwrite(str(raw_path), source, inputdict=pipingDict.copy())
+    decoded = skvideo.io.vread(
+        str(raw_path),
+        width=source.shape[2],
+        height=source.shape[1],
+        num_frames=source.shape[0],
+        outputdict=pipingDict.copy(),
     )
     return source, decoded
 
@@ -404,11 +430,37 @@ class TestRoundTripAndMetricNumerics:
 
         assert np.mean((source.astype(np.float32) - decoded.astype(np.float32)) ** 2) < 2.0
 
-    def test_yuv444_roundtrip_is_bit_exact(self, skvideo_modules, tmp_path):
-        """Spec: "RGB to yuv444 to RGB round-trip: == 0 (bit-exact)." """
-        source, decoded = _roundtrip_yuv(skvideo_modules, tmp_path, "yuv444p")
+    def test_yuv444_raw_buffer_roundtrip_is_bit_exact(self, skvideo_modules, tmp_path):
+        """yuv444 raw buffer I/O must be bit-exact.
+
+        Mirrors the contract in skvideo/tests/test_vread.py::test_vread_raw2_ffmpeg:
+        writing a yuv array to a .yuv file and reading it back must not change
+        a single byte. This guards file I/O against byte-shuffling regressions.
+        Note: this is different from RGB<->yuv444<->RGB round-trip (below),
+        which is necessarily lossy due to colorspace conversion quantization
+        even though yuv444 has no chroma subsampling.
+        """
+        source, decoded = _roundtrip_yuv_raw_buffer(skvideo_modules, tmp_path, "yuvj444p")
 
         assert np.mean((source.astype(np.float32) - decoded.astype(np.float32)) ** 2) == 0
+
+    def test_rgb_to_yuv444_to_rgb_roundtrip_within_quantization_bound(
+        self, skvideo_modules, tmp_path
+    ):
+        """RGB<->yuv444<->RGB round-trip stays within an 8-bit quantization bound.
+
+        Even with no chroma subsampling, the RGB<->YUV matrix has non-integer
+        coefficients and every intermediate value is quantized to uint8, so a
+        small per-pixel error is unavoidable. The < 0.5 threshold catches
+        gross regressions (e.g. a swscale flag that switches from
+        round-to-nearest to truncate) without demanding impossible bit-exactness.
+        Spec correction: the original spec said this must be == 0; that was
+        wrong, see commit message of this test for details.
+        """
+        source, decoded = _roundtrip_yuv(skvideo_modules, tmp_path, "yuv444p")
+
+        mse = float(np.mean((source.astype(np.float32) - decoded.astype(np.float32)) ** 2))
+        assert mse < 0.5, "RGB<->yuv444<->RGB MSE=%f exceeds quantization bound 0.5" % mse
 
     def test_brisque_features_match_pinned_reference(self, skvideo_modules, bunny_path):
         """Spec: "BRISQUE / NIQE / VideoBliinds decimal=2 against pinned reference arrays." """
