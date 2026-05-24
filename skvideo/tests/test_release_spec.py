@@ -10,6 +10,7 @@ Skipped or external-only coverage requested by the spec:
 """
 
 import importlib
+import json
 import os
 import subprocess
 import sys
@@ -61,6 +62,22 @@ def _metadata_tags(info):
 
     visit(info)
     return tags
+
+
+def _format_metadata_tags(skvideo, path):
+    ffprobe = os.path.join(skvideo._FFMPEG_PATH, skvideo._FFPROBE_APPLICATION)
+    out = subprocess.check_output(
+        [
+            ffprobe,
+            "-v",
+            "error",
+            "-show_format",
+            "-print_format",
+            "json",
+            str(path),
+        ]
+    )
+    return json.loads(out).get("format", {}).get("tags", {})
 
 
 def _streams(info, codec_type):
@@ -166,7 +183,7 @@ class TestMultiValueMetadata:
             outputdict={"-metadata": ["title=My Title", "artist=Kathy"]},
         )
 
-        assert {"title": "My Title", "artist": "Kathy"}.items() <= _metadata_tags(info).items()
+        assert {"title": "My Title", "artist": "Kathy"}.items() <= _format_metadata_tags(skvideo_modules, output).items()
 
     def test_single_element_metadata_list_matches_string_form(
         self, skvideo_modules, short_rgb_frames, tmp_path
@@ -185,7 +202,10 @@ class TestMultiValueMetadata:
             outputdict={"-metadata": "title=foo"},
         )
 
-        assert (_metadata_tags(list_info).get("title"), _metadata_tags(string_info).get("title")) == ("foo", "foo")
+        assert (
+            _format_metadata_tags(skvideo_modules, tmp_path / "metadata_list_single.mp4").get("title"),
+            _format_metadata_tags(skvideo_modules, tmp_path / "metadata_string_single.mp4").get("title"),
+        ) == ("foo", "foo")
 
     def test_empty_metadata_list_fails_loudly(self, skvideo_modules, short_rgb_frames, tmp_path):
         """Spec: "An empty list is a programmer error, explicit failure is acceptable; silent skip is not." """
