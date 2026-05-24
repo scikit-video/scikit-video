@@ -1,4 +1,4 @@
-1.1.12 (unreleased)
+1.1.12 (2026-05-24)
 -------------------
 - Replaced setup.py / numpy.distutils packaging with pyproject.toml + setuptools.
   Restores ``pip install`` compatibility with Python 3.12+ and NumPy >= 1.26.
