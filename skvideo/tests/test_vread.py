@@ -26,9 +26,9 @@ def test_vread():
     assert_equal(N, 1280)
     assert_equal(C, 3)
 
-    # check the numbers
+    # check the numbers (allow 1% tolerance — exact value is FFmpeg-version-dependent)
 
-    assert_equal(np.mean(videodata), 109.28332841215979)
+    np.testing.assert_allclose(np.mean(videodata), 109.28, rtol=0.01)
 
 
 # reading/writing consistency checks using yuv420 
