@@ -27,10 +27,12 @@
 - ``FFmpegWriter`` and ``vwrite`` accept an ``audiosrc`` argument: a path to
   a media file whose first audio stream is muxed into the output via
   ``-c:a copy`` and ``-shortest``, restoring audio across a ``vread`` /
-  ``vwrite`` passthrough. Pass ``outputdict={'-map': '1:a'}`` to copy all
-  audio streams instead of just the first. A missing path or an ``audiosrc``
-  with no audio stream raises at construction time rather than producing a
-  silent videoless output. Fixes #173, #176.
+  ``vwrite`` passthrough. To copy all audio streams instead of just the first,
+  pass ``outputdict={'-map': ['0:v:0', '1:a']}`` (list form required so ffmpeg
+  receives two separate ``-map`` flags; omitting ``0:v:0`` would drop the video
+  stream). A missing path or an ``audiosrc`` with no audio stream raises at
+  construction time rather than producing a silent videoless output.
+  Fixes #173, #176.
 
 1.1.11
 ------
