@@ -1,3 +1,30 @@
+1.1.13 (unreleased)
+-------------------
+- ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
+  ``skvideo.io.vread``, ``vwrite``, ``vreader``, ``ffprobe``, and the
+  ``FFmpegReader`` / ``FFmpegWriter`` constructors. Previously a ``Path`` could
+  cause ``ffprobe`` to silently fail and the downstream caller to raise a
+  misleading "No way to determine width or height" error. Fixes #148, #163.
+- ``FFmpegWriter._proc`` is now initialized to ``None`` in ``__init__`` so that
+  calling ``close()`` (or exiting a ``with`` block) before any frames are
+  written no longer raises ``AttributeError``. Fixes #139.
+- ``FFmpegReader`` no longer leaks an ffmpeg process when ``verbosity > 0``.
+  Previously ``_createProcess()`` ran ``subprocess.Popen`` twice — once inside
+  an ``if verbosity > 0`` branch and once unconditionally after — causing
+  broken-pipe errors for some users. Fixes #174.
+- ``VideoReaderAbstract.close()`` now guards against ``self._proc.stderr is
+  None``, which is the configured state when ``verbosity > 0``.
+- ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
+  ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
+  ``int('30000/1001')`` raised ``ValueError``. Fixes #128.
+- Documentation: corrected ``skvideo.io.write`` typo to ``skvideo.io.vwrite``
+  in the I/O guide. Fixes #158.
+- Motion: replaced all 45 instances of removed ``np.int()`` with ``int()`` in
+  ``skvideo.motion.block`` for NumPy 2.x compatibility. Cherry-picked the SE3SS
+  indexing fix from PR #142 with an additional correction (``cost = costs[dxy
+  - 1]``) to avoid an IndexError when ``argmin`` returns the last element.
+  Closes #142.
+
 1.1.12 (2026-05-24)
 -------------------
 - Replaced setup.py / numpy.distutils packaging with pyproject.toml + setuptools.
