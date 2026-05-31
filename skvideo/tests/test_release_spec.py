@@ -206,10 +206,10 @@ class TestMultiValueMetadata:
             skvideo_modules,
             output,
             short_rgb_frames[:3],
-            outputdict={"-metadata": ["title=My Title", "artist=Kathy"]},
+            outputdict={"-metadata": ["title=My Title", "artist=Test Artist"]},
         )
 
-        assert {"title": "My Title", "artist": "Kathy"}.items() <= _format_metadata_tags(skvideo_modules, output).items()
+        assert {"title": "My Title", "artist": "Test Artist"}.items() <= _format_metadata_tags(skvideo_modules, output).items()
 
     def test_single_element_metadata_list_matches_string_form(
         self, skvideo_modules, short_rgb_frames, tmp_path
