@@ -54,14 +54,14 @@ class FFmpegReader(VideoReaderAbstract):
         if verbosity > 0:
             cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
-            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=None)
+            stderr = None
         else:
             cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
                                                                                                       self._filename] + oargs + [
                       '-']
+            stderr = sp.PIPE
         self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                              stdout=sp.PIPE, stderr=sp.PIPE)
+                              stdout=sp.PIPE, stderr=stderr)
         self._cmd = " ".join(cmd)
 
     def _probCountFrames(self):
