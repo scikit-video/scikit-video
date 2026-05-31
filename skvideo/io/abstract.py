@@ -55,6 +55,7 @@ class VideoReaderAbstract(object):
         # check if FFMPEG exists in the path
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
+        filename = os.fspath(filename)
         self._filename = filename
         self.verbosity = verbosity
 
@@ -378,7 +379,7 @@ class VideoWriterAbstract(object):
         """
         self.DEVNULL = open(os.devnull, 'wb')
 
-        filename = os.path.abspath(filename)
+        filename = os.path.abspath(os.fspath(filename))
         _, self.extension = os.path.splitext(filename)
 
         # check that the extension makes sense

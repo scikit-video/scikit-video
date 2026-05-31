@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 from .avconv import LibAVReader
@@ -49,6 +51,8 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
     none
 
     """
+    fname = os.fspath(fname)
+
     if not inputdict:
         inputdict = {}
 
@@ -130,6 +134,8 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         width, and C is depth.
 
     """
+    fname = os.fspath(fname)
+
     if not inputdict:
         inputdict = {}
 
@@ -237,6 +243,8 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         Passed to the given plugin.
 
     """
+    fname = os.fspath(fname)
+
     if not inputdict:
         inputdict = {}
 

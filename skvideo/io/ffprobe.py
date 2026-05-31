@@ -1,3 +1,4 @@
+import os
 import subprocess as sp
 
 from ..utils import *
@@ -41,6 +42,8 @@ def ffprobe(filename):
     """
     # check if FFMPEG exists in the path
     assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+
+    filename = os.fspath(filename)
 
     try:
         command = [_FFMPEG_PATH + "/" + _FFPROBE_APPLICATION, "-v", "error", "-show_streams", "-print_format", "xml", filename]
