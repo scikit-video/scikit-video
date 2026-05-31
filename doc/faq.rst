@@ -27,10 +27,10 @@ I installed scikit-video, but the API I installed does not match the website! Ho
 
 You may be using an old version of scikit-video. Uninstall it using
 
-.. code-block:: python
+.. code-block:: console
 
-    $ sudo pip uninstall sk-video
-    $ sudo pip install scikit-video
+    $ python -m pip uninstall sk-video scikit-video
+    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.1.12.tar.gz
 
 You can verify the module path by importing skvideo and printing the path to the init file
 
@@ -41,9 +41,9 @@ You can verify the module path by importing skvideo and printing the path to the
 
 This should produce output like
 
-.. code-block:: python
+.. code-block:: text
 
-  /usr/lib/python*/site-packages/scikit_video-*.*.*-py*.egg/skvideo/__init__.pyc
+  /path/to/site-packages/skvideo/__init__.py
 
 
 

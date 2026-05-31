@@ -6,7 +6,7 @@ Benchmarking scikit-video
 
 To be useful in any project, we would like to approach real-time performance. Some algorithms implemented may not be able to achieve this (exhaustive search algorithms, for example), but we still set our goals high!
 
-All tests computed for scikit-video v1.1.1
+All tests computed for scikit-video v1.1.1 *(historical data from 2018; updated benchmarks planned for a future release)*
 
 Reading speed
 -------------

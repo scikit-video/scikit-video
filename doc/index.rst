@@ -6,9 +6,13 @@
     <br/>
     <br/>
 
-.. code-block:: python
+.. code-block:: console
 
-    $ sudo pip install scikit-video
+    # v1.1.12 — PyPI upload in progress, install from GitHub:
+    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.1.12.tar.gz
+
+    # Once PyPI is updated (coming soon):
+    # python -m pip install scikit-video
 
 .. only:: html
     

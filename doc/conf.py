@@ -29,15 +29,13 @@ from github_link import make_linkcode_resolve
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              #'youtube.youtube',
-              #'sphinx.ext.linkcode',
-              'numpy_ext.numpydoc']
+              'numpydoc']
 
 autosummary_generate = True
 
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {'members': True, 'inherited-members': True}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
@@ -53,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'scikit-video'
-copyright = u'2015-2017, scikit-video developers (BSD License)'
+copyright = u'2015-2026, scikit-video developers (BSD License)'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -75,7 +73,7 @@ release = skvideo.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_trees = ['_build', 'templates', 'includes']
+exclude_patterns = ['_build', 'templates', 'includes']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -273,8 +271,6 @@ def generate_example_rst(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 def setup(app):
-    # to hide/show the prompt in code examples:
-    app.add_javascript('js/copybutton.js')
     app.connect('autodoc-process-docstring', generate_example_rst)
 
 # The following is used by sphinx.ext.linkcode to provide links to github
