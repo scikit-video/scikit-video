@@ -407,6 +407,7 @@ class VideoWriterAbstract(object):
         if "-f" not in self.inputdict:
             self.inputdict["-f"] = "rawvideo"
         self.warmStarted = False
+        self._proc = None
 
     def _warmStart(self, M, N, C, dtype):
         self.warmStarted = True
