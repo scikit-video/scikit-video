@@ -469,7 +469,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
                         computations += 1
 
                 dxy = np.argmin(costs) + 1
-                cost = costs[dxy]
+                cost = costs[dxy - 1]
 
                 if dxy == 2:
                     x = refBlkHorPointB

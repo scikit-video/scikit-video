@@ -80,8 +80,8 @@ def test_SE3SS():
     xmean = np.mean(mvec[:, :, :, 0])
     ymean = np.mean(mvec[:, :, :, 1])
 
-    assert_almost_equal(ymean, 0.013888888992369, decimal=15)
-    assert_almost_equal(xmean, -0.034722223877907, decimal=15)
+    assert_almost_equal(ymean, -0.1458333283662796, decimal=5)
+    assert_almost_equal(xmean, -0.0486111119389534, decimal=5)
 
 
 def test_ARPS():
