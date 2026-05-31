@@ -7,6 +7,7 @@ a wide range of video formats.
 # Copyright (c) 2015, imageio contributors
 # distributed under the terms of the BSD License (included in release).
 
+import os
 import subprocess as sp
 
 import numpy as np
@@ -81,11 +82,79 @@ class FFmpegWriter(VideoWriterAbstract):
 
     Using FFmpeg as a backend, this class
     provides sane initializations for the default case.
+
+    Parameters
+    ----------
+    filename : string
+        Video file path for writing.
+
+    inputdict : dict
+        How to interpret the frames piped in from Python.
+
+    outputdict : dict
+        How to encode the output file.
+
+    audiosrc : string, optional
+        Path to a media file whose audio track should be muxed into the
+        output. Used to preserve audio across a ``vread`` / ``vwrite``
+        round-trip (issues #173, #176). By default the output contains
+        the video from the piped-in frames plus the **first** audio
+        stream from ``audiosrc`` (equivalent to passing
+        ``-map 0:v:0 -map 1:a:0`` to ffmpeg).
+
+        To take full control of stream selection, supply your own
+        ``-map`` in ``outputdict``. When ``outputdict`` contains a
+        ``-map`` entry, our default ``-map`` arguments yield entirely;
+        this is in line with ffmpeg's additive ``-map`` semantics (a
+        second ``-map`` adds streams rather than overriding earlier
+        ones). Examples (note the list form for multiple ``-map``
+        values):
+
+          - Copy all audio streams::
+
+                outputdict={'-map': ['0:v:0', '1:a']}
+
+          - Pick a specific audio stream::
+
+                outputdict={'-map': ['0:v:0', '1:a:5']}
+
+        The audio is stream-copied with ``-c:a copy`` (no re-encoding);
+        set ``-c:a`` (or ``-codec:a`` / ``-acodec``) in ``outputdict``
+        to override the codec. The output is also trimmed to the shorter
+        of video/audio via ``-shortest``, which is the intuitive
+        behavior when the video is a subset of the original.
+
+    verbosity : int
+        0 (default) for quiet, 1 to print the ffmpeg command.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, filename, inputdict=None, outputdict=None,
+                 audiosrc=None, verbosity=0):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
-        super(FFmpegWriter,self).__init__(*args, **kwargs)
+        if audiosrc is not None:
+            # Fail fast at construction time rather than letting ffmpeg
+            # produce a silent videoless output that the user discovers
+            # later. Both the missing-file and no-audio-stream cases would
+            # otherwise be invisible.
+            if not os.path.isfile(audiosrc):
+                raise FileNotFoundError(
+                    "audiosrc not found: %r" % audiosrc
+                )
+            probe = ffprobe(audiosrc)
+            if not probe.get("audio_streams"):
+                raise ValueError(
+                    "audiosrc %r contains no audio stream; cannot mux audio "
+                    "from a file without audio. Remove the audiosrc argument "
+                    "to write a video-only output." % audiosrc
+                )
+            # Resolve to an absolute path now. FFmpegWriter's subprocess is
+            # launched lazily on the first writeFrame() call; if the user's
+            # cwd changes between construction and first write, a relative
+            # path would silently resolve against the wrong directory.
+            audiosrc = os.path.abspath(audiosrc)
+        self._audiosrc = audiosrc
+        super(FFmpegWriter, self).__init__(
+            filename, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
 
     def _getSupportedEncoders(self):
         return _FFMPEG_SUPPORTED_ENCODERS
@@ -94,7 +163,30 @@ class FFmpegWriter(VideoWriterAbstract):
         iargs = self._dict2Args(inputdict)
         oargs = self._dict2Args(outputdict)
 
-        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"] + oargs + [self._filename]
+        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"]
+
+        if self._audiosrc is not None:
+            # Mux audio from a separate source. stdin (raw video) is input #0;
+            # the audio source becomes input #1.
+            cmd += ["-i", self._audiosrc]
+            # ffmpeg's -map is ADDITIVE: a second -map adds streams rather than
+            # overriding earlier ones. So if the user supplies any -map in
+            # outputdict, our defaults must yield entirely — otherwise the user
+            # gets unexpected duplicated streams. Default behavior (no user
+            # -map): copy video from input 0 and the first audio stream from
+            # input 1; we pick :0 over :a to avoid surprise-multiplexing all
+            # audio tracks from a multi-language source.
+            if "-map" not in outputdict:
+                cmd += ["-map", "0:v:0", "-map", "1:a:0"]
+            # Only set the default codec/duration policy if the user hasn't
+            # already specified their own audio codec.
+            user_audio_codec_keys = ("-c:a", "-codec:a", "-acodec")
+            if not any(k in outputdict for k in user_audio_codec_keys):
+                cmd += ["-c:a", "copy"]
+            if "-shortest" not in outputdict:
+                cmd += ["-shortest"]
+
+        cmd += oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 

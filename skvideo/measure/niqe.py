@@ -3,7 +3,6 @@ from ..utils.image import imresize
 
 import numpy as np
 import cv2
-import scipy.misc
 import scipy.io
 
 from os.path import dirname

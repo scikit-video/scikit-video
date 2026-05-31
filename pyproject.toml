@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-video"
+dynamic = ["version"]
+description = "Video Processing in Python"
+readme = "README.rst"
+license = "BSD-3-Clause"
+license-files = ["LICENSE.txt"]
+requires-python = ">=3.10"
+authors = [
+    { name = "Todd Goodall", email = "info@scikit-video.org" },
+]
+maintainers = [
+    { name = "scikit-video contributors", email = "info@scikit-video.org" },
+]
+keywords = ["video", "processing", "ffmpeg", "scientific"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy>=1.22",
+    "scipy>=1.9",
+    "pillow>=9.0",
+    "opencv-python-headless>=4.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+docs = ["sphinx>=5", "numpydoc"]
+
+[project.urls]
+Homepage = "http://scikit-video.org/"
+Repository = "https://github.com/scikit-video/scikit-video"
+Issues = "https://github.com/scikit-video/scikit-video/issues"
+
+[tool.setuptools.packages.find]
+include = ["skvideo*"]
+exclude = ["benchmarks*", "doc*"]
+
+[tool.setuptools.package-data]
+"skvideo.datasets" = ["data/*"]
+"skvideo.measure" = ["data/*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "skvideo.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["skvideo/tests"]

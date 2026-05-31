@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import scipy.fftpack
 import scipy.io
-import scipy.misc
 import scipy.ndimage
 import scipy.stats
 

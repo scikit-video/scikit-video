@@ -1,2 +1,25 @@
 *.pyc
 *.swp
+__pycache__/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Test artifacts (videos/raw frames written by test_vread / test_vwrite)
+*.yuv
+*.raw
+*.mp4
+!skvideo/datasets/data/*.mp4
+
+# Editor / IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
