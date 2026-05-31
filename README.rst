@@ -25,7 +25,7 @@ Video Processing SciKit
 
 Borrowing coding styles and conventions from scikit-image and scikit-learn,
 scikit-video is a Python module for video processing built on top of
-scipy, numpy, and ffmpeg/libav.
+scipy, numpy, and FFmpeg.
 
 This project is distributed under the 3-clause BSD.
 
@@ -37,7 +37,9 @@ Dependencies and Installation
 
 Requirements:
 
-- Either FFmpeg (version >= 2.8) or libav (version 10 or 11) — installed on the system PATH
+- FFmpeg >= 2.8 on the system PATH (primary tested backend). The libav/avconv
+  backend is retained in the codebase for compatibility but is not validated
+  as part of the 1.1.12 release.
 - Python >= 3.10
 - numpy >= 1.22
 - scipy >= 1.9
