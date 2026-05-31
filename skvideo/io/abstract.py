@@ -78,7 +78,12 @@ class VideoReaderAbstract(object):
 
         self.inputfps = -1
         if ("-r" in inputdict):
-            self.inputfps = int(inputdict["-r"])
+            r_val = str(inputdict["-r"])
+            parts = r_val.split('/')
+            if len(parts) > 1:
+                self.inputfps = float(parts[0]) / float(parts[1])
+            else:
+                self.inputfps = float(r_val)
         elif self.INFO_AVERAGE_FRAMERATE in viddict:
             # check for the slash
             frtxt = viddict[self.INFO_AVERAGE_FRAMERATE]

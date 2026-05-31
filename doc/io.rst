@@ -78,7 +78,7 @@ inputparameters may be useful for raw video which has no header information. The
 Writing
 -----------------------
 
-To write an ndarray to a video file, use :func:`skvideo.io.write`
+To write an ndarray to a video file, use :func:`skvideo.io.vwrite`
 
 .. code-block:: python
 
