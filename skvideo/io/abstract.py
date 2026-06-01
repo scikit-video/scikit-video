@@ -117,6 +117,12 @@ class VideoReaderAbstract(object):
                     "Cannot use both start_frame and inputdict['-ss']; "
                     "choose one."
                 )
+            if not self.inputfps or float(self.inputfps) <= 0:
+                raise ValueError(
+                    "Cannot use start_frame without a positive input "
+                    "framerate (got %r). Drop start_frame or supply a "
+                    "valid inputdict['-r']." % self.inputfps
+                )
             inputdict["-ss"] = str(start_frame / float(self.inputfps))
         self._start_frame = start_frame
 

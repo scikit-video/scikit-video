@@ -65,6 +65,19 @@ def test_start_frame_rejects_double_ss():
         )
 
 
+def test_start_frame_rejects_zero_fps():
+    """start_frame + a zero/invalid input framerate is invalid arithmetic
+    (division by zero). Surface a clear ValueError instead of letting
+    Python raise a cryptic ZeroDivisionError deep in __init__.
+    """
+    with pytest.raises(ValueError, match="positive input framerate"):
+        skvideo.io.vread(
+            skvideo.datasets.bigbuckbunny(),
+            start_frame=10,
+            inputdict={"-r": "0"},
+        )
+
+
 def test_vreader_supports_start_frame():
     """The generator API mirrors vread()."""
     reader = skvideo.io.vreader(
