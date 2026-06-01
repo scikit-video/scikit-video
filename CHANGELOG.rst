@@ -21,6 +21,12 @@
   reads and includes the stderr that the original code template referenced
   but never populated. Non-verbose mode now uses ``stderr=PIPE`` instead of
   routing stderr to ``DEVNULL`` via ``STDOUT``. Fixes #111.
+- ``skvideo.measure.videobliinds`` ``temporal_dc_variation_feature_extraction``
+  no longer raises ``ValueError: operands could not be broadcast together``
+  when a motion vector points outside the reference frame. Out-of-bounds
+  blocks are marked NaN and ``nanstd`` / ``nanmean`` aggregate over the
+  remainder. Default motion method (N3SS) is unchanged. Fixes #97 (patch
+  contributed by amarion35, adapted with corrected bounds checks).
 - ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
   ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
   ``int('30000/1001')`` raised ``ValueError``. Fixes #128.

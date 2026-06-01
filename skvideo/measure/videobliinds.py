@@ -180,24 +180,37 @@ def temporal_dc_variation_feature_extraction(frames):
     iw = int(frames.shape[2]/mbsize)*mbsize
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
-    # step 2: compensated temporal dct differences
+    # step 2: compensated temporal dct differences.
+    # When a motion vector points outside the reference frame, NumPy slicing
+    # returns an empty array and the subtraction broadcasts to ValueError
+    # (issue #97). N3SS happens to keep all vectors in bounds so this code
+    # path was never exercised with the default, but other motion methods
+    # (ARPS, DS, ES, ...) do produce out-of-bounds vectors. Mark such
+    # blocks as NaN and let nanstd / nanmean aggregate over the rest.
     dct_motion_comp_diff = np.zeros((motion_vectors.shape[0], motion_vectors.shape[1], motion_vectors.shape[2]), dtype=np.float32)
+    H, W = frames.shape[1], frames.shape[2]
     for i in range(motion_vectors.shape[0]):
       for y in range(motion_vectors.shape[1]):
         for x in range(motion_vectors.shape[2]):
           patchP = frames[i+1, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock, 0].astype(np.float32)
-          patchI = frames[i, y*mblock+motion_vectors[i, y, x, 0]:(y+1)*mblock+motion_vectors[i, y, x, 0], x*mblock+motion_vectors[i, y, x, 1]:(x+1)*mblock+motion_vectors[i, y, x, 1], 0].astype(np.float32)
+          vy = y*mblock + motion_vectors[i, y, x, 0]
+          uy = (y+1)*mblock + motion_vectors[i, y, x, 0]
+          vx = x*mblock + motion_vectors[i, y, x, 1]
+          ux = (x+1)*mblock + motion_vectors[i, y, x, 1]
+          if vy < 0 or uy > H or vx < 0 or ux > W:
+              dct_motion_comp_diff[i, y, x] = np.nan
+              continue
+          patchI = frames[i, vy:uy, vx:ux, 0].astype(np.float32)
           diff = patchP - patchI
           t = scipy.fftpack.dct(scipy.fftpack.dct(diff, axis=1, norm='ortho'), axis=0, norm='ortho')
-          #dct_motion_comp_diff[i, y*mblock:(y+1)*mblock, x*mblock:(x+1)*mblock] = t
           dct_motion_comp_diff[i, y, x] = t[0, 0]
 
     dct_motion_comp_diff = dct_motion_comp_diff.reshape(motion_vectors.shape[0], -1)
 
-    std_dc = np.std(dct_motion_comp_diff, axis=1)
+    std_dc = np.nanstd(dct_motion_comp_diff, axis=1)
     dt_dc_temp = np.abs(std_dc[1:] - std_dc[:-1])
 
-    dt_dc_measure1 = np.mean(dt_dc_temp)
+    dt_dc_measure1 = np.nanmean(dt_dc_temp)
     return np.array([dt_dc_measure1])
 
 def NSS_spectral_ratios_feature_extraction(frames):
