@@ -494,16 +494,30 @@ class VideoWriterAbstract(object):
     def close(self):
         """Closes the video and terminates FFmpeg process
 
+        Raises ``RuntimeError`` if FFmpeg exited with a non-zero return
+        code, including its stderr output in the exception message (issue
+        #111). Previously a failing encode produced a silent empty/corrupt
+        output file with no indication of what went wrong.
         """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
             return  # process already dead
-        if self._proc.stdin:
-            self._proc.stdin.close()
-        self._proc.wait()
+        # communicate() closes stdin, then drains stdout/stderr while
+        # waiting — this avoids the deadlock that wait() would hit if
+        # FFmpeg's stderr pipe filled. When stderr is None (verbosity>0),
+        # the second tuple element is None and we have nothing to surface.
+        # Don't call stdin.close() ourselves first: communicate() flushes
+        # stdin and raises ValueError if it's already closed.
+        _, stderr_data = self._proc.communicate()
+        returncode = self._proc.returncode
         self._proc = None
         self.DEVNULL.close()
+        if returncode != 0:
+            msg = "FFmpeg exited with code %d" % returncode
+            if stderr_data:
+                msg += ":\n" + stderr_data.decode(errors='replace')
+            raise RuntimeError(msg)
 
     def writeFrame(self, im):
         """Sends ndarray frames to FFmpeg
@@ -537,9 +551,18 @@ class VideoWriterAbstract(object):
         try:
             self._proc.stdin.write(vid.tobytes())
         except IOError as e:
-            # Show the command and stderr from pipe
-            msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
-                  'OUTPUT:\n'.format(e, self._cmd)
+            # Surface FFmpeg's stderr alongside the broken-pipe error so the
+            # user sees what FFmpeg actually rejected (e.g. bad codec, bad
+            # pixel format), not just "Broken pipe" (issue #111).
+            stderr_data = b''
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b''
+                except Exception:
+                    pass
+            msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}'.format(e, self._cmd)
+            if stderr_data:
+                msg += '\n\nFFMPEG STDERR OUTPUT:\n' + stderr_data.decode(errors='replace')
             raise IOError(msg)
 
     def _getSupportedEncoders(self):

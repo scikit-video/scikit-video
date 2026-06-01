@@ -14,6 +14,13 @@
   broken-pipe errors for some users. Fixes #174.
 - ``VideoReaderAbstract.close()`` now guards against ``self._proc.stderr is
   None``, which is the configured state when ``verbosity > 0``.
+- ``FFmpegWriter`` now surfaces FFmpeg's actual error output instead of
+  silently producing an empty/corrupt file when encoding fails. ``close()``
+  raises ``RuntimeError`` with FFmpeg's stderr if the process exited
+  non-zero; the existing ``writeFrame`` ``IOError`` handler now actually
+  reads and includes the stderr that the original code template referenced
+  but never populated. Non-verbose mode now uses ``stderr=PIPE`` instead of
+  routing stderr to ``DEVNULL`` via ``STDOUT``. Fixes #111.
 - ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
   ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
   ``int('30000/1001')`` raised ``ValueError``. Fixes #128.
