@@ -86,7 +86,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         raise NotImplemented
 
 
-def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
+def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
     """Load a video from file entirely into memory.
 
     Parameters
@@ -126,6 +126,13 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         Setting to 1 enables all debugging output.
         Useful to see if the backend is behaving properly.
 
+    start_frame : int
+        Skip the first ``start_frame`` frames before reading (issue #166).
+        Combine with ``num_frames`` for a windowed read like
+        ``vread(..., start_frame=1000, num_frames=200)``. Uses FFmpeg's
+        fast keyframe seek, so the actual first frame returned may snap
+        to the nearest keyframe at or before the requested position.
+
     Returns
     -------
     vid_array : ndarray
@@ -155,7 +162,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         if as_grey:
             outputdict['-pix_fmt'] = 'gray'
 
-        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity, start_frame=start_frame)
         T, M, N, C = reader.getShape()
 
         videodata = np.empty((T, M, N, C), dtype=reader.dtype)
@@ -191,7 +198,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         raise NotImplemented
 
 
-def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0):
+def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
     """Load a video through the use of a generator.
 
     Parameters
@@ -230,6 +237,11 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         Setting to 1 enables all debugging output.
         Useful to see if the backend is behaving properly.
 
+    start_frame : int
+        Skip the first ``start_frame`` frames before reading (issue #166).
+        Uses FFmpeg's fast keyframe seek; the first frame returned may
+        snap to the nearest keyframe at or before the requested position.
+
 
     Returns
     -------
@@ -264,7 +276,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         if as_grey:
             outputdict['-pix_fmt'] = 'gray'
 
-        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity, start_frame=start_frame)
         try:
             for frame in reader.nextFrame():
                 if as_grey:

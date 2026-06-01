@@ -34,6 +34,16 @@
   support (v1.1.13), and ``audiosrc`` muxing (v1.1.12). Fixes #160, #96.
   Also corrected a stale Python 2 ``xrange`` example in the writer code
   snippet.
+- ``vread`` / ``vreader`` / ``FFmpegReader`` accept a new ``start_frame``
+  argument to skip the first N frames before reading. Combine with
+  ``num_frames`` for a windowed read::
+
+      videodata = skvideo.io.vread("clip.mp4", start_frame=1000, num_frames=200)
+
+  Uses FFmpeg's fast keyframe-based ``-ss`` input seek, so the first
+  frame returned may snap to the nearest keyframe at or before the
+  requested position. Passing both ``start_frame`` and
+  ``inputdict['-ss']`` raises ``ValueError``. Fixes #166.
 - ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
   ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
   ``int('30000/1001')`` raised ``ValueError``. Fixes #128.

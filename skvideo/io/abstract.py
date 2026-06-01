@@ -22,7 +22,7 @@ class VideoReaderAbstract(object):
     DEFAULT_INPUT_PIX_FMT = "yuvj444p"
     OUTPUT_METHOD = None  # "rawvideo"
 
-    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
+    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0, start_frame=0):
         """Initializes FFmpeg in reading mode with the given parameters
 
         During initialization, additional parameters about the video file
@@ -46,6 +46,15 @@ class VideoReaderAbstract(object):
         outputdict : dict
             Output dictionary parameters, i.e. how to encode the data
             when sending back to the python process.
+
+        start_frame : int
+            Skip the first ``start_frame`` frames of the input (issue #166).
+            Uses FFmpeg's fast keyframe-based ``-ss`` seek (input seeking),
+            so the actual first frame returned may snap to the nearest
+            keyframe at or before the requested position. Combine with
+            ``num_frames`` for a windowed read. For frame-exact extraction,
+            pass ``inputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead;
+            that is slower because it decodes from the start of the file.
 
         Returns
         -------
@@ -98,6 +107,18 @@ class VideoReaderAbstract(object):
                 self.inputfps = float(frtxt)
         else:
             self.inputfps = self.DEFAULT_FRAMERATE
+
+        # Frame-range seek (issue #166). start_frame is converted to a
+        # seconds-based -ss before -i so FFmpeg performs a fast keyframe
+        # seek. Refuse to silently mix this with a user-supplied -ss.
+        if start_frame > 0:
+            if "-ss" in inputdict:
+                raise ValueError(
+                    "Cannot use both start_frame and inputdict['-ss']; "
+                    "choose one."
+                )
+            inputdict["-ss"] = str(start_frame / float(self.inputfps))
+        self._start_frame = start_frame
 
         # check for transposition tag
         if ('tag' in viddict):
@@ -167,6 +188,12 @@ class VideoReaderAbstract(object):
                 warnings.warn(
                     "Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.",
                     UserWarning)
+
+        # Adjust the expected frame count for start_frame seek so getShape()
+        # reports what nextFrame() will actually yield. If the user also
+        # passed -vframes, that already governs the output count.
+        if start_frame > 0 and "-vframes" not in outputdict and self.inputframenum > 0:
+            self.inputframenum = max(0, self.inputframenum - start_frame)
 
         if israw or iswebcam:
             inputdict['-pix_fmt'] = self.pix_fmt

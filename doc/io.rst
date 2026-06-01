@@ -198,6 +198,28 @@ list element:
 **Fraction framerates** (such as NTSC ``30000/1001``) are accepted in
 ``inputdict["-r"]`` as of v1.1.13.
 
+**Reading a frame window** (added in v1.1.13): to extract a slice of a
+long video without loading the whole file, pass ``start_frame`` and
+``num_frames`` to ``vread`` or ``vreader``:
+
+.. code-block:: python
+
+    # Frames 1000–1199 of a long clip, as a (200, H, W, 3) ndarray
+    videodata = skvideo.io.vread("clip.mp4", start_frame=1000, num_frames=200)
+
+This uses FFmpeg's fast keyframe-based ``-ss`` seek, so the first frame
+returned may snap to the nearest keyframe at or before frame 1000. For
+frame-exact extraction, drop ``start_frame`` and use a ``select`` filter
+instead — slower because FFmpeg decodes from the start of the file:
+
+.. code-block:: python
+
+    skvideo.io.vread(
+        "clip.mp4",
+        inputdict={"-vf": "select='gte(n\\,1000)'"},
+        num_frames=200,
+    )
+
 **Muxing audio from a separate source** (added in v1.1.12) uses the
 ``audiosrc`` constructor argument rather than ``inputdict``:
 
