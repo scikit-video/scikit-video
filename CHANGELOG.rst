@@ -27,6 +27,13 @@
   blocks are marked NaN and ``nanstd`` / ``nanmean`` aggregate over the
   remainder. Default motion method (N3SS) is unchanged. Fixes #97 (patch
   contributed by amarion35, adapted with corrected bounds checks).
+- Documentation: added a "Tuning FFmpeg Parameters" section to the I/O
+  guide covering ``inputdict`` / ``outputdict`` semantics, common reading
+  and writing recipes (pixel format, resize, codec, bitrate, framerate
+  resampling), repeated-flag list values (v1.1.12), fraction framerate
+  support (v1.1.13), and ``audiosrc`` muxing (v1.1.12). Fixes #160, #96.
+  Also corrected a stale Python 2 ``xrange`` example in the writer code
+  snippet.
 - ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
   ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
   ``int('30000/1001')`` raised ``ValueError``. Fixes #128.

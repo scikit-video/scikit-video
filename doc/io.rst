@@ -73,7 +73,7 @@ Sometimes, particular use cases require fine tuning FFmpeg's reading parameters.
 For example, FFmpegReader will by default return an RGB representation of a video file, but you may want some other color space that FFmpeg supports, by setting appropriate key/values in outputparameters. Since FFmpeg output is piped into stdin, all FFmpeg commands can be used here.
 
 inputparameters may be useful for raw video which has no header information. Then you should FFmpeg exactly how to interpret your data.
-	
+
 
 Writing
 -----------------------
@@ -101,9 +101,112 @@ Often, writing videos requires fine tuning FFmpeg's writing parameters to select
 	outputdata = outputdata.astype(np.uint8)
 
 	writer = skvideo.io.FFmpegWriter("outputvideo.mp4")
-	for i in xrange(5):
+	for i in range(5):
 		writer.writeFrame(outputdata[i, :, :, :])
 	writer.close()
+
+
+Tuning FFmpeg Parameters
+------------------------
+
+``inputdict`` and ``outputdict`` are plain Python dicts whose keys are
+FFmpeg command-line flags (including the leading ``-``) and whose values
+are the argument FFmpeg expects after that flag. Both keys and values are
+strings; scikit-video passes them through verbatim to ``ffmpeg``. The
+complete reference for valid flags is FFmpeg's own documentation:
+https://ffmpeg.org/ffmpeg.html.
+
+``inputdict`` parameters are placed *before* the input file on the FFmpeg
+command line (they describe how to interpret the input), and ``outputdict``
+parameters are placed *after* (they describe what to do on the way out).
+
+**Common reading recipes**
+
+Force a different output pixel format (default is ``rgb24``):
+
+.. code-block:: python
+
+    reader = skvideo.io.FFmpegReader(
+        "in.mp4",
+        outputdict={"-pix_fmt": "gray"},
+    )
+
+Resize during decoding (FFmpeg handles the scaling, faster than NumPy):
+
+.. code-block:: python
+
+    reader = skvideo.io.FFmpegReader(
+        "in.mp4",
+        outputdict={"-s": "640x360"},
+    )
+
+Read a raw YUV file with no header (size and format must be supplied):
+
+.. code-block:: python
+
+    reader = skvideo.io.FFmpegReader(
+        "in.yuv",
+        inputdict={"-pix_fmt": "yuv420p", "-s": "1280x720"},
+    )
+
+**Common writing recipes**
+
+Pick a specific codec, bitrate, and framerate:
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "out.mp4",
+        outputdict={
+            "-vcodec": "libx264",
+            "-b:v": "2000k",
+            "-r": "30",
+        },
+    )
+
+Resample to a different framerate (FFmpeg drops or duplicates frames as
+needed):
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "out.mp4",
+        inputdict={"-r": "60"},      # source framerate
+        outputdict={"-r": "30"},     # target framerate
+    )
+
+Write a high-quality H.264 with a constant rate factor:
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "out.mp4",
+        outputdict={"-vcodec": "libx264", "-crf": "18", "-pix_fmt": "yuv420p"},
+    )
+
+**Repeating the same flag** (e.g. multiple ``-metadata`` or ``-map``
+entries) is done with a list value — scikit-video emits the flag once per
+list element:
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "out.mp4",
+        outputdict={"-metadata": ["title=My Video", "artist=Me"]},
+    )
+
+**Fraction framerates** (such as NTSC ``30000/1001``) are accepted in
+``inputdict["-r"]`` as of v1.1.13.
+
+**Muxing audio from a separate source** (added in v1.1.12) uses the
+``audiosrc`` constructor argument rather than ``inputdict``:
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter("out.mp4", audiosrc="source_with_audio.mp4")
+
+See the :class:`skvideo.io.FFmpegWriter` API reference for the full
+``audiosrc`` / ``-map`` interaction.
 
 
 Reading Video Metadata
