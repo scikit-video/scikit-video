@@ -30,7 +30,7 @@ def avprobe(filename):
     if not _HAS_AVCONV:
         raise RuntimeError("Cannot find installation of avprobe.")
     if int(_LIBAV_MAJOR_VERSION) < 10:
-        raise RuntimeError("Version of libav (" + str(_LIBAV_MAJOR_VERSION) + ") < 9. Please update libav or use ffmpeg.")
+        raise RuntimeError("Version of libav (" + str(_LIBAV_MAJOR_VERSION) + ") is too old (need >= 10). Please update libav or use ffmpeg.")
 
     try:
         command = [_AVCONV_PATH + "/" + _AVPROBE_APPLICATION, "-v", "error", "-show_streams", "-of", "json", filename]
