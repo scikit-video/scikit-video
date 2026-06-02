@@ -112,6 +112,24 @@
     fallback that raw video relies on), instead of swallowing failures
     silently.
 
+- **Edge-case hardening** (adversarial input testing; failures that were
+  silent or crashed on otherwise-normal input):
+
+  - Full-reference metrics (``mse``/``mae``/``psnr``/``ssim``/``msssim``/
+    ``strred``) and ``globalEdgeMotion`` raised a bare ``assert`` on a
+    ref/dis shape mismatch, and ``blockMotion`` on frame count; under
+    ``python -O`` these vanished and mismatched arrays broadcast to a
+    plausible-but-wrong score. Now raise ``ValueError``.
+  - ``blockComp`` silently zeroed the bottom/right border for frames whose
+    dimensions are not a multiple of ``mbSize`` (e.g. any 1080p frame with
+    ``mbSize=16``). The uncovered remainder now passes through unchanged;
+    evenly-divisible frames are unaffected.
+  - ``blockComp`` no longer crashes on the documented single-frame input.
+  - ``globalEdgeMotion`` on edgeless frames returns ``[0, 0]`` instead of a
+    meaningless ``(-r, -r)`` or a crash.
+  - ``vwrite`` on a zero-frame array now raises ``ValueError`` instead of
+    silently writing no file.
+
 1.1.13 (2026-06-01)
 -------------------
 - ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
