@@ -41,7 +41,8 @@ class FFmpegReader(VideoReaderAbstract):
     OUTPUT_METHOD = "image2pipe"
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         super(FFmpegReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
@@ -139,7 +140,8 @@ class FFmpegWriter(VideoWriterAbstract):
 
     def __init__(self, filename, inputdict=None, outputdict=None,
                  audiosrc=None, verbosity=0):
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         if audiosrc is not None:
             # Fail fast at construction time rather than letting ffmpeg
             # produce a silent videoless output that the user discovers

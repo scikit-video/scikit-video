@@ -187,3 +187,22 @@ def test_setffmpegpath_bad_path_clears_codec_caches():
     finally:
         skvideo.setFFmpegPath(orig)  # restore for the rest of the session
     assert skvideo._HAS_FFMPEG == 1
+
+
+def test_backend_missing_raises_runtimeerror_under_O():
+    """Backend-availability checks must be real exceptions, not asserts, so a
+    missing ffmpeg is reported even under `python -O` (where asserts vanish)."""
+    import subprocess
+    import sys
+    code = (
+        "import importlib\n"
+        "m = importlib.import_module('skvideo.io.ffprobe')\n"
+        "m._HAS_FFMPEG = 0\n"   # simulate ffmpeg not installed
+        "try:\n"
+        "    m.ffprobe('whatever.mp4')\n"
+        "    print('NORAISE')\n"
+        "except RuntimeError:\n"
+        "    print('RUNTIMEERROR')\n"
+    )
+    out = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
+    assert "RUNTIMEERROR" in out.stdout, (out.stdout, out.stderr[-200:])

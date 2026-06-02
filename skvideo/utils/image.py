@@ -17,12 +17,14 @@ def imresize(image, factor, interp="nearest", mode=None):
         "bicubic": PIL.Image.BICUBIC,
         "bilinear": PIL.Image.BILINEAR
     }
-    assert(interp in interp_methods)
+    if interp not in interp_methods:
+        raise ValueError("interp must be one of %s; got %r." % (sorted(interp_methods), interp))
 
     if type(factor) != tuple:
         new_shape = (int(factor * image.shape[0]), int(factor * image.shape[1]))
     else:
-        assert(len(factor) == 2)
+        if len(factor) != 2:
+            raise ValueError("factor tuple must have length 2; got %d." % len(factor))
         new_shape = factor
 
     h, w = new_shape

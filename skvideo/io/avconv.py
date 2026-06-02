@@ -36,7 +36,8 @@ class LibAVReader(VideoReaderAbstract):
     OUTPUT_METHOD = "rawvideo"
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
@@ -74,7 +75,8 @@ class LibAVWriter(VideoWriterAbstract):
     """
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVWriter,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):

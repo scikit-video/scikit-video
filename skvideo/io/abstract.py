@@ -155,7 +155,8 @@ class VideoReaderAbstract(object):
 
         """
         # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         self._source_kind = _classify_source(filename)
         # Track temp files spooled from memory sources so close() can clean

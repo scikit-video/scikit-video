@@ -20,7 +20,8 @@ def gen_gauss_window(lw, sigma):
 def compute_image_mscn_transform(image, C=1, avg_window=None, extend_mode='constant'):
     if avg_window is None:
       avg_window = gen_gauss_window(3, 7.0/6.0)
-    assert len(np.shape(image)) == 2
+    if len(np.shape(image)) != 2:
+        raise ValueError("compute_image_mscn_transform expects a 2D image; got shape %s." % (np.shape(image),))
     h, w = np.shape(image)
     mu_image = np.zeros((h, w), dtype=np.float32)
     var_image = np.zeros((h, w), dtype=np.float32)
