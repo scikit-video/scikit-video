@@ -231,6 +231,93 @@ See the :class:`skvideo.io.FFmpegWriter` API reference for the full
 ``audiosrc`` / ``-map`` interaction.
 
 
+Remote and in-memory I/O
+------------------------
+
+As of v1.1.14, every function and class that accepts a video filename also
+accepts:
+
+* a **URL string** — anything matching ``<scheme>://...``, such as
+  ``http://``, ``https://``, ``rtsp://``, ``rtmp://``, ``udp://``,
+  ``ftp://``, etc. FFmpeg's own protocol handlers take it from there.
+* a **file-like object** — ``io.BytesIO``, an open file handle, anything
+  with a ``.read()`` / ``.write()`` method.
+
+This covers the read side and the write side: pass a URL or a BytesIO to
+``vread`` / ``vreader`` / ``FFmpegReader`` to consume, or to ``vwrite`` /
+``FFmpegWriter`` to produce.
+
+**Read from a URL:**
+
+.. code-block:: python
+
+    videodata = skvideo.io.vread("https://example.com/clip.mp4", num_frames=10)
+
+``ffprobe`` is invoked against the URL directly to read metadata, which
+adds network round-trip latency to ``FFmpegReader`` construction. For
+high-volume use, consider downloading first or caching the probe result.
+
+**Read from a BytesIO:**
+
+.. code-block:: python
+
+    import io
+    raw_bytes = open("clip.mp4", "rb").read()
+    buf = io.BytesIO(raw_bytes)
+    videodata = skvideo.io.vread(buf, num_frames=10)
+
+Memory inputs are spooled to a temporary file at construction so the rest
+of the read path can operate on a regular filename (container formats
+like mp4 need random access to read their header atoms, which subprocess
+stdin can't reliably provide). The temp file is unlinked on
+``reader.close()`` / when ``vread`` returns.
+
+**Write to a URL** (e.g. RTMP push to a streaming server):
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "rtmp://live.example.com/stream/key",
+        outputdict={"-f": "flv", "-vcodec": "libx264", "-preset": "ultrafast"},
+    )
+    for frame in frames:
+        writer.writeFrame(frame)
+    writer.close()
+
+**Write to a BytesIO:**
+
+.. code-block:: python
+
+    import io
+    out = io.BytesIO()
+    skvideo.io.vwrite(out, videodata)
+    out.seek(0)
+    # `out` now contains a streamable fragmented-mp4 file
+
+When writing to a memory destination and the caller doesn't override
+``-f``, the wrapper defaults to ``-f mp4`` with
+``-movflags frag_keyframe+empty_moov`` so the bytes can stream as they're
+produced (the default mp4 muxer would seek back to rewrite the moov atom
+at end-of-encode, which a pipe can't support). To pick a different
+streamable container, set ``-f`` explicitly:
+
+.. code-block:: python
+
+    out = io.BytesIO()
+    writer = skvideo.io.FFmpegWriter(
+        out,
+        outputdict={"-f": "webm", "-vcodec": "libvpx-vp9", "-b:v": "1M"},
+    )
+
+**Protocol detection.** On first URL use, ``skvideo`` runs
+``ffmpeg -protocols`` and caches the result. If the URL's scheme isn't in
+the local ffmpeg's supported list (most commonly: an ffmpeg built without
+OpenSSL hitting an ``https://`` URL), a ``UserWarning`` is emitted so the
+underlying problem is obvious. FFmpeg's actual stderr (now surfaced via
+``RuntimeError`` since v1.1.13) still reports the real failure if you
+proceed.
+
+
 Reading Video Metadata
 -----------------------
 

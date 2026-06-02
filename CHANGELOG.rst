@@ -1,3 +1,40 @@
+1.1.14 (unreleased)
+-------------------
+- **Input source decoupling**: ``vread`` / ``vreader`` / ``vwrite`` and the
+  ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept three kinds
+  of source/destination uniformly — a file path (existing behavior), a URL
+  string (``http://``, ``https://``, ``rtsp://``, ``rtmp://``, ``udp://``,
+  …), or a file-like object such as ``io.BytesIO``. The wrapper no longer
+  blocks ffmpeg with filesystem-only checks (``os.path.getsize``,
+  ``os.path.isfile``, ``os.access(W_OK)``) when the source isn't a local
+  file. Closes #117, #113, #81 (read+write sides for all three).
+- ``ffprobe`` is invoked against the URL directly for URL inputs, so probing
+  is transparent. Note this incurs network latency on ``FFmpegReader``
+  construction proportional to the URL's round-trip time.
+- BytesIO / file-like inputs are spooled to a ``NamedTemporaryFile`` at
+  construction so the rest of the read path (probe, extension heuristics,
+  frame reader, ``start_frame`` seek) operates on a regular path. The
+  spool is required for formats like mp4 whose moov atom needs random
+  access. The temp file is unlinked in ``close()``.
+- BytesIO / file-like outputs are written via ffmpeg's stdout (``pipe:1``)
+  and drained by a background thread into the user's buffer. When the
+  caller doesn't override ``-f``, the wrapper defaults to ``-f mp4`` with
+  ``-movflags frag_keyframe+empty_moov`` so the output is streamable
+  (the default mp4 muxer would otherwise seek back to write the moov atom,
+  which a pipe can't support). Picking ``-f`` explicitly (webm, matroska,
+  mpegts, …) is respected.
+- **Protocol detection**: at first URL use, ``skvideo`` runs
+  ``ffmpeg -protocols`` (cached for the rest of the session) and emits a
+  ``UserWarning`` if the URL's scheme isn't compiled into the local
+  ffmpeg build — typical case is an ffmpeg without OpenSSL hitting an
+  ``https://`` URL. Warning rather than error; ffmpeg's actual stderr
+  (now readable since v1.1.13) still surfaces the underlying problem.
+  ``setFFmpegPath`` clears the protocol cache so a different binary
+  triggers fresh detection.
+- Documentation: I/O guide gains a "Remote and in-memory I/O" section
+  covering URL inputs/outputs, BytesIO round-trip, the streaming-mp4
+  default for memory destinations, and a note on ffprobe latency.
+
 1.1.13 (2026-06-01)
 -------------------
 - ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
