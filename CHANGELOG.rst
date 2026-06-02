@@ -11,6 +11,15 @@ Correctness-completion pass continuing the v1.1.14 hardening:
 - ``ssim`` now raises ``ValueError`` for frames smaller than its 11x11 window
   instead of silently returning ``NaN``.
 - Ported the last Python-2 ``xrange`` (``utils/stpyr.py``) to ``range``.
+- Reading an empty or undecodable memory/file source via the count-frames
+  fallback now raises a clear ``RuntimeError`` explaining the input is
+  unreadable (and how to declare the frame count) instead of leaking a raw
+  ``subprocess.CalledProcessError``.
+- ``FFmpegReader.close`` now closes its pipe file objects even when ffmpeg has
+  already exited (e.g. ``start_frame`` seeks past EOF), removing a spurious
+  ``ResourceWarning``.
+- Docs: corrected the full-reference metric reference from the removed ``mad``
+  to ``mae`` in ``doc/measure.rst`` and the module autosummary.
 
 1.1.14 (2026-06-02)
 -------------------

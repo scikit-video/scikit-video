@@ -70,7 +70,23 @@ class FFmpegReader(VideoReaderAbstract):
         probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
-        return int(check_output(probecmd).decode().split('\n')[0])
+        try:
+            output = check_output(probecmd).decode().split('\n')[0]
+        except sp.CalledProcessError:
+            raise RuntimeError(
+                "Could not count the frames of %r: ffprobe could not read it. "
+                "The input is most likely empty, truncated, or not a video "
+                "that ffmpeg can decode. For raw video pass -s and -pix_fmt "
+                "(and ideally -vframes) in inputdict." % self._filename
+            )
+        try:
+            return int(output)
+        except ValueError:
+            raise RuntimeError(
+                "Could not count the frames of %r: ffprobe returned no frame "
+                "count (%r). Pass -vframes in inputdict to declare the frame "
+                "count explicitly." % (self._filename, output)
+            )
 
     def _probe(self):
         return ffprobe(self._filename)

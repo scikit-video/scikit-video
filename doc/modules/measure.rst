@@ -23,7 +23,7 @@ Functions
    ssim
    msssim
    mse
-   mad
+   mae
    psnr
    scenedet
    brisque_features
