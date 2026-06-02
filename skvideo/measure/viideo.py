@@ -131,7 +131,8 @@ def viideo_features(videoData, blocksize=(18, 18), blockoverlap=(8, 8), filterle
 
     T, M, N, C = videoData.shape
 
-    assert C == 1, "viideo called with video having %d channels. Please supply only the luminance channel." % (C,)
+    if not (C == 1):
+        raise ValueError("viideo called with video having %d channels. Please supply only the luminance channel." % (C,))
 
     hf = gauss_window_full(filterlength, filterlength/6.0)
     blockstrideY = blocksize[0]# - blockoverlap[0]

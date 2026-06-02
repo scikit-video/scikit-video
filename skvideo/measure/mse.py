@@ -36,7 +36,8 @@ def mse(referenceVideoData, distortedVideoData):
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "mse called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("mse called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     scores = np.zeros(T, dtype=np.float32)
     for t in range(T):

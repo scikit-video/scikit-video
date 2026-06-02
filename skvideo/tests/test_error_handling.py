@@ -33,3 +33,29 @@ def test_videobliinds_computequality_raises_on_small_frame_instead_of_exit():
     tiny = np.zeros((4, 4, 1), dtype=np.float32)
     with pytest.raises(ValueError):
         _vbliinds_mod.computequality(tiny, 96, 96, None, None)
+
+
+def test_input_validation_survives_O_optimization():
+    """Public input validation must use real exceptions, not `assert`, so it
+    is not stripped under `python -O`. Previously `mse` asserted on the
+    channel count; under -O that vanished and mse returned [0.] for RGB."""
+    import subprocess
+    import sys
+
+    code = (
+        "import numpy as np, skvideo.measure as m\n"
+        "rgb = np.zeros((2, 16, 16, 3))\n"
+        "try:\n"
+        "    m.mse(rgb, rgb)\n"
+        "    print('NORAISE')\n"
+        "except ValueError:\n"
+        "    print('VALUEERROR')\n"
+    )
+    out = subprocess.run(
+        [sys.executable, "-O", "-c", code],
+        capture_output=True, text=True,
+    )
+    assert "VALUEERROR" in out.stdout, (
+        "mse did not raise under -O; stdout=%r stderr=%r"
+        % (out.stdout, out.stderr[-200:])
+    )

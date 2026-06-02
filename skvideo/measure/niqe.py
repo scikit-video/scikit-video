@@ -132,9 +132,12 @@ def niqe(inputVideoData):
 
     T, M, N, C = inputVideoData.shape
 
-    assert C == 1, "niqe called with videos containing %d channels. Please supply only the luminance channel" % (C,)
-    assert M > (patch_size*2+1), "niqe called with small frame size, requires > 192x192 resolution video using current training parameters"
-    assert N > (patch_size*2+1), "niqe called with small frame size, requires > 192x192 resolution video using current training parameters"
+    if not (C == 1):
+        raise ValueError("niqe called with videos containing %d channels. Please supply only the luminance channel" % (C,))
+    if not (M > (patch_size*2+1)):
+        raise ValueError("niqe called with small frame size, requires > 192x192 resolution video using current training parameters")
+    if not (N > (patch_size*2+1)):
+        raise ValueError("niqe called with small frame size, requires > 192x192 resolution video using current training parameters")
 
     niqe_scores = np.zeros(T, dtype=np.float32)
 

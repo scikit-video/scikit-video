@@ -383,8 +383,8 @@ class VideoReaderAbstract(object):
             decoders = self._getSupportedDecoders()
             if decoders != NotImplemented:
                 # check that the extension makes sense
-                assert str.encode(
-                    self.extension).lower() in decoders, "Unknown decoder extension: " + self.extension.lower()
+                if str.encode(self.extension).lower() not in decoders:
+                    raise ValueError("Unknown decoder extension: " + self.extension.lower())
 
         if '-f' not in outputdict:
             outputdict['-f'] = self.OUTPUT_METHOD
@@ -614,14 +614,15 @@ class VideoWriterAbstract(object):
             # check that the extension makes sense
             encoders = self._getSupportedEncoders()
             if encoders != NotImplemented:
-                assert str.encode(
-                    self.extension).lower() in encoders, "Unknown encoder extension: " + self.extension.lower()
+                if str.encode(self.extension).lower() not in encoders:
+                    raise ValueError("Unknown encoder extension: " + self.extension.lower())
 
             self._filename = filename
             basepath, _ = os.path.split(filename)
 
             # check to see if filename is a valid file location
-            assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+            if not os.access(basepath, os.W_OK):
+                raise OSError("Cannot write to directory: " + basepath)
         elif self._dest_kind == "url":
             # URL output: ffmpeg picks the format from the URL itself
             # (e.g. rtmp://... → FLV) or from -f in outputdict. Skip the
@@ -730,8 +731,9 @@ class VideoWriterAbstract(object):
         else:
             raise ValueError(self.inputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
-        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (
-            self.inputNumChannels, self.inputdict["-pix_fmt"])
+        if self.inputNumChannels != C:
+            raise ValueError("Failed to pass the correct number of channels %d for the pixel format %s." % (
+                self.inputNumChannels, self.inputdict["-pix_fmt"]))
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')

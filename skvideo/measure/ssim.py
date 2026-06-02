@@ -125,7 +125,8 @@ def ssim(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bitdept
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     ssim_scores = np.zeros(T, dtype=np.float32)
 
@@ -202,7 +203,8 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     factor = int(np.max((1, np.round(np.min((M, N))/256.0))))
 

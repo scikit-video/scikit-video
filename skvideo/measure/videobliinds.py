@@ -158,7 +158,8 @@ def compute_niqe_features(frames):
     blocksizecol = 96
 
     T, M, N, C = frames.shape
-    assert ((M >= blocksizerow*2) & (N >= blocksizecol*2)), "Video too small for NIQE extraction"
+    if not (((M >= blocksizerow*2) & (N >= blocksizecol*2))):
+        raise ValueError("Video too small for NIQE extraction")
 
     module_path = dirname(__file__)
     params = scipy.io.loadmat(join(module_path, 'data', 'frames_modelparameters.mat'))
@@ -316,7 +317,8 @@ def videobliinds_features(videoData):
 
     T, M, N, C = videoData.shape
 
-    assert C == 1, "videobliinds called with video having %d channels. Please supply only the luminance channel." % (C,)
+    if not (C == 1):
+        raise ValueError("videobliinds called with video having %d channels. Please supply only the luminance channel." % (C,))
 
     dt_dc_measure1 = temporal_dc_variation_feature_extraction(videoData)
     spectral_features = NSS_spectral_ratios_feature_extraction(videoData)

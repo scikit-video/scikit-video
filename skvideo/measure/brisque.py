@@ -56,7 +56,8 @@ def brisque_features(videoData):
 
     T, M, N, C = videoData.shape
 
-    assert C == 1, "brisque_features called with video having %d channels. Please supply only the luminance channel." % (C,)
+    if not (C == 1):
+        raise ValueError("brisque_features called with video having %d channels. Please supply only the luminance channel." % (C,))
 
     feats = np.zeros((T, 36), dtype=np.float32)
     for i in range(T):

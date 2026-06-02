@@ -41,7 +41,8 @@ def psnr(referenceVideoData, distortedVideoData, bitdepth=8):
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "psnr called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("psnr called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     maxvalue = int(2**bitdepth - 1)
     maxsq = maxvalue**2
