@@ -53,8 +53,10 @@ def extract_on_patches(img, patch_size):
 def _get_patches_generic(img, patch_size, is_train, stride):
     h, w = np.shape(img)
     if h < patch_size or w < patch_size:
-        print("Input image is too small")
-        exit(0)
+        raise ValueError(
+            "Input image (%dx%d) is smaller than the patch size %d."
+            % (h, w, patch_size)
+        )
 
     # ensure that the patch divides evenly into img
     hoffset = (h % patch_size)
@@ -130,9 +132,12 @@ def niqe(inputVideoData):
 
     T, M, N, C = inputVideoData.shape
 
-    assert C == 1, "niqe called with videos containing %d channels. Please supply only the luminance channel" % (C,)
-    assert M > (patch_size*2+1), "niqe called with small frame size, requires > 192x192 resolution video using current training parameters"
-    assert N > (patch_size*2+1), "niqe called with small frame size, requires > 192x192 resolution video using current training parameters"
+    if not (C == 1):
+        raise ValueError("niqe called with videos containing %d channels. Please supply only the luminance channel" % (C,))
+    if not (M > (patch_size*2+1)):
+        raise ValueError("niqe called with small frame size, requires > 192x192 resolution video using current training parameters")
+    if not (N > (patch_size*2+1)):
+        raise ValueError("niqe called with small frame size, requires > 192x192 resolution video using current training parameters")
 
     niqe_scores = np.zeros(T, dtype=np.float32)
 

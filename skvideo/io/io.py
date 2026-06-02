@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from .abstract import _classify_source
 from .avconv import LibAVReader
 from .avconv import LibAVWriter
 from .ffmpeg import FFmpegReader
@@ -9,6 +10,18 @@ from .ffmpeg import FFmpegWriter
 from .. import _HAS_AVCONV
 from .. import _HAS_FFMPEG
 from ..utils import *
+
+
+def _normalize_source(fname):
+    """Path-likes go through os.fspath; file-like objects pass through unchanged.
+
+    Callers downstream (the Reader/Writer constructors) handle the BytesIO /
+    file-like case via _classify_source + spool_memory_to_tempfile, so we
+    must not try to coerce these into strings here.
+    """
+    if _classify_source(fname) == "memory":
+        return fname
+    return os.fspath(fname)
 
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, audiosrc=None):
@@ -51,7 +64,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
     none
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}
@@ -63,6 +76,9 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
 
     # check that the appropriate videodata size was passed
     T, M, N, C = videodata.shape
+
+    if T == 0:
+        raise ValueError("Cannot write an empty video: videodata has 0 frames.")
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
@@ -141,7 +157,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         width, and C is depth.
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}
@@ -163,15 +179,26 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             outputdict['-pix_fmt'] = 'gray'
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity, start_frame=start_frame)
-        T, M, N, C = reader.getShape()
+        try:
+            T, M, N, C = reader.getShape()
 
-        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-        for idx, frame in enumerate(reader.nextFrame()):
-            videodata[idx, :, :, :] = frame
+            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            count = 0
+            for idx, frame in enumerate(reader.nextFrame()):
+                videodata[idx, :, :, :] = frame
+                count = idx + 1
+            # An output filter (e.g. -vf select) can yield fewer frames than
+            # getShape() predicted from nb_frames; trim so the caller never
+            # sees uninitialized np.empty rows.
+            if count < T:
+                videodata = videodata[:count]
 
-        if as_grey:
-            videodata = vshape(videodata[:, :, :, 0])
-        reader.close()
+            if as_grey:
+                videodata = vshape(videodata[:, :, :, 0])
+        finally:
+            # Always close so a spooled temp file (BytesIO input) is unlinked
+            # even if reading raises partway through.
+            reader.close()
 
         return videodata
     elif backend == "libav":
@@ -185,13 +212,18 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             outputdict['-vframes'] = str(num_frames)
 
         reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        T, M, N, C = reader.getShape()
+        try:
+            T, M, N, C = reader.getShape()
 
-        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-        for idx, frame in enumerate(reader.nextFrame()):
-            videodata[idx, :, :, :] = frame
-
-        reader.close()
+            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            count = 0
+            for idx, frame in enumerate(reader.nextFrame()):
+                videodata[idx, :, :, :] = frame
+                count = idx + 1
+            if count < T:
+                videodata = videodata[:count]
+        finally:
+            reader.close()
         return videodata
 
     else:
@@ -255,7 +287,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         Passed to the given plugin.
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}

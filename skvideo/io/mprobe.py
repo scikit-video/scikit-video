@@ -1,4 +1,5 @@
 import subprocess as sp
+import warnings
 
 from ..utils import *
 from .. import _HAS_MEDIAINFO
@@ -59,5 +60,11 @@ def mprobe(filename):
             tracksbytype[unorderedtracks["@type"]] = unorderedtracks
 
         return tracksbytype
-    except:
+    except Exception as exc:
+        warnings.warn(
+            "mediainfo could not parse %r (%s); returning empty metadata. "
+            "This usually means the file is unreadable or not a recognized "
+            "media format." % (filename, exc),
+            UserWarning,
+        )
         return {}

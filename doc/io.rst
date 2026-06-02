@@ -54,6 +54,7 @@ Sometimes, particular use cases require fine tuning FFmpeg's reading parameters.
 
 .. code-block:: python
 
+	import numpy as np
 	import skvideo.io
 	import skvideo.datasets
 
@@ -120,6 +121,21 @@ https://ffmpeg.org/ffmpeg.html.
 command line (they describe how to interpret the input), and ``outputdict``
 parameters are placed *after* (they describe what to do on the way out).
 
+.. note::
+
+   ``FFmpegWriter`` feeds your NumPy frames to FFmpeg as headerless
+   ``rawvideo`` over a pipe, so the stream carries no framerate of its
+   own (FFmpeg assumes 25 fps unless told otherwise). To set the
+   framerate of the written video, put ``-r`` in **inputdict**, not
+   ``outputdict``. ``-r`` before ``-i`` declares the framerate of the
+   incoming frames; ``-r`` after ``-i`` (i.e. in ``outputdict``) is a
+   *resampler* that drops or duplicates frames relative to the input
+   rate. Setting only ``outputdict["-r"]`` resamples against the
+   assumed 25 fps and produces the wrong duration. (This is the reverse
+   of ``FFmpegReader``, whose input is a real container with its own
+   framerate header, so resampling on the output side is the natural
+   knob there.)
+
 **Common reading recipes**
 
 Force a different output pixel format (default is ``rgb24``):
@@ -151,28 +167,32 @@ Read a raw YUV file with no header (size and format must be supplied):
 
 **Common writing recipes**
 
-Pick a specific codec, bitrate, and framerate:
+Pick a specific codec, bitrate, and framerate. Note ``-r`` (the
+framerate of the frames you write) goes in ``inputdict``; see the note
+above:
 
 .. code-block:: python
 
     writer = skvideo.io.FFmpegWriter(
         "out.mp4",
+        inputdict={"-r": "30"},      # framerate of the written video
         outputdict={
             "-vcodec": "libx264",
             "-b:v": "2000k",
-            "-r": "30",
         },
     )
 
-Resample to a different framerate (FFmpeg drops or duplicates frames as
-needed):
+Resample to a different framerate, i.e. write at a different rate than the
+frames are produced (FFmpeg drops or duplicates frames as needed). Here
+``inputdict["-r"]`` sets the source rate and ``outputdict["-r"]`` is the
+resampler:
 
 .. code-block:: python
 
     writer = skvideo.io.FFmpegWriter(
         "out.mp4",
-        inputdict={"-r": "60"},      # source framerate
-        outputdict={"-r": "30"},     # target framerate
+        inputdict={"-r": "60"},      # rate of the frames you write
+        outputdict={"-r": "30"},     # resample to this rate on output
     )
 
 Write a high-quality H.264 with a constant rate factor:
@@ -183,6 +203,35 @@ Write a high-quality H.264 with a constant rate factor:
         "out.mp4",
         outputdict={"-vcodec": "libx264", "-crf": "18", "-pix_fmt": "yuv420p"},
     )
+
+Preserve an alpha (transparency) channel. Two things are required:
+the codec/container must support alpha (H.264/``.mp4`` does **not**;
+use FFV1 in ``.mkv``, or QTRLE or PNG in ``.mov``), and the output
+``-pix_fmt`` must keep the alpha plane (e.g. ``rgba``):
+
+.. code-block:: python
+
+    # frames is an (T, H, W, 4) uint8 array
+    writer = skvideo.io.FFmpegWriter(
+        "out.mkv",
+        inputdict={"-r": "10"},
+        outputdict={"-vcodec": "ffv1", "-pix_fmt": "rgba"},
+    )
+
+When reading the file back, you must also ask for a 4-channel pixel
+format — the reader defaults to ``rgb24`` and would otherwise silently
+drop the alpha plane:
+
+.. code-block:: python
+
+    vid = skvideo.io.vread("out.mkv", outputdict={"-pix_fmt": "rgba"})
+    # vid.shape == (T, H, W, 4)
+
+VP9 in ``.webm`` can also carry alpha, but FFmpeg does not always
+auto-select the alpha-aware decoder on read, so a plain ``rgba`` read may
+come back fully opaque. Name the decoder explicitly to recover the alpha
+plane: ``vread("out.webm", inputdict={"-vcodec": "libvpx-vp9"},
+outputdict={"-pix_fmt": "rgba"})``.
 
 **Repeating the same flag** (e.g. multiple ``-metadata`` or ``-map``
 entries) is done with a list value — scikit-video emits the flag once per
@@ -216,9 +265,20 @@ instead — slower because FFmpeg decodes from the start of the file:
 
     skvideo.io.vread(
         "clip.mp4",
-        inputdict={"-vf": "select='gte(n\\,1000)'"},
+        outputdict={"-vf": "select='gte(n\\,1000)'", "-vsync": "0"},
         num_frames=200,
     )
+
+Two details matter here. ``select`` is an *output* filter, so it goes in
+``outputdict`` (after ``-i``); placing ``-vf`` in ``inputdict`` yields no
+frames. And ``-vsync 0`` is required: ``select`` drops frames, and without
+it FFmpeg re-pads the gaps back to a constant frame rate by duplicating
+frames, which silently undoes the selection. With ``-vsync 0`` each
+surviving frame is emitted exactly once. (On FFmpeg 5.1 and newer,
+``-vsync 0`` is a deprecated alias for ``-fps_mode passthrough`` and may
+print a deprecation notice; ``-vsync 0`` is used here because it works
+across the FFmpeg versions scikit-video supports. On a recent-only
+FFmpeg you can use ``"-fps_mode": "passthrough"`` instead.)
 
 **Muxing audio from a separate source** (added in v1.1.12) uses the
 ``audiosrc`` constructor argument rather than ``inputdict``:
@@ -229,6 +289,100 @@ instead — slower because FFmpeg decodes from the start of the file:
 
 See the :class:`skvideo.io.FFmpegWriter` API reference for the full
 ``audiosrc`` / ``-map`` interaction.
+
+
+Remote and in-memory I/O
+------------------------
+
+As of v1.1.14, the I/O entry points accept three kinds of source/destination:
+
+* a **file path** — string or ``pathlib.Path`` (existing behavior).
+* a **URL string** — anything matching ``<scheme>://...``, such as
+  ``http://``, ``https://``, ``rtsp://``, ``rtmp://``, ``udp://``,
+  ``ftp://``, etc. FFmpeg's own protocol handlers take it from there.
+* a **file-like object** — ``io.BytesIO``, an open file handle, anything
+  with a ``.read()`` (for input) or ``.write()`` (for output) method.
+
+Specifically:
+
+* :func:`skvideo.io.vread`, :func:`skvideo.io.vreader`, and
+  :class:`skvideo.io.FFmpegReader` accept all three on input.
+* :func:`skvideo.io.vwrite` and :class:`skvideo.io.FFmpegWriter` accept
+  all three on output.
+* :func:`skvideo.io.ffprobe` accepts a file path or a URL string. It does
+  **not** accept a file-like object — wrap the bytes in a
+  ``NamedTemporaryFile`` and call ``ffprobe`` on the resulting path if
+  you need metadata from in-memory bytes.
+
+**Read from a URL:**
+
+.. code-block:: python
+
+    videodata = skvideo.io.vread("https://example.com/clip.mp4", num_frames=10)
+
+``ffprobe`` is invoked against the URL directly to read metadata, which
+adds network round-trip latency to ``FFmpegReader`` construction. For
+high-volume use, consider downloading first or caching the probe result.
+
+**Read from a BytesIO:**
+
+.. code-block:: python
+
+    import io
+    raw_bytes = open("clip.mp4", "rb").read()
+    buf = io.BytesIO(raw_bytes)
+    videodata = skvideo.io.vread(buf, num_frames=10)
+
+Memory inputs are spooled to a temporary file at construction so the rest
+of the read path can operate on a regular filename (container formats
+like mp4 need random access to read their header atoms, which subprocess
+stdin can't reliably provide). The temp file is unlinked on
+``reader.close()`` / when ``vread`` returns.
+
+**Write to a URL** (e.g. RTMP push to a streaming server):
+
+.. code-block:: python
+
+    writer = skvideo.io.FFmpegWriter(
+        "rtmp://live.example.com/stream/key",
+        outputdict={"-f": "flv", "-vcodec": "libx264", "-preset": "ultrafast"},
+    )
+    for frame in frames:
+        writer.writeFrame(frame)
+    writer.close()
+
+**Write to a BytesIO:**
+
+.. code-block:: python
+
+    import io
+    out = io.BytesIO()
+    skvideo.io.vwrite(out, videodata)
+    out.seek(0)
+    # `out` now contains a streamable fragmented-mp4 file
+
+When writing to a memory destination and the caller doesn't override
+``-f``, the wrapper defaults to ``-f mp4`` with
+``-movflags frag_keyframe+empty_moov`` so the bytes can stream as they're
+produced (the default mp4 muxer would seek back to rewrite the moov atom
+at end-of-encode, which a pipe can't support). To pick a different
+streamable container, set ``-f`` explicitly:
+
+.. code-block:: python
+
+    out = io.BytesIO()
+    writer = skvideo.io.FFmpegWriter(
+        out,
+        outputdict={"-f": "webm", "-vcodec": "libvpx-vp9", "-b:v": "1M"},
+    )
+
+**Protocol detection.** On first URL use, ``skvideo`` runs
+``ffmpeg -protocols`` and caches the result. If the URL's scheme isn't in
+the local ffmpeg's supported list (most commonly: an ffmpeg built without
+OpenSSL hitting an ``https://`` URL), a ``UserWarning`` is emitted so the
+underlying problem is obvious. FFmpeg's actual stderr (now surfaced via
+``RuntimeError`` since v1.1.13) still reports the real failure if you
+proceed.
 
 
 Reading Video Metadata

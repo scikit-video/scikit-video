@@ -1,5 +1,6 @@
 import os
 import subprocess as sp
+import warnings
 
 from ..utils import *
 from .. import _HAS_FFMPEG
@@ -70,5 +71,18 @@ def ffprobe(filename):
             result.setdefault(codec_type + "_streams", []).append(stream)
 
         return result
-    except Exception:
+    except Exception as exc:
+        # Returning {} is load-bearing: raw/headerless video (e.g. .yuv) has
+        # no probeable streams and the reader falls back to inputdict's
+        # -s / -pix_fmt. But silently swallowing every failure also hides a
+        # genuinely unreadable/corrupt file behind a later "No way to
+        # determine width or height" error. Warn with the cause so the real
+        # reason is visible, then preserve the {} fallback.
+        warnings.warn(
+            "ffprobe could not parse %r (%s); returning empty metadata. "
+            "Expected for raw video (supply -s and -pix_fmt via inputdict); "
+            "for a normal media file this usually means it is unreadable or "
+            "not a recognized format." % (filename, exc),
+            UserWarning,
+        )
         return {}

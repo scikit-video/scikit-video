@@ -33,14 +33,19 @@ def Li3DDCT_features(videoData):
 
     T, M, N, C = videoData.shape
 
-    assert C == 1, "called with video having %d channels. Please supply only the luminance channel." % (C,)
-    assert T >= 4, "Only %d input frames. Please supply at least 4" % (T,)
+    if not (C == 1):
+        raise ValueError("called with video having %d channels. Please supply only the luminance channel." % (C,))
+    if not (T >= 4):
+        raise ValueError("Only %d input frames. Please supply at least 4" % (T,))
 
     feats = np.zeros((63*5,), dtype=np.float32)
-    newM = int32(np.floor(M/4)*4)
-    newN = int32(np.floor(N/4)*4)
+    newM = np.int32(np.floor(M/4)*4)
+    newN = np.int32(np.floor(N/4)*4)
 
-    frameSlices = np.arange(0, T-4, 4)
+    # Non-overlapping groups of 4 frames. Stop is T-3 (not T-4) so the last
+    # valid group starting at T-4 is included; with T-4 the final group was
+    # dropped and T==4 produced no groups at all.
+    frameSlices = np.arange(0, T-3, 4)
     Sfeats = np.zeros((len(frameSlices), 63), dtype=np.float32)
     Gammafeats = np.zeros((len(frameSlices), 63), dtype=np.float32)
     Energy1feats = np.zeros((len(frameSlices), 63), dtype=np.float32)

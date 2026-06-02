@@ -1,3 +1,153 @@
+1.1.14 (2026-06-02)
+-------------------
+- **Input source decoupling**: ``vread`` / ``vreader`` / ``vwrite`` and the
+  ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept three kinds
+  of source/destination uniformly — a file path (existing behavior), a URL
+  string (``http://``, ``https://``, ``rtsp://``, ``rtmp://``, ``udp://``,
+  …), or a file-like object such as ``io.BytesIO``. The wrapper no longer
+  blocks ffmpeg with filesystem-only checks (``os.path.getsize``,
+  ``os.path.isfile``, ``os.access(W_OK)``) when the source isn't a local
+  file. Closes #117, #113, #81 on the reader and writer paths. (Note:
+  ``skvideo.io.ffprobe`` itself accepts URLs but not file-like objects;
+  wrap to a ``NamedTemporaryFile`` if you need to probe in-memory bytes.)
+- ``ffprobe`` is invoked against the URL directly for URL inputs, so probing
+  is transparent. Note this incurs network latency on ``FFmpegReader``
+  construction proportional to the URL's round-trip time.
+- BytesIO / file-like inputs are spooled to a ``NamedTemporaryFile`` at
+  construction so the rest of the read path (probe, extension heuristics,
+  frame reader, ``start_frame`` seek) operates on a regular path. The
+  spool is required for formats like mp4 whose moov atom needs random
+  access. The temp file is unlinked in ``close()``.
+- BytesIO / file-like outputs are written via ffmpeg's stdout (``pipe:1``)
+  and drained by a background thread into the user's buffer. When the
+  caller doesn't override ``-f``, the wrapper defaults to ``-f mp4`` with
+  ``-movflags frag_keyframe+empty_moov`` so the output is streamable
+  (the default mp4 muxer would otherwise seek back to write the moov atom,
+  which a pipe can't support). Picking ``-f`` explicitly (webm, matroska,
+  mpegts, …) is respected.
+- **Protocol detection**: at first URL use, ``skvideo`` runs
+  ``ffmpeg -protocols`` (cached for the rest of the session) and emits a
+  ``UserWarning`` if the URL's scheme isn't compiled into the local
+  ffmpeg build — typical case is an ffmpeg without OpenSSL hitting an
+  ``https://`` URL. Warning rather than error; ffmpeg's actual stderr
+  (now readable since v1.1.13) still surfaces the underlying problem.
+  ``setFFmpegPath`` clears the protocol cache so a different binary
+  triggers fresh detection.
+- Documentation: I/O guide gains a "Remote and in-memory I/O" section
+  covering URL inputs/outputs, BytesIO round-trip, the streaming-mp4
+  default for memory destinations, and a note on ffprobe latency.
+- Documentation fix: the "Tuning FFmpeg Parameters" writer recipe added in
+  v1.1.13 incorrectly placed the output framerate in ``outputdict["-r"]``.
+  Because ``FFmpegWriter`` feeds headerless ``rawvideo`` (assumed 25 fps),
+  ``-r`` must go in ``inputdict`` to set the written video's framerate;
+  ``outputdict["-r"]`` only resamples against the assumed input rate and
+  yields the wrong duration. Recipes corrected and a note added explaining
+  the input-vs-output ``-r`` asymmetry (and why it differs from
+  ``FFmpegReader``). Reopens the documentation concern from #160/#96; see
+  #186 (reported by page200).
+- Documentation: added an alpha-channel (transparency) writing recipe to
+  the I/O guide. Preserving alpha requires both an alpha-capable
+  codec/container (FFV1/.mkv, or QTRLE or PNG/.mov; not H.264/.mp4) and
+  reading back with ``outputdict={"-pix_fmt": "rgba"}``, since the reader
+  defaults to ``rgb24`` and otherwise drops the alpha plane. VP9/.webm
+  alpha is also documented with the caveat that the decoder may need to
+  be named explicitly on read. Addresses the usage confusion in #143.
+- Fixed a file-descriptor leak: ``FFmpegWriter.close()`` returned early
+  without closing its ``DEVNULL`` handle when the writer was constructed
+  but never warm-started (no frames written), e.g. URL/validation-only
+  writers. ``close()`` now releases ``DEVNULL`` on every path.
+- Fixed temp-file leaks on the BytesIO/file-like read path: spooling now
+  unlinks its ``NamedTemporaryFile`` if the source read fails partway,
+  and ``vread`` closes the reader in a ``finally`` so a mid-read error no
+  longer leaks the spooled file. A file-like input without a ``read()``
+  method is now rejected up front with a clear ``TypeError`` instead of
+  failing deep inside the copy.
+- Documentation fix: the frame-exact ``select`` recipe (and the
+  ``start_frame`` docstring) placed ``-vf`` in ``inputdict``; ``-vf`` is
+  an output filter and yields no frames there. Corrected to ``outputdict``
+  and added the required ``-vsync 0`` (without it FFmpeg re-pads the
+  frames ``select`` drops back to a constant rate, silently undoing the
+  selection). Also added a missing ``import numpy as np`` to the reader
+  example.
+- ``vread`` now trims its result to the number of frames actually
+  produced. When an output filter such as ``-vf select`` yields fewer
+  frames than ``getShape()`` predicted from ``nb_frames``, the returned
+  array previously kept the extra, uninitialized ``np.empty`` rows.
+- The readable-input check for file-like sources is stricter: a file
+  opened in write mode (``"wb"``) exposes a ``read`` attribute that
+  raises when called, so it now fails the ``readable()`` probe and is
+  rejected with a clear ``TypeError`` instead of an opaque
+  ``io.UnsupportedOperation`` from inside the spool copy.
+
+- **Python-3 correctness pass** (pre-existing defects found in a
+  whole-codebase audit; none were introduced by the v1.1.14 work):
+
+  - ``skvideo.measure.Li3DDCT_features`` raised ``NameError: name 'int32'
+    is not defined`` on every call (bare ``int32`` instead of
+    ``np.int32``) and produced no frame groups when ``T == 4``. Fixed
+    both; the function now runs.
+  - ``skvideo.utils.canny`` (used by ``globalEdgeMotion`` and scene
+    detection) had the same bare ``int32`` ``NameError``. Fixed.
+  - ``skvideo.motion.globalEdgeMotion`` was broken on Python 3: the bool
+    edge-mask path was not squeezed to 2D, the hausdorff branch compared
+    the shifted frame against itself instead of the reference frame, and
+    an unknown method raised a misspelled ``Notimplemented``. All fixed;
+    both ``hamming`` and ``hausdorff`` now recover a known translation.
+  - ``skvideo.motion.blockComp`` dropped every bottom/right macroblock
+    because ``_checkBounded`` rejected blocks ending exactly at the frame
+    edge (``>=`` should have been ``>``). Motion compensation now covers
+    the full frame.
+  - ``from skvideo import *`` raised ``TypeError`` because the top-level
+    ``__all__`` listed function objects instead of names. Fixed.
+  - Library code no longer calls ``exit()`` or raises the ``NotImplemented``
+    singleton: ``rgb2gray``, ``niqe`` and ``videobliinds`` helpers now
+    raise proper exceptions.
+  - Public input validation in the quality metrics (channel / frame-count
+    / resolution checks) and in the I/O layer (unknown extension, unwritable
+    output directory, channel/pixel-format mismatch) now raises
+    ``ValueError`` / ``OSError`` instead of ``assert``, so it is no longer
+    stripped under ``python -O``.
+  - ``ffprobe`` / ``avprobe`` / ``mprobe`` now emit a ``UserWarning`` with
+    the underlying error before returning ``{}`` (the empty-metadata
+    fallback that raw video relies on), instead of swallowing failures
+    silently.
+
+- **Edge-case hardening** (adversarial input testing; failures that were
+  silent or crashed on otherwise-normal input):
+
+  - Full-reference metrics (``mse``/``mae``/``psnr``/``ssim``/``msssim``/
+    ``strred``) and ``globalEdgeMotion`` raised a bare ``assert`` on a
+    ref/dis shape mismatch, and ``blockMotion`` on frame count; under
+    ``python -O`` these vanished and mismatched arrays broadcast to a
+    plausible-but-wrong score. Now raise ``ValueError``.
+  - ``blockComp`` silently zeroed the bottom/right border for frames whose
+    dimensions are not a multiple of ``mbSize`` (e.g. any 1080p frame with
+    ``mbSize=16``). The uncovered remainder now passes through unchanged;
+    evenly-divisible frames are unaffected.
+  - ``blockComp`` no longer crashes on the documented single-frame input.
+  - ``globalEdgeMotion`` on edgeless frames returns ``[0, 0]`` instead of a
+    meaningless ``(-r, -r)`` or a crash.
+  - ``vwrite`` on a zero-frame array now raises ``ValueError`` instead of
+    silently writing no file.
+  - ``blockComp`` validates the motion-vector grid against the macroblock
+    grid (a mismatch raised a cryptic ``IndexError`` or silently ignored
+    extra vectors; now ``ValueError``), and its single-frame result is now
+    ``(1, M, N, C)`` to match the documented shape.
+  - Documented previously-implicit behaviors: ``blockComp`` output dtype
+    (``float64``), non-divisible-border passthrough, out-of-bounds-vector
+    passthrough; ``globalEdgeMotion``'s ``[0, 0]`` edgeless sentinel; and
+    that a low-level ``FFmpegWriter`` closed without frames is an
+    intentional no-op (use ``vwrite`` for the guarded 0-frame check).
+  - ``blockComp`` validates the full motion-vector shape
+    ``(M//mbSize, N//mbSize, 2)`` (a wrong rank or last dimension was a
+    cryptic ``IndexError`` or silently accepted).
+  - The ``BytesIO`` writer now closes the ffmpeg subprocess pipe objects on
+    ``close()``, eliminating a ``ResourceWarning: unclosed file`` per writer
+    (no fd leak existed; the warnings were noise).
+  - ``setFFmpegPath`` on a non-existent path now also clears the cached
+    decoder/encoder lists, so a bad path no longer leaves the module
+    half-configured with stale codec data.
+
 1.1.13 (2026-06-01)
 -------------------
 - ``pathlib.Path`` objects are now accepted everywhere a filename is expected:

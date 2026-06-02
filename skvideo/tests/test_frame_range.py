@@ -88,3 +88,27 @@ def test_vreader_supports_start_frame():
     frames = list(reader)
     assert len(frames) == 10
     assert frames[0].shape == (720, 1280, 3)
+
+
+def test_vread_trims_to_actual_frames_with_output_filter():
+    """When an output filter (-vf select) yields fewer frames than
+    getShape() predicts from nb_frames, vread must return only the frames
+    actually produced, not an over-allocated array padded with
+    uninitialized np.empty rows.
+    """
+    full = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
+    total = full.shape[0]
+    # Keep only the last two frames via an output-side select filter.
+    # -vsync 0 is required so FFmpeg doesn't re-pad the dropped frames back
+    # to a constant rate (which would undo the selection).
+    keep_from = total - 2
+    selected = skvideo.io.vread(
+        skvideo.datasets.bigbuckbunny(),
+        outputdict={"-vf": "select='gte(n\\,%d)'" % keep_from, "-vsync": "0"},
+    )
+    assert selected.shape[0] == 2, (
+        "expected 2 selected frames, got %d (over-allocation not trimmed)"
+        % selected.shape[0]
+    )
+    # The trimmed frames must be the real tail frames, not uninitialized data.
+    assert np.array_equal(selected, full[keep_from:total])

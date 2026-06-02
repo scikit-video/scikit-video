@@ -32,11 +32,13 @@ def mae(referenceVideoData, distortedVideoData):
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    assert(referenceVideoData.shape == distortedVideoData.shape)
+    if referenceVideoData.shape != distortedVideoData.shape:
+        raise ValueError("reference and distorted videos must have the same shape; got %s vs %s" % (referenceVideoData.shape, distortedVideoData.shape))
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "mae called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("mae called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     scores = np.zeros(T, dtype=np.float32)
     for t in range(T):

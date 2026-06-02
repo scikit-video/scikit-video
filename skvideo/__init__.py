@@ -1,4 +1,4 @@
-__version__ = "1.1.13"
+__version__ = "1.1.14"
 
 from .utils import check_output, where
 import os
@@ -39,6 +39,16 @@ _FFMPEG_PATCH_VERSION = "0"
 _FFMPEG_SUPPORTED_DECODERS = []
 _FFMPEG_SUPPORTED_ENCODERS = []
 _LIBAV_SUPPORTED_EXT = []
+
+# Lazy cache of `ffmpeg -protocols` output (issue #117, v1.1.14 protocol
+# detection). Stored as a single tuple ``(input_list, output_list)`` and
+# published in one assignment, so a reader that races past the cache
+# check sees either None or a fully populated tuple, never a half-filled
+# pair. This is not a lock: a concurrent setFFmpegPath() reset can still
+# race a populate, in which case detection simply runs again; the cost
+# is a redundant `ffmpeg -protocols` call, not corruption. Reset to None
+# by setFFmpegPath so a different ffmpeg binary triggers fresh detection.
+_FFMPEG_PROTOCOLS = None
 
 _FFPROBE_APPLICATION = "ffprobe"
 _FFMPEG_APPLICATION = "ffmpeg"
@@ -225,6 +235,110 @@ def scan_ffmpeg():
     ]
 
 
+def _get_ffmpeg_protocols():
+    """Return (input_protocols, output_protocols) supported by the installed ffmpeg.
+
+    Lazily caches the result so the subprocess call only runs once per
+    interpreter (or until ``setFFmpegPath`` is called, which resets the
+    cache). Each return value is a list of bare scheme names like
+    ``["file", "http", "https", "pipe", "rtsp", ...]``.
+
+    Used by ``_warn_if_unsupported_protocol`` to give users a useful
+    heads-up when their URL scheme isn't compiled into their ffmpeg
+    build (e.g. an ffmpeg without HTTPS support hitting an https://
+    URL). Returns empty lists on detection failure — callers fall back
+    to letting ffmpeg surface its own error.
+    """
+    global _FFMPEG_PROTOCOLS
+    # Read once into a local so concurrent setFFmpegPath() can't null
+    # this out from under us mid-function.
+    cached = _FFMPEG_PROTOCOLS
+    if cached is not None:
+        return cached
+
+    inputs, outputs = [], []
+    if not _HAS_FFMPEG:
+        _FFMPEG_PROTOCOLS = (inputs, outputs)
+        return _FFMPEG_PROTOCOLS
+
+    try:
+        raw = check_output(
+            [os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION), "-hide_banner", "-protocols"]
+        ).decode(errors="replace")
+        # ffmpeg -protocols layout:
+        #   Input:
+        #     file
+        #     http
+        #     ...
+        #   Output:
+        #     file
+        #     md5
+        #     ...
+        section = None
+        for line in raw.splitlines():
+            stripped = line.strip()
+            if stripped.lower().startswith("input"):
+                section = "input"
+                continue
+            if stripped.lower().startswith("output"):
+                section = "output"
+                continue
+            if not stripped or ":" in stripped:
+                continue
+            if section == "input":
+                inputs.append(stripped)
+            elif section == "output":
+                outputs.append(stripped)
+    except Exception:
+        # Detection is best-effort; ffmpeg will surface its own error if
+        # the protocol really isn't supported.
+        pass
+
+    # Single atomic publish so concurrent readers see a fully populated
+    # cache or nothing — no half-state with inputs set but outputs None.
+    _FFMPEG_PROTOCOLS = (inputs, outputs)
+    return _FFMPEG_PROTOCOLS
+
+
+def _warn_if_unsupported_protocol(url, direction):
+    """Emit a UserWarning if ``url``'s scheme isn't in ffmpeg's protocol list.
+
+    ``direction`` is either ``"input"`` (reader) or ``"output"`` (writer).
+    Silent no-op for non-URL strings, for ffmpeg builds whose protocol list
+    we couldn't detect (empty list), or for protocols that are present.
+
+    We warn rather than raise so the user gets ffmpeg's own (now-readable)
+    stderr if they choose to proceed — the warning just makes the root
+    cause obvious. Typical case: an ffmpeg compiled without OpenSSL
+    support refusing to handle https:// URLs.
+    """
+    import re as _re
+    import warnings as _warnings
+
+    m = _re.match(r"^([a-zA-Z][a-zA-Z0-9+.\-]*)://", str(url))
+    if not m:
+        return
+    scheme = m.group(1).lower()
+    inputs, outputs = _get_ffmpeg_protocols()
+    available = inputs if direction == "input" else outputs
+    if not available:
+        return  # detection failed; don't preempt ffmpeg's own error
+    if scheme not in available:
+        _warnings.warn(
+            "ffmpeg at %s does not list %r as a supported %s protocol "
+            "(available: %s). ffmpeg may still try and fail with its own "
+            "error message; if you see a connection-refused or "
+            "protocol-not-found error, rebuild or reinstall ffmpeg with "
+            "support for %r." % (
+                _FFMPEG_PATH, scheme, direction,
+                ", ".join(sorted(available)[:20]) +
+                ("..." if len(available) > 20 else ""),
+                scheme,
+            ),
+            UserWarning,
+        )
+
+
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
     global _LIBAV_MINOR_VERSION
@@ -297,7 +411,11 @@ def setFFmpegPath(path):
     """
     global _FFMPEG_PATH
     global _HAS_FFMPEG
+    global _FFMPEG_PROTOCOLS
     _FFMPEG_PATH = path
+    # New binary may have different compiled-in protocol support; clear
+    # the cache so the next URL use re-detects (issue #117 protocol check).
+    _FFMPEG_PROTOCOLS = None
 
     # check to see if the executables actually exist on these paths
     if os.path.isfile(os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION)) and os.path.isfile(os.path.join(_FFMPEG_PATH, _FFPROBE_APPLICATION)):
@@ -318,9 +436,16 @@ def setFFmpegPath(path):
         global _FFMPEG_MAJOR_VERSION
         global _FFMPEG_MINOR_VERSION
         global _FFMPEG_PATCH_VERSION
+        global _FFMPEG_SUPPORTED_DECODERS
+        global _FFMPEG_SUPPORTED_ENCODERS
         _FFMPEG_MAJOR_VERSION = "0"
         _FFMPEG_MINOR_VERSION = "0"
         _FFMPEG_PATCH_VERSION = "0"
+        # Clear codec lists too, otherwise a bad path leaves the module
+        # half-configured: _HAS_FFMPEG=0 but stale decoders/encoders from the
+        # previous valid binary.
+        _FFMPEG_SUPPORTED_DECODERS = []
+        _FFMPEG_SUPPORTED_ENCODERS = []
         return
 
     # reload version from new path
@@ -390,10 +515,10 @@ if (len(_AVCONV_PATH) > 0):
 
 
 __all__ = [
-    getFFmpegPath,
-    getFFmpegVersion,
-    setFFmpegPath,
-    getLibAVPath,
-    getLibAVVersion,
-    setLibAVPath,
+    "getFFmpegPath",
+    "getFFmpegVersion",
+    "setFFmpegPath",
+    "getLibAVPath",
+    "getLibAVVersion",
+    "setLibAVPath",
 ]

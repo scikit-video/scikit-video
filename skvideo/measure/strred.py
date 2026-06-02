@@ -121,11 +121,13 @@ def strred(referenceVideoData, distortedVideoData):
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    assert(referenceVideoData.shape == distortedVideoData.shape)
+    if referenceVideoData.shape != distortedVideoData.shape:
+        raise ValueError("reference and distorted videos must have the same shape; got %s vs %s" % (referenceVideoData.shape, distortedVideoData.shape))
 
     T, M, N, C = referenceVideoData.shape
 
-    assert C == 1, "strred called with videos containing %d channels. Please supply only the luminance channel" % (C,)
+    if not (C == 1):
+        raise ValueError("strred called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
     referenceVideoData = referenceVideoData[:, :, :, 0]
     distortedVideoData = distortedVideoData[:, :, :, 0]

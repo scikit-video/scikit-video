@@ -1,11 +1,100 @@
+import io
 import os
+import re
+import tempfile
+import threading
 import time
 import warnings
 
 import numpy as np
 
 from .. import _HAS_FFMPEG
+from .. import _warn_if_unsupported_protocol
 from ..utils import *
+
+
+# Matches URL schemes ffmpeg supports for input/output (http, https, rtsp, rtmp,
+# rtmps, udp, tcp, ftp, sftp, srt, unix, file, pipe, concat, async, hls, ...).
+# We classify any string that looks like `<scheme>://<...>` as a URL and let
+# ffmpeg validate the specific protocol.
+_URL_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*://")
+
+
+def _classify_source(source):
+    """Classify an input/output source into one of three kinds.
+
+    Returns one of ``"file"``, ``"url"``, ``"memory"``. Used by the reader and
+    writer to dispatch around filesystem-only operations like ``os.path.getsize``,
+    ``os.path.isfile``, and ``os.access(..., os.W_OK)`` (issue #117, #113, #81).
+
+    - ``str`` or ``Path`` matching ``<scheme>://...`` → ``"url"``
+    - ``BytesIO`` or any object with a ``read`` / ``write`` method → ``"memory"``
+    - everything else → ``"file"`` (the existing behavior)
+
+    A pure string filename like ``"video.mp4"`` is classified as ``"file"``; the
+    URL check is intentionally strict (``://`` required) so Windows drive
+    letters and oddly-named local files don't false-positive.
+    """
+    # File-like / BytesIO objects expose read or write
+    if hasattr(source, "read") or hasattr(source, "write"):
+        return "memory"
+    # os.fspath() turns Path into str without changing strings
+    try:
+        source_str = os.fspath(source)
+    except TypeError:
+        return "file"  # fallback; downstream will surface the real error
+    if _URL_SCHEME_RE.match(source_str):
+        return "url"
+    return "file"
+
+
+def _spool_memory_to_tempfile(source):
+    """Copy a file-like ``source`` into a NamedTemporaryFile and return its path.
+
+    Called when the reader's input is a BytesIO or other file-like (issue
+    #113). Container formats like mp4 need random access to read header
+    atoms that live at the end of the file, which subprocess stdin can't
+    reliably provide. Spooling to disk lets the rest of the read path
+    treat the source uniformly with a regular filename.
+
+    The temp file is created with ``delete=False``; the caller (typically
+    ``VideoReaderAbstract.close``) is responsible for unlinking it. If the
+    source has a ``.name`` attribute with a recognizable extension, that
+    extension is preserved on the temp file; otherwise ``.mp4`` is used
+    as a sensible default (ffmpeg always content-detects format regardless
+    of extension, but our wrapper's extension-based decoder-allowlist check
+    needs *some* valid extension).
+    """
+    if hasattr(source, "seek"):
+        source.seek(0)
+    suffix = ".mp4"
+    name = getattr(source, "name", None)
+    if isinstance(name, str):
+        _, ext = os.path.splitext(name)
+        if ext:
+            suffix = ext
+    tf = tempfile.NamedTemporaryFile(
+        prefix="skvideo_in_", suffix=suffix, delete=False
+    )
+    try:
+        # Stream-copy in chunks so we don't materialize huge buffers.
+        while True:
+            chunk = source.read(1024 * 1024)
+            if not chunk:
+                break
+            tf.write(chunk)
+    except BaseException:
+        # The copy failed partway (e.g. source.read raised). The temp file
+        # is already on disk with delete=False, so unlink it here before
+        # re-raising — the caller never gets a path and can't clean up.
+        tf.close()
+        try:
+            os.unlink(tf.name)
+        except OSError:
+            pass
+        raise
+    tf.close()
+    return tf.name
 
 
 class VideoReaderAbstract(object):
@@ -53,8 +142,12 @@ class VideoReaderAbstract(object):
             so the actual first frame returned may snap to the nearest
             keyframe at or before the requested position. Combine with
             ``num_frames`` for a windowed read. For frame-exact extraction,
-            pass ``inputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead;
-            that is slower because it decodes from the start of the file.
+            pass ``outputdict={"-vf": "select='gte(n\\\\,N)'", "-vsync":
+            "0"}`` instead (``-vf`` is an output filter, so it must go in
+            ``outputdict``; ``-vsync 0`` stops FFmpeg from re-padding the
+            dropped frames back to a constant rate, and on FFmpeg 5.1+ is
+            equivalent to ``-fps_mode passthrough``). That is slower
+            because it decodes from the start of the file.
 
         Returns
         -------
@@ -64,7 +157,62 @@ class VideoReaderAbstract(object):
         # check if FFMPEG exists in the path
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
+        self._source_kind = _classify_source(filename)
+        # Track temp files spooled from memory sources so close() can clean
+        # them up. None for file / url sources.
+        self._temp_input_path = None
+        # Memory sources (BytesIO, file-like): spool to a temp file so the
+        # rest of __init__ — ffprobe, extension heuristics, frame reading —
+        # can operate on a regular path. mp4's moov atom in particular
+        # needs random access that subprocess stdin can't provide reliably.
+        # After spooling, treat as a file for all downstream branching.
+        if self._source_kind == "memory":
+            # Must be readable. hasattr("read") alone is too weak: a file
+            # opened in write mode ("wb") still exposes a read attribute
+            # that raises io.UnsupportedOperation when called. Prefer the
+            # readable() probe when the object provides it, and require a
+            # callable read otherwise.
+            read = getattr(filename, "read", None)
+            readable = getattr(filename, "readable", None)
+            if not callable(read) or (callable(readable) and not readable()):
+                raise TypeError(
+                    "Input source is not readable; FFmpegReader needs a "
+                    "file-like object opened for reading (got %r)."
+                    % type(filename)
+                )
+            self._temp_input_path = _spool_memory_to_tempfile(filename)
+            filename = self._temp_input_path
+            self._source_kind = "file"
+        elif self._source_kind == "url":
+            # Warn early if the installed ffmpeg lacks support for this
+            # URL scheme (e.g. https on a build without OpenSSL). The
+            # warning makes ffmpeg's eventual error obvious; we don't
+            # raise because protocol detection is best-effort.
+            _warn_if_unsupported_protocol(filename, "input")
         filename = os.fspath(filename)
+
+        # Wrap the rest of __init__ so that any failure (bad ffprobe,
+        # missing width/height, decoder mismatch) unlinks the spooled temp
+        # file before re-raising. Without this, callers never get a
+        # reference to the half-constructed reader, so close() is
+        # unreachable and the temp file leaks.
+        try:
+            self._finish_init(filename, inputdict, outputdict, verbosity, start_frame)
+        except Exception:
+            if self._temp_input_path is not None:
+                try:
+                    os.unlink(self._temp_input_path)
+                except OSError:
+                    pass
+                self._temp_input_path = None
+            raise
+
+    def _finish_init(self, filename, inputdict, outputdict, verbosity, start_frame):
+        """The rest of __init__, wrapped so spool failure cleanup can apply.
+
+        Extracted purely for the try/except boundary; semantics are
+        unchanged from doing this work inline.
+        """
         self._filename = filename
         self.verbosity = verbosity
 
@@ -74,9 +222,19 @@ class VideoReaderAbstract(object):
         if not outputdict:
             outputdict = {}
 
-        # General information
-        _, self.extension = os.path.splitext(filename)
-        self.size = os.path.getsize(filename)
+        # General information. URLs skip filesystem ops entirely; memory
+        # sources reach here as "file" because we already spooled them to
+        # a real temp path above. ffmpeg/ffprobe handle URLs natively
+        # (note: probing a remote URL incurs network latency on
+        # FFmpegReader construction).
+        if self._source_kind == "file":
+            _, self.extension = os.path.splitext(filename)
+            self.size = os.path.getsize(filename)
+        else:
+            # URL: no meaningful filesystem extension; use empty so downstream
+            # checks (which mostly gate on .yuv / .raw) skip cleanly.
+            self.extension = ""
+            self.size = 0
         self.probeInfo = self._probe()
 
         # smartphone video data is weird
@@ -171,7 +329,17 @@ class VideoReaderAbstract(object):
         self.bpp = int(bpplut[self.pix_fmt][1])
 
         israw = str.encode(self.extension) in [b".raw", b".yuv"]
-        iswebcam = not os.path.isfile(filename)
+        # iswebcam covers cases where input has no finite frame count (live
+        # device, streaming URL). The os.path.isfile heuristic still routes
+        # /dev/video* and similar to this branch. Memory sources have
+        # already been spooled to a temp file path above, so they take the
+        # file branch with isfile==True. URLs need explicit handling.
+        if self._source_kind == "file":
+            iswebcam = not os.path.isfile(filename)
+        else:
+            # URL: treat as a stream unless the metadata gave us a frame
+            # count (e.g. mp4 over http reports nb_frames).
+            iswebcam = self.INFO_NB_FRAMES not in viddict
 
         if ("-vframes" in outputdict):
             self.inputframenum = int(outputdict["-vframes"])
@@ -186,7 +354,8 @@ class VideoReaderAbstract(object):
             # we can compute it based on the input size and color space
             self.inputframenum = int(self.size / (self.inputwidth * self.inputheight * (self.bpp / 8.0)))
         elif iswebcam:
-            # webcam can stream frames endlessly, lets use the special default value of 0 to indicate that
+            # webcam (or live URL) can stream frames endlessly, lets use the
+            # special default value of 0 to indicate that
             self.inputframenum = 0
         else:
             self.inputframenum = self._probCountFrames()
@@ -203,12 +372,19 @@ class VideoReaderAbstract(object):
 
         if israw or iswebcam:
             inputdict['-pix_fmt'] = self.pix_fmt
+        elif self._source_kind != "file":
+            # URL: ffprobe already validated the codec; the wrapper's
+            # extension-based sanity check has no extension to check
+            # against. Trust ffmpeg to surface a decode error if it can't
+            # handle the input. (Memory inputs reach here as "file" via
+            # the temp-spool path, so they DO get the assert below.)
+            pass
         else:
             decoders = self._getSupportedDecoders()
             if decoders != NotImplemented:
                 # check that the extension makes sense
-                assert str.encode(
-                    self.extension).lower() in decoders, "Unknown decoder extension: " + self.extension.lower()
+                if str.encode(self.extension).lower() not in decoders:
+                    raise ValueError("Unknown decoder extension: " + self.extension.lower())
 
         if '-f' not in outputdict:
             outputdict['-f'] = self.OUTPUT_METHOD
@@ -298,6 +474,14 @@ class VideoReaderAbstract(object):
                 self._proc.stderr.close()
             self._terminate(0.2)
         self._proc = None
+        # Clean up the spooled temp file for memory sources (issue #113).
+        # Best-effort: ignore if already removed or unreachable.
+        if self._temp_input_path is not None:
+            try:
+                os.unlink(self._temp_input_path)
+            except OSError:
+                pass
+            self._temp_input_path = None
 
     def _terminate(self, timeout=1.0):
         """ Terminate the sub process.
@@ -413,20 +597,54 @@ class VideoWriterAbstract(object):
         """
         self.DEVNULL = open(os.devnull, 'wb')
 
-        filename = os.path.abspath(os.fspath(filename))
-        _, self.extension = os.path.splitext(filename)
+        # Classify the output destination so we can skip filesystem-only
+        # operations (os.path.abspath, os.access W_OK) for URL outputs like
+        # rtmp:// or http:// PUT targets. ffmpeg handles the network side
+        # natively; the wrapper just needs to get out of its way (issue #117
+        # write-side, related #81).
+        self._dest_kind = _classify_source(filename)
+        # Always-defined fields; the memory branch below may overwrite.
+        self._memory_dest = None
+        self._stdout_drain_thread = None
+        self._stdout_drain_error = None
 
-        # check that the extension makes sense
-        encoders = self._getSupportedEncoders()
-        if encoders != NotImplemented:
-            assert str.encode(
-                self.extension).lower() in encoders, "Unknown encoder extension: " + self.extension.lower()
+        if self._dest_kind == "file":
+            filename = os.path.abspath(os.fspath(filename))
+            _, self.extension = os.path.splitext(filename)
+            # check that the extension makes sense
+            encoders = self._getSupportedEncoders()
+            if encoders != NotImplemented:
+                if str.encode(self.extension).lower() not in encoders:
+                    raise ValueError("Unknown encoder extension: " + self.extension.lower())
 
-        self._filename = filename
-        basepath, _ = os.path.split(filename)
+            self._filename = filename
+            basepath, _ = os.path.split(filename)
 
-        # check to see if filename is a valid file location
-        assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+            # check to see if filename is a valid file location
+            if not os.access(basepath, os.W_OK):
+                raise OSError("Cannot write to directory: " + basepath)
+        elif self._dest_kind == "url":
+            # URL output: ffmpeg picks the format from the URL itself
+            # (e.g. rtmp://... → FLV) or from -f in outputdict. Skip the
+            # extension allowlist and the writable-directory check.
+            _warn_if_unsupported_protocol(filename, "output")
+            self.extension = ""
+            self._filename = filename
+        else:
+            # Memory destination (BytesIO/file-like with .write). ffmpeg
+            # writes encoded bytes to stdout (pipe:1); a background thread
+            # drains stdout into the user's buffer so ffmpeg never blocks on
+            # a full pipe (issue #113 write-side).
+            if not hasattr(filename, "write"):
+                raise TypeError(
+                    "Memory destination must be a file-like object with a "
+                    "write() method (e.g. io.BytesIO()); got %r" % type(filename)
+                )
+            self._memory_dest = filename
+            self._stdout_drain_thread = None
+            self._stdout_drain_error = None
+            self.extension = ""
+            self._filename = "pipe:1"  # ffmpeg writes encoded bytes to stdout
 
         if not inputdict:
             inputdict = {}
@@ -440,6 +658,23 @@ class VideoWriterAbstract(object):
 
         if "-f" not in self.inputdict:
             self.inputdict["-f"] = "rawvideo"
+
+        # For memory destinations, ffmpeg writes to stdout which is not
+        # seekable. Apply streaming-friendly defaults if the caller didn't
+        # already specify them (issue #113 write-side):
+        #   -f mp4: pick a container; without this, ffmpeg can't infer
+        #     format from the "pipe:1" pseudo-filename
+        #   -movflags frag_keyframe+empty_moov: write a fragmented mp4 so
+        #     the moov atom appears up-front instead of requiring a seek
+        #     back to the start at end-of-encode (which would fail on a pipe).
+        # If the caller chose a different format (webm, matroska, mpegts, …),
+        # we trust them to know it's streamable.
+        if self._dest_kind == "memory":
+            if "-f" not in self.outputdict:
+                self.outputdict["-f"] = "mp4"
+            if self.outputdict.get("-f") == "mp4" and "-movflags" not in self.outputdict:
+                self.outputdict["-movflags"] = "frag_keyframe+empty_moov"
+
         self.warmStarted = False
         self._proc = None
 
@@ -496,8 +731,9 @@ class VideoWriterAbstract(object):
         else:
             raise ValueError(self.inputdict['-pix_fmt'] + 'is not a valid pix_fmt for numpy conversion')
 
-        assert self.inputNumChannels == C, "Failed to pass the correct number of channels %d for the pixel format %s." % (
-            self.inputNumChannels, self.inputdict["-pix_fmt"])
+        if self.inputNumChannels != C:
+            raise ValueError("Failed to pass the correct number of channels %d for the pixel format %s." % (
+                self.inputNumChannels, self.inputdict["-pix_fmt"]))
 
         if ("-s" in self.inputdict):
             widthheight = self.inputdict["-s"].split('x')
@@ -524,6 +760,36 @@ class VideoWriterAbstract(object):
     def _prepareData(self, data):
         return data  # general case : do nothing
 
+    def _start_stdout_drain_thread(self):
+        """Drain ffmpeg stdout into ``self._memory_dest`` in a background thread.
+
+        Used only for memory destinations (issue #113 write-side). The
+        thread reads stdout in 64KB chunks until EOF, copies each chunk
+        into the user's buffer, and stores any exception in
+        ``self._stdout_drain_error`` so ``close()`` can re-raise it from
+        the main thread.
+
+        Without continuous draining, ffmpeg would block once stdout's
+        ~64KB pipe buffer filled — deadlocking the writer.
+        """
+        stdout = self._proc.stdout
+        dest = self._memory_dest
+
+        def _drain():
+            try:
+                while True:
+                    chunk = stdout.read(64 * 1024)
+                    if not chunk:
+                        break
+                    dest.write(chunk)
+            except Exception as exc:
+                self._stdout_drain_error = exc
+
+        self._stdout_drain_thread = threading.Thread(
+            target=_drain, daemon=True, name="skvideo-stdout-drain"
+        )
+        self._stdout_drain_thread.start()
+
     def close(self):
         """Closes the video and terminates FFmpeg process
 
@@ -532,16 +798,71 @@ class VideoWriterAbstract(object):
         #111). Previously a failing encode produced a silent empty/corrupt
         output file with no indication of what went wrong.
         """
-        if self._proc is None:  # pragma: no cover
-            return  # no process
+        if self._proc is None:
+            # Writer was constructed but never warm-started (no frames
+            # written), e.g. URL/parameter validation paths. The FFmpeg
+            # subprocess was never launched, but DEVNULL was opened in
+            # __init__, so release it here to avoid leaking the fd.
+            if self.DEVNULL is not None and not self.DEVNULL.closed:
+                self.DEVNULL.close()
+            return
         if self._proc.poll() is not None:
-            return  # process already dead
-        # communicate() closes stdin, then drains stdout/stderr while
-        # waiting — this avoids the deadlock that wait() would hit if
-        # FFmpeg's stderr pipe filled. When stderr is None (verbosity>0),
-        # the second tuple element is None and we have nothing to surface.
-        # Don't call stdin.close() ourselves first: communicate() flushes
-        # stdin and raises ValueError if it's already closed.
+            # Process already exited; release DEVNULL and drop the handle.
+            self._proc = None
+            if self.DEVNULL is not None and not self.DEVNULL.closed:
+                self.DEVNULL.close()
+            return
+
+        if self._dest_kind == "memory":
+            # Memory destination: stdout is owned by the drain thread. We
+            # close stdin to tell ffmpeg "no more frames", wait for ffmpeg
+            # to flush + exit, then join the drain thread to be sure the
+            # last bytes landed in the user's buffer. communicate() can't
+            # be used here because it would also try to read stdout.
+            if self._proc.stdin and not self._proc.stdin.closed:
+                self._proc.stdin.close()
+            self._proc.wait()
+            if self._stdout_drain_thread is not None:
+                self._stdout_drain_thread.join(timeout=30)
+            stderr_data = b""
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b""
+                except Exception:
+                    pass
+            # Close the subprocess pipe objects explicitly. The drain thread
+            # reads stdout to EOF but doesn't close the file object, and we've
+            # just finished reading stderr; without this, Popen leaves them to
+            # be reclaimed at GC and Python emits ResourceWarning per writer.
+            for pipe in (self._proc.stdout, self._proc.stderr):
+                if pipe is not None and not pipe.closed:
+                    try:
+                        pipe.close()
+                    except Exception:
+                        pass
+            returncode = self._proc.returncode
+            self._proc = None
+            self.DEVNULL.close()
+            if self._stdout_drain_error is not None:
+                # The drain thread crashed; surface that ahead of the
+                # ffmpeg exit code, which is likely a side effect.
+                raise RuntimeError(
+                    "BytesIO destination write failed: %r" % self._stdout_drain_error
+                )
+            if returncode != 0:
+                msg = "FFmpeg exited with code %d" % returncode
+                if stderr_data:
+                    msg += ":\n" + stderr_data.decode(errors='replace')
+                raise RuntimeError(msg)
+            return
+
+        # File / URL destination: communicate() closes stdin, then drains
+        # stdout/stderr while waiting — this avoids the deadlock that
+        # wait() would hit if FFmpeg's stderr pipe filled. When stderr is
+        # None (verbosity>0), the second tuple element is None and we have
+        # nothing to surface. Don't call stdin.close() ourselves first:
+        # communicate() flushes stdin and raises ValueError if it's
+        # already closed.
         _, stderr_data = self._proc.communicate()
         returncode = self._proc.returncode
         self._proc = None

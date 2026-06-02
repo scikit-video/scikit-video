@@ -119,6 +119,23 @@ def test_measure_VideoBliinds():
     for i in range(features.shape[0]):
       assert_almost_equal(features[i], output[i], decimal=2)
 
+def test_measure_Li3DDCT_smoke():
+    # Smoke test only: the exported Li3DDCT_features previously raised
+    # NameError ('int32' not defined) on every Python-3 call, so there is
+    # no historical reference output to pin. Verify it runs and returns a
+    # finite (5*63,) feature vector. Also exercises the T==4 minimum.
+    vidpath = skvideo.datasets.bigbuckbunny()
+    dis = skvideo.io.vread(vidpath, as_grey=True)[:8, :64, :64]
+    features = skvideo.measure.Li3DDCT_features(dis)
+    assert features.shape == (5 * 63,)
+    assert np.all(np.isfinite(features))
+
+    # T == 4 is the documented minimum and must yield one group of frames,
+    # not an empty slice.
+    features4 = skvideo.measure.Li3DDCT_features(dis[:4])
+    assert features4.shape == (5 * 63,)
+    assert np.all(np.isfinite(features4))
+
 def test_measure_SSIM():
     vidpaths = skvideo.datasets.fullreferencepair()
     ref = skvideo.io.vread(vidpaths[0], as_grey=True)

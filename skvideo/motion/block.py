@@ -29,10 +29,15 @@ def _minCost(costs):
     return dx, dy, mi
 
 def _checkBounded(xval, yval, w, h, mbSize):
+    # A block at (xval, yval) occupies [xval, xval+mbSize) x [yval, yval+mbSize),
+    # so it fits when xval+mbSize <= w and yval+mbSize <= h. The previous test
+    # used >=, which wrongly rejected the block ending exactly at the frame
+    # edge — dropping every bottom/right macroblock (e.g. with a 16x16 frame
+    # and 8x8 blocks only the top-left block survived motion compensation).
     if ((yval < 0) or
-       (yval + mbSize >= h) or
+       (yval + mbSize > h) or
        (xval < 0) or
-       (xval + mbSize >= w)):
+       (xval + mbSize > w)):
         return False
     else:
         return True
@@ -942,7 +947,8 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
     luminancedata = rgb2gray(videodata)
 
     numFrames, height, width, channels = luminancedata.shape
-    assert numFrames > 1, "Must have more than 1 frame for motion estimation!"
+    if numFrames <= 1:
+        raise ValueError("Must have more than 1 frame for motion estimation!")
 
     # luminance is 1 channel, so flatten for computation
     luminancedata = luminancedata.reshape((numFrames, height, width))
@@ -986,7 +992,24 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 def _subcomp(framedata, motionVect, mbSize):
     M, N, C = framedata.shape
 
-    compImg = np.zeros((M, N, C))
+    # Validate the full motion-vector shape against the macroblock grid:
+    # (M//mbSize, N//mbSize, 2). Without this, a too-small grid crashed with
+    # a cryptic IndexError, a wrong last dimension (e.g. missing the dy/dx
+    # pair) also IndexError'd, and a too-large grid silently ignored extras.
+    motionVect = np.asarray(motionVect)
+    expectedShape = (M // mbSize, N // mbSize, 2)
+    if motionVect.shape != expectedShape:
+        raise ValueError(
+            "motion vectors have shape %s but %s (M//mbSize, N//mbSize, 2) is "
+            "required for a %dx%d frame with mbSize=%d."
+            % (tuple(motionVect.shape), expectedShape, M, N, mbSize))
+
+    # Start from a copy of the frame so any border region not covered by a
+    # whole macroblock (when M or N isn't a multiple of mbSize, e.g. 1080 /
+    # 16) passes through unchanged instead of being silently zeroed. For
+    # frames whose dimensions divide evenly by mbSize, every cell is
+    # overwritten below, so this is identical to the old zero-init.
+    compImg = framedata.astype(np.float64)
 
     for i in range(0, M - mbSize + 1, mbSize):
         for j in range(0, N - mbSize + 1, mbSize):
@@ -1024,7 +1047,18 @@ def blockComp(videodata, motionVect, mbSize=8):
     Returns
     -------
     compImg : ndarray
-        ndarray holding the motion compensated image frame, shape (T, M, N, C)
+        ndarray holding the motion compensated frames, shape (T, M, N, C)
+        and dtype ``float64``. A single input frame returns shape
+        (1, M, N, C).
+
+    Notes
+    -----
+    ``motionVect``'s grid must match the macroblock grid
+    (``M // mbSize`` by ``N // mbSize``); a mismatch raises ``ValueError``.
+    When ``M`` or ``N`` is not a multiple of ``mbSize``, the uncovered
+    bottom/right border is copied through from the input frame unchanged
+    (it cannot be motion-compensated). A motion vector that points outside
+    the frame leaves that block as the original (uncompensated) pixels.
 
     """
 
@@ -1032,7 +1066,11 @@ def blockComp(videodata, motionVect, mbSize=8):
     T, M, N, C = videodata.shape
 
     if T == 1:	# a single frame is passed in
-        return _subcomp(videodata, motionVect, mbSize)
+        # vshape gives (1, M, N, C); _subcomp expects a single (M, N, C)
+        # frame. Passing the 4D array crashed with "too many values to
+        # unpack". Return (1, M, N, C) to match the multi-frame path and
+        # the documented (T, M, N, C) shape.
+        return _subcomp(videodata[0], motionVect, mbSize)[np.newaxis, :, :, :]
 
     else: # more frames passed in
         # allocate compensation data

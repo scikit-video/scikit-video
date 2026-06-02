@@ -16,11 +16,11 @@ def _hausdorff_distance(E_1, E_2):
     diamond = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
 
     # extract only 1-pixel border line of objects
-    E_1_per = E_1^scipy.ndimage.morphology.binary_erosion(E_1, structure=diamond)
-    E_2_per = E_2^scipy.ndimage.morphology.binary_erosion(E_2, structure=diamond)
+    E_1_per = E_1^scipy.ndimage.binary_erosion(E_1, structure=diamond)
+    E_2_per = E_2^scipy.ndimage.binary_erosion(E_2, structure=diamond)
 
-    A = scipy.ndimage.morphology.distance_transform_edt(~E_2_per)[E_1_per].max()
-    B = scipy.ndimage.morphology.distance_transform_edt(~E_1_per)[E_2_per].max()
+    A = scipy.ndimage.distance_transform_edt(~E_2_per)[E_1_per].max()
+    B = scipy.ndimage.distance_transform_edt(~E_1_per)[E_2_per].max()
     return np.max((A, B))
 
 
@@ -49,8 +49,12 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
 
     Returns
     ----------
-    globalMotionVector  : ndarray, shape (2,)
-        The motion to minimize edge distances by moving frame2 with respect to frame1.
+    globalMotionVector  : list of int, length 2
+        The motion to minimize edge distances by moving frame2 with respect
+        to frame1. Returns ``[0, 0]`` when either frame contains no edges
+        (no edge correspondence to minimize), so a blank/edgeless frame
+        yields "no detected motion" rather than a spurious or crashing
+        result.
 
     References
     ----------
@@ -63,26 +67,35 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
     frame1 = vshape(frame1)
     frame2 = vshape(frame2)
     
-    assert(frame1.shape == frame2.shape)
+    if frame1.shape != frame2.shape:
+        raise ValueError("frame1 and frame2 must have the same shape; got %s vs %s" % (frame1.shape, frame2.shape))
 
     T, M, N, C = frame1.shape
 
     if C == 3:
         frame1 = rgb2gray(frame1)
         frame2 = rgb2gray(frame2)
-    else:
-        assert C == 1, "called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,)
+    elif C != 1:
+        raise ValueError("called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,))
 
-    # if type bool, then these are edge maps. No need to convert them
+    # if type bool, then these are edge maps. No need to convert them, but
+    # still squeeze to 2D so the roll/morphology ops below see (M, N) like
+    # the canny() path produces (vshape made them 4D).
     if frame1.dtype != bool:
         E_1 = canny(frame1.squeeze())
     else:
-        E_1 = frame1
+        E_1 = frame1.squeeze()
     if frame2.dtype != bool:
-
         E_2 = canny(frame2.squeeze())
     else:
-        E_2 = frame2
+        E_2 = frame2.squeeze()
+
+    # If either frame has no edges, there is no edge correspondence to
+    # minimize: every displacement ties (hamming would argmin to the first,
+    # i.e. (-r, -r)) and the hausdorff distance does an empty-array reduction
+    # and crashes. Report no detectable motion.
+    if not E_1.any() or not E_2.any():
+        return [0, 0]
 
     distances = []
     displacements = []
@@ -94,9 +107,13 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
             if method == 'hamming':
                 distance = scipy.spatial.distance.hamming(np.ravel(cimage), np.ravel(E_1))
             elif method == 'hausdorff':
-                distance = _hausdorff_distance(cimage, E_2)
+                # cimage is the shifted frame2 edge map; measure its distance
+                # to frame1's edges (E_1), matching the hamming branch.
+                distance = _hausdorff_distance(cimage, E_1)
             else:
-                raise Notimplemented
+                raise NotImplementedError(
+                    "Unknown method %r; expected 'hamming' or 'hausdorff'." % (method,)
+                )
             # compute # of bit flip distance
             distances.append(distance)
             displacements.append([dx, dy])
