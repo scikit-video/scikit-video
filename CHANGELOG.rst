@@ -1,4 +1,4 @@
-1.1.14 (unreleased)
+1.1.14 (2026-06-02)
 -------------------
 - **Input source decoupling**: ``vread`` / ``vreader`` / ``vwrite`` and the
   ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept three kinds
