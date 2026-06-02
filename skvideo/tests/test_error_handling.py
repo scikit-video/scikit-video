@@ -143,3 +143,47 @@ def test_vwrite_rejects_zero_frames(tmp_path):
     import skvideo.io
     with pytest.raises(ValueError):
         skvideo.io.vwrite(str(tmp_path / "empty.mp4"), np.empty((0, 16, 16, 3)))
+
+
+def test_blockcomp_rejects_malformed_vector_rank():
+    """blockComp must reject motion vectors whose last dimension isn't 2
+    (or that are rank-2) with a clear ValueError, not a cryptic IndexError
+    / silent ignore of extra components."""
+    import skvideo.motion as MO
+    frame = np.ones((16, 16, 1))  # single frame -> _subcomp gets motionVect directly
+    for bad in [(2, 2), (2, 2, 1), (2, 2, 3)]:
+        with pytest.raises(ValueError):
+            MO.blockComp(frame, np.zeros(bad, dtype=np.int64), mbSize=8)
+    # the correct shape still works
+    ok = MO.blockComp(frame, np.zeros((2, 2, 2), dtype=np.int64), mbSize=8)
+    assert ok.shape == (1, 16, 16, 1)
+
+
+def test_bytesio_writer_close_emits_no_resourcewarning():
+    """Closing a BytesIO writer must not leak ffmpeg pipe file objects
+    (previously emitted ResourceWarning: unclosed file per writer)."""
+    import io as _io
+    import warnings
+    import skvideo.io
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ResourceWarning)
+        buf = _io.BytesIO()
+        w = skvideo.io.FFmpegWriter(buf, inputdict={"-r": "5"}, outputdict={"-f": "mp4"})
+        for _ in range(3):
+            w.writeFrame(np.zeros((16, 16, 3), dtype=np.uint8))
+        w.close()  # must not raise ResourceWarning
+
+
+def test_setffmpegpath_bad_path_clears_codec_caches():
+    """A bad setFFmpegPath must not leave stale decoder/encoder lists from a
+    previously valid binary (half-configured state)."""
+    import skvideo
+    orig = skvideo._FFMPEG_PATH
+    try:
+        skvideo.setFFmpegPath("/nonexistent/skvideo/path")
+        assert skvideo._HAS_FFMPEG == 0
+        assert skvideo._FFMPEG_SUPPORTED_DECODERS == []
+        assert skvideo._FFMPEG_SUPPORTED_ENCODERS == []
+    finally:
+        skvideo.setFFmpegPath(orig)  # restore for the rest of the session
+    assert skvideo._HAS_FFMPEG == 1

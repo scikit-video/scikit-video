@@ -992,16 +992,17 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 def _subcomp(framedata, motionVect, mbSize):
     M, N, C = framedata.shape
 
-    # Validate the motion-vector grid against the macroblock grid. Without
-    # this, a too-small grid crashed with a cryptic IndexError and a
-    # too-large grid silently ignored the extra vectors.
+    # Validate the full motion-vector shape against the macroblock grid:
+    # (M//mbSize, N//mbSize, 2). Without this, a too-small grid crashed with
+    # a cryptic IndexError, a wrong last dimension (e.g. missing the dy/dx
+    # pair) also IndexError'd, and a too-large grid silently ignored extras.
     motionVect = np.asarray(motionVect)
-    expectedGrid = (M // mbSize, N // mbSize)
-    if motionVect.shape[:2] != expectedGrid:
+    expectedShape = (M // mbSize, N // mbSize, 2)
+    if motionVect.shape != expectedShape:
         raise ValueError(
-            "motion-vector grid %s does not match the %s macroblock grid for "
-            "a %dx%d frame with mbSize=%d."
-            % (tuple(motionVect.shape[:2]), expectedGrid, M, N, mbSize))
+            "motion vectors have shape %s but %s (M//mbSize, N//mbSize, 2) is "
+            "required for a %dx%d frame with mbSize=%d."
+            % (tuple(motionVect.shape), expectedShape, M, N, mbSize))
 
     # Start from a copy of the frame so any border region not covered by a
     # whole macroblock (when M or N isn't a multiple of mbSize, e.g. 1080 /

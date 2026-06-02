@@ -830,6 +830,16 @@ class VideoWriterAbstract(object):
                     stderr_data = self._proc.stderr.read() or b""
                 except Exception:
                     pass
+            # Close the subprocess pipe objects explicitly. The drain thread
+            # reads stdout to EOF but doesn't close the file object, and we've
+            # just finished reading stderr; without this, Popen leaves them to
+            # be reclaimed at GC and Python emits ResourceWarning per writer.
+            for pipe in (self._proc.stdout, self._proc.stderr):
+                if pipe is not None and not pipe.closed:
+                    try:
+                        pipe.close()
+                    except Exception:
+                        pass
             returncode = self._proc.returncode
             self._proc = None
             self.DEVNULL.close()

@@ -436,9 +436,16 @@ def setFFmpegPath(path):
         global _FFMPEG_MAJOR_VERSION
         global _FFMPEG_MINOR_VERSION
         global _FFMPEG_PATCH_VERSION
+        global _FFMPEG_SUPPORTED_DECODERS
+        global _FFMPEG_SUPPORTED_ENCODERS
         _FFMPEG_MAJOR_VERSION = "0"
         _FFMPEG_MINOR_VERSION = "0"
         _FFMPEG_PATCH_VERSION = "0"
+        # Clear codec lists too, otherwise a bad path leaves the module
+        # half-configured: _HAS_FFMPEG=0 but stale decoders/encoders from the
+        # previous valid binary.
+        _FFMPEG_SUPPORTED_DECODERS = []
+        _FFMPEG_SUPPORTED_ENCODERS = []
         return
 
     # reload version from new path
