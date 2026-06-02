@@ -1,3 +1,9 @@
+1.1.15 (unreleased)
+-------------------
+- **Correctness completion pass.** Continues the v1.1.14 hardening: remaining
+  user-facing ``assert`` validation converted to real exceptions, per-metric
+  minimum-size guards, and residual Python-2 cleanup. (in progress)
+
 1.1.14 (2026-06-02)
 -------------------
 - **Input source decoupling**: ``vread`` / ``vreader`` / ``vwrite`` and the
