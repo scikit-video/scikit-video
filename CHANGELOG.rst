@@ -138,6 +138,15 @@
     passthrough; ``globalEdgeMotion``'s ``[0, 0]`` edgeless sentinel; and
     that a low-level ``FFmpegWriter`` closed without frames is an
     intentional no-op (use ``vwrite`` for the guarded 0-frame check).
+  - ``blockComp`` validates the full motion-vector shape
+    ``(M//mbSize, N//mbSize, 2)`` (a wrong rank or last dimension was a
+    cryptic ``IndexError`` or silently accepted).
+  - The ``BytesIO`` writer now closes the ffmpeg subprocess pipe objects on
+    ``close()``, eliminating a ``ResourceWarning: unclosed file`` per writer
+    (no fd leak existed; the warnings were noise).
+  - ``setFFmpegPath`` on a non-existent path now also clears the cached
+    decoder/encoder lists, so a bad path no longer leaves the module
+    half-configured with stale codec data.
 
 1.1.13 (2026-06-01)
 -------------------
