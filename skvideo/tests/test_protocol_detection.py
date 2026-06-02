@@ -1,4 +1,10 @@
-"""Tests for ffmpeg protocol detection + warning (v1.1.14)."""
+"""Tests for ffmpeg protocol detection + warning (v1.1.14).
+
+After Codex round 1 the cache moved from two separate globals
+(_FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS) to a single atomic
+tuple (_FFMPEG_PROTOCOLS = (inputs, outputs)) so concurrent readers
+can't observe one half populated and the other half None.
+"""
 import warnings
 
 import pytest
@@ -25,8 +31,7 @@ def test_parser_extracts_input_and_output_protocols(monkeypatch):
         b"  md5\n"
         b"  pipe\n"
     )
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", None)
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", None)
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", None)
     monkeypatch.setattr(skvideo, "check_output", lambda *a, **k: fake_output)
 
     inputs, outputs = skvideo._get_ffmpeg_protocols()
@@ -42,8 +47,7 @@ def test_parser_caches_result(monkeypatch):
         call_count["n"] += 1
         return b"Supported file protocols:\nInput:\n  file\nOutput:\n  file\n"
 
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", None)
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", None)
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", None)
     monkeypatch.setattr(skvideo, "check_output", fake_check_output)
 
     skvideo._get_ffmpeg_protocols()
@@ -57,8 +61,7 @@ def test_parser_handles_detection_failure(monkeypatch):
     def boom(*a, **k):
         raise OSError("ffmpeg crashed")
 
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", None)
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", None)
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", None)
     monkeypatch.setattr(skvideo, "check_output", boom)
 
     inputs, outputs = skvideo._get_ffmpeg_protocols()
@@ -66,12 +69,30 @@ def test_parser_handles_detection_failure(monkeypatch):
     assert outputs == []
 
 
+def test_cache_is_atomic_tuple(monkeypatch):
+    """Codex round 1: when the cache gets populated it must be a single
+    tuple assignment, not two separate writes. Otherwise a concurrent
+    reader can see inputs set and outputs still None.
+
+    We can't easily reproduce the race in a single-threaded test, but
+    we can verify the post-detection state has exactly one published
+    cache object (the tuple), not two separate attributes.
+    """
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", None)
+    monkeypatch.setattr(
+        skvideo, "check_output",
+        lambda *a, **k: b"Input:\n  file\nOutput:\n  file\n"
+    )
+    skvideo._get_ffmpeg_protocols()
+    assert isinstance(skvideo._FFMPEG_PROTOCOLS, tuple)
+    assert len(skvideo._FFMPEG_PROTOCOLS) == 2
+
+
 # --- warn behavior tests -----------------------------------------------------
 
 def test_warn_fires_for_unsupported_scheme(monkeypatch):
     """When the URL scheme isn't in the supported list, a UserWarning fires."""
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", ["file", "http", "pipe"])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", ["file", "pipe"])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", (["file", "http", "pipe"], ["file", "pipe"]))
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -85,8 +106,7 @@ def test_warn_fires_for_unsupported_scheme(monkeypatch):
 
 def test_warn_silent_for_supported_scheme(monkeypatch):
     """No warning when the scheme is in the list."""
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", ["file", "http", "https"])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", ["file"])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", (["file", "http", "https"], ["file"]))
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -98,8 +118,7 @@ def test_warn_silent_for_supported_scheme(monkeypatch):
 
 def test_warn_silent_when_detection_failed(monkeypatch):
     """Empty protocol list = detection failed; don't preempt ffmpeg's error."""
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", [])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", [])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", ([], []))
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -111,8 +130,7 @@ def test_warn_silent_when_detection_failed(monkeypatch):
 
 def test_warn_silent_for_non_url(monkeypatch):
     """Plain filenames (no `://`) don't trigger the URL warning."""
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", ["file"])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", ["file"])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", (["file"], ["file"]))
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -125,8 +143,7 @@ def test_warn_silent_for_non_url(monkeypatch):
 
 def test_warn_input_vs_output_independent(monkeypatch):
     """A scheme supported as output but not input should warn for input only."""
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", ["file"])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", ["file", "md5"])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", (["file"], ["file", "md5"]))
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -143,14 +160,11 @@ def test_warn_input_vs_output_independent(monkeypatch):
 def test_setffmpegpath_invalidates_protocol_cache(monkeypatch):
     """A new ffmpeg binary may have different compiled-in protocols, so
     setFFmpegPath must clear the cache."""
-    # Pre-populate the cache as if detection ran
-    monkeypatch.setattr(skvideo, "_FFMPEG_INPUT_PROTOCOLS", ["file"])
-    monkeypatch.setattr(skvideo, "_FFMPEG_OUTPUT_PROTOCOLS", ["file"])
+    monkeypatch.setattr(skvideo, "_FFMPEG_PROTOCOLS", (["file"], ["file"]))
 
     original_path = skvideo.getFFmpegPath()
     try:
         skvideo.setFFmpegPath("/")  # any path; we just need the cache reset
-        assert skvideo._FFMPEG_INPUT_PROTOCOLS is None
-        assert skvideo._FFMPEG_OUTPUT_PROTOCOLS is None
+        assert skvideo._FFMPEG_PROTOCOLS is None
     finally:
         skvideo.setFFmpegPath(original_path)

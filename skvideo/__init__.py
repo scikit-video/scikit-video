@@ -41,12 +41,12 @@ _FFMPEG_SUPPORTED_ENCODERS = []
 _LIBAV_SUPPORTED_EXT = []
 
 # Lazy cache of `ffmpeg -protocols` output (issue #117, v1.1.14 protocol
-# detection). Lists of bare scheme names ("http", "https", "rtmp", ...) the
-# installed ffmpeg can read from / write to respectively. None until the
-# first call to _get_ffmpeg_protocols(); reset to None by setFFmpegPath
-# (so a different ffmpeg binary triggers a fresh detection).
-_FFMPEG_INPUT_PROTOCOLS = None
-_FFMPEG_OUTPUT_PROTOCOLS = None
+# detection). A single tuple ``(input_list, output_list)`` so the publish
+# is atomic — two threads racing past the cache check can never observe
+# one half populated and the other half None (Codex round 1 finding).
+# Reset to None by setFFmpegPath so a different ffmpeg binary triggers
+# fresh detection.
+_FFMPEG_PROTOCOLS = None
 
 _FFPROBE_APPLICATION = "ffprobe"
 _FFMPEG_APPLICATION = "ffmpeg"
@@ -247,15 +247,17 @@ def _get_ffmpeg_protocols():
     URL). Returns empty lists on detection failure — callers fall back
     to letting ffmpeg surface its own error.
     """
-    global _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
-    if _FFMPEG_INPUT_PROTOCOLS is not None:
-        return _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
+    global _FFMPEG_PROTOCOLS
+    # Read once into a local so concurrent setFFmpegPath() can't null
+    # this out from under us mid-function.
+    cached = _FFMPEG_PROTOCOLS
+    if cached is not None:
+        return cached
 
     inputs, outputs = [], []
     if not _HAS_FFMPEG:
-        _FFMPEG_INPUT_PROTOCOLS = inputs
-        _FFMPEG_OUTPUT_PROTOCOLS = outputs
-        return inputs, outputs
+        _FFMPEG_PROTOCOLS = (inputs, outputs)
+        return _FFMPEG_PROTOCOLS
 
     try:
         raw = check_output(
@@ -290,9 +292,10 @@ def _get_ffmpeg_protocols():
         # the protocol really isn't supported.
         pass
 
-    _FFMPEG_INPUT_PROTOCOLS = inputs
-    _FFMPEG_OUTPUT_PROTOCOLS = outputs
-    return inputs, outputs
+    # Single atomic publish so concurrent readers see a fully populated
+    # cache or nothing — no half-state with inputs set but outputs None.
+    _FFMPEG_PROTOCOLS = (inputs, outputs)
+    return _FFMPEG_PROTOCOLS
 
 
 def _warn_if_unsupported_protocol(url, direction):
@@ -406,12 +409,11 @@ def setFFmpegPath(path):
     """
     global _FFMPEG_PATH
     global _HAS_FFMPEG
-    global _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
+    global _FFMPEG_PROTOCOLS
     _FFMPEG_PATH = path
     # New binary may have different compiled-in protocol support; clear
     # the cache so the next URL use re-detects (issue #117 protocol check).
-    _FFMPEG_INPUT_PROTOCOLS = None
-    _FFMPEG_OUTPUT_PROTOCOLS = None
+    _FFMPEG_PROTOCOLS = None
 
     # check to see if the executables actually exist on these paths
     if os.path.isfile(os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION)) and os.path.isfile(os.path.join(_FFMPEG_PATH, _FFPROBE_APPLICATION)):
