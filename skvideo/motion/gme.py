@@ -16,11 +16,11 @@ def _hausdorff_distance(E_1, E_2):
     diamond = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
 
     # extract only 1-pixel border line of objects
-    E_1_per = E_1^scipy.ndimage.morphology.binary_erosion(E_1, structure=diamond)
-    E_2_per = E_2^scipy.ndimage.morphology.binary_erosion(E_2, structure=diamond)
+    E_1_per = E_1^scipy.ndimage.binary_erosion(E_1, structure=diamond)
+    E_2_per = E_2^scipy.ndimage.binary_erosion(E_2, structure=diamond)
 
-    A = scipy.ndimage.morphology.distance_transform_edt(~E_2_per)[E_1_per].max()
-    B = scipy.ndimage.morphology.distance_transform_edt(~E_1_per)[E_2_per].max()
+    A = scipy.ndimage.distance_transform_edt(~E_2_per)[E_1_per].max()
+    B = scipy.ndimage.distance_transform_edt(~E_1_per)[E_2_per].max()
     return np.max((A, B))
 
 
@@ -73,16 +73,17 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
     else:
         assert C == 1, "called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,)
 
-    # if type bool, then these are edge maps. No need to convert them
+    # if type bool, then these are edge maps. No need to convert them, but
+    # still squeeze to 2D so the roll/morphology ops below see (M, N) like
+    # the canny() path produces (vshape made them 4D).
     if frame1.dtype != bool:
         E_1 = canny(frame1.squeeze())
     else:
-        E_1 = frame1
+        E_1 = frame1.squeeze()
     if frame2.dtype != bool:
-
         E_2 = canny(frame2.squeeze())
     else:
-        E_2 = frame2
+        E_2 = frame2.squeeze()
 
     distances = []
     displacements = []
@@ -94,9 +95,13 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
             if method == 'hamming':
                 distance = scipy.spatial.distance.hamming(np.ravel(cimage), np.ravel(E_1))
             elif method == 'hausdorff':
-                distance = _hausdorff_distance(cimage, E_2)
+                # cimage is the shifted frame2 edge map; measure its distance
+                # to frame1's edges (E_1), matching the hamming branch.
+                distance = _hausdorff_distance(cimage, E_1)
             else:
-                raise Notimplemented
+                raise NotImplementedError(
+                    "Unknown method %r; expected 'hamming' or 'hausdorff'." % (method,)
+                )
             # compute # of bit flip distance
             distances.append(distance)
             displacements.append([dx, dy])
