@@ -9,6 +9,7 @@ import warnings
 import numpy as np
 
 from .. import _HAS_FFMPEG
+from .. import _warn_if_unsupported_protocol
 from ..utils import *
 
 
@@ -156,6 +157,12 @@ class VideoReaderAbstract(object):
             self._temp_input_path = _spool_memory_to_tempfile(filename)
             filename = self._temp_input_path
             self._source_kind = "file"
+        elif self._source_kind == "url":
+            # Warn early if the installed ffmpeg lacks support for this
+            # URL scheme (e.g. https on a build without OpenSSL). The
+            # warning makes ffmpeg's eventual error obvious; we don't
+            # raise because protocol detection is best-effort.
+            _warn_if_unsupported_protocol(filename, "input")
         filename = os.fspath(filename)
         self._filename = filename
         self.verbosity = verbosity
@@ -566,6 +573,7 @@ class VideoWriterAbstract(object):
             # URL output: ffmpeg picks the format from the URL itself
             # (e.g. rtmp://... → FLV) or from -f in outputdict. Skip the
             # extension allowlist and the writable-directory check.
+            _warn_if_unsupported_protocol(filename, "output")
             self.extension = ""
             self._filename = filename
         else:

@@ -40,6 +40,14 @@ _FFMPEG_SUPPORTED_DECODERS = []
 _FFMPEG_SUPPORTED_ENCODERS = []
 _LIBAV_SUPPORTED_EXT = []
 
+# Lazy cache of `ffmpeg -protocols` output (issue #117, v1.1.14 protocol
+# detection). Lists of bare scheme names ("http", "https", "rtmp", ...) the
+# installed ffmpeg can read from / write to respectively. None until the
+# first call to _get_ffmpeg_protocols(); reset to None by setFFmpegPath
+# (so a different ffmpeg binary triggers a fresh detection).
+_FFMPEG_INPUT_PROTOCOLS = None
+_FFMPEG_OUTPUT_PROTOCOLS = None
+
 _FFPROBE_APPLICATION = "ffprobe"
 _FFMPEG_APPLICATION = "ffmpeg"
 _AVPROBE_APPLICATION = "avprobe"
@@ -225,6 +233,107 @@ def scan_ffmpeg():
     ]
 
 
+def _get_ffmpeg_protocols():
+    """Return (input_protocols, output_protocols) supported by the installed ffmpeg.
+
+    Lazily caches the result so the subprocess call only runs once per
+    interpreter (or until ``setFFmpegPath`` is called, which resets the
+    cache). Each return value is a list of bare scheme names like
+    ``["file", "http", "https", "pipe", "rtsp", ...]``.
+
+    Used by ``_warn_if_unsupported_protocol`` to give users a useful
+    heads-up when their URL scheme isn't compiled into their ffmpeg
+    build (e.g. an ffmpeg without HTTPS support hitting an https://
+    URL). Returns empty lists on detection failure — callers fall back
+    to letting ffmpeg surface its own error.
+    """
+    global _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
+    if _FFMPEG_INPUT_PROTOCOLS is not None:
+        return _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
+
+    inputs, outputs = [], []
+    if not _HAS_FFMPEG:
+        _FFMPEG_INPUT_PROTOCOLS = inputs
+        _FFMPEG_OUTPUT_PROTOCOLS = outputs
+        return inputs, outputs
+
+    try:
+        raw = check_output(
+            [os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION), "-hide_banner", "-protocols"]
+        ).decode(errors="replace")
+        # ffmpeg -protocols layout:
+        #   Input:
+        #     file
+        #     http
+        #     ...
+        #   Output:
+        #     file
+        #     md5
+        #     ...
+        section = None
+        for line in raw.splitlines():
+            stripped = line.strip()
+            if stripped.lower().startswith("input"):
+                section = "input"
+                continue
+            if stripped.lower().startswith("output"):
+                section = "output"
+                continue
+            if not stripped or ":" in stripped:
+                continue
+            if section == "input":
+                inputs.append(stripped)
+            elif section == "output":
+                outputs.append(stripped)
+    except Exception:
+        # Detection is best-effort; ffmpeg will surface its own error if
+        # the protocol really isn't supported.
+        pass
+
+    _FFMPEG_INPUT_PROTOCOLS = inputs
+    _FFMPEG_OUTPUT_PROTOCOLS = outputs
+    return inputs, outputs
+
+
+def _warn_if_unsupported_protocol(url, direction):
+    """Emit a UserWarning if ``url``'s scheme isn't in ffmpeg's protocol list.
+
+    ``direction`` is either ``"input"`` (reader) or ``"output"`` (writer).
+    Silent no-op for non-URL strings, for ffmpeg builds whose protocol list
+    we couldn't detect (empty list), or for protocols that are present.
+
+    We warn rather than raise so the user gets ffmpeg's own (now-readable)
+    stderr if they choose to proceed — the warning just makes the root
+    cause obvious. Typical case: an ffmpeg compiled without OpenSSL
+    support refusing to handle https:// URLs.
+    """
+    import re as _re
+    import warnings as _warnings
+
+    m = _re.match(r"^([a-zA-Z][a-zA-Z0-9+.\-]*)://", str(url))
+    if not m:
+        return
+    scheme = m.group(1).lower()
+    inputs, outputs = _get_ffmpeg_protocols()
+    available = inputs if direction == "input" else outputs
+    if not available:
+        return  # detection failed; don't preempt ffmpeg's own error
+    if scheme not in available:
+        _warnings.warn(
+            "ffmpeg at %s does not list %r as a supported %s protocol "
+            "(available: %s). ffmpeg may still try and fail with its own "
+            "error message; if you see a connection-refused or "
+            "protocol-not-found error, rebuild or reinstall ffmpeg with "
+            "support for %r." % (
+                _FFMPEG_PATH, scheme, direction,
+                ", ".join(sorted(available)[:20]) +
+                ("..." if len(available) > 20 else ""),
+                scheme,
+            ),
+            UserWarning,
+        )
+
+
 def scan_libav():
     global _LIBAV_MAJOR_VERSION
     global _LIBAV_MINOR_VERSION
@@ -297,7 +406,12 @@ def setFFmpegPath(path):
     """
     global _FFMPEG_PATH
     global _HAS_FFMPEG
+    global _FFMPEG_INPUT_PROTOCOLS, _FFMPEG_OUTPUT_PROTOCOLS
     _FFMPEG_PATH = path
+    # New binary may have different compiled-in protocol support; clear
+    # the cache so the next URL use re-detects (issue #117 protocol check).
+    _FFMPEG_INPUT_PROTOCOLS = None
+    _FFMPEG_OUTPUT_PROTOCOLS = None
 
     # check to see if the executables actually exist on these paths
     if os.path.isfile(os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION)) and os.path.isfile(os.path.join(_FFMPEG_PATH, _FFPROBE_APPLICATION)):
