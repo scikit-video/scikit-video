@@ -79,6 +79,39 @@
   rejected with a clear ``TypeError`` instead of an opaque
   ``io.UnsupportedOperation`` from inside the spool copy.
 
+- **Python-3 correctness pass** (pre-existing defects found in a
+  whole-codebase audit; none were introduced by the v1.1.14 work):
+
+  - ``skvideo.measure.Li3DDCT_features`` raised ``NameError: name 'int32'
+    is not defined`` on every call (bare ``int32`` instead of
+    ``np.int32``) and produced no frame groups when ``T == 4``. Fixed
+    both; the function now runs.
+  - ``skvideo.utils.canny`` (used by ``globalEdgeMotion`` and scene
+    detection) had the same bare ``int32`` ``NameError``. Fixed.
+  - ``skvideo.motion.globalEdgeMotion`` was broken on Python 3: the bool
+    edge-mask path was not squeezed to 2D, the hausdorff branch compared
+    the shifted frame against itself instead of the reference frame, and
+    an unknown method raised a misspelled ``Notimplemented``. All fixed;
+    both ``hamming`` and ``hausdorff`` now recover a known translation.
+  - ``skvideo.motion.blockComp`` dropped every bottom/right macroblock
+    because ``_checkBounded`` rejected blocks ending exactly at the frame
+    edge (``>=`` should have been ``>``). Motion compensation now covers
+    the full frame.
+  - ``from skvideo import *`` raised ``TypeError`` because the top-level
+    ``__all__`` listed function objects instead of names. Fixed.
+  - Library code no longer calls ``exit()`` or raises the ``NotImplemented``
+    singleton: ``rgb2gray``, ``niqe`` and ``videobliinds`` helpers now
+    raise proper exceptions.
+  - Public input validation in the quality metrics (channel / frame-count
+    / resolution checks) and in the I/O layer (unknown extension, unwritable
+    output directory, channel/pixel-format mismatch) now raises
+    ``ValueError`` / ``OSError`` instead of ``assert``, so it is no longer
+    stripped under ``python -O``.
+  - ``ffprobe`` / ``avprobe`` / ``mprobe`` now emit a ``UserWarning`` with
+    the underlying error before returning ``{}`` (the empty-metadata
+    fallback that raw video relies on), instead of swallowing failures
+    silently.
+
 1.1.13 (2026-06-01)
 -------------------
 - ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
