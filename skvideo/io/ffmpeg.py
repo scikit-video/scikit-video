@@ -194,7 +194,16 @@ class FFmpegWriter(VideoWriterAbstract):
         # writeFrame IOError handler can surface FFmpeg's actual error output
         # (issue #111). verbosity>0 leaves stderr unredirected so the user
         # sees FFmpeg's output live and we have no captured stream to read.
-        if self.verbosity > 0:
+        # For memory destinations, stdout MUST be a PIPE (regardless of
+        # verbosity) because ffmpeg writes the encoded bytes there and a
+        # background thread drains them into the user's buffer (issue #113
+        # write-side). Without draining, ffmpeg blocks once stdout's
+        # ~64KB pipe buffer fills.
+        if self._dest_kind == "memory":
+            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
+                                  stdout=sp.PIPE, stderr=sp.PIPE)
+            self._start_stdout_drain_thread()
+        elif self.verbosity > 0:
             print(self._cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)

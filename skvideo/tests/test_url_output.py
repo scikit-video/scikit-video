@@ -54,9 +54,14 @@ def test_writer_url_skips_extension_assert():
     writer.close()
 
 
-def test_writer_rejects_bytesio_for_now():
-    """Until commit 5 wires up BytesIO output, the wrapper should refuse
-    cleanly rather than crash mid-init with a confusing error."""
-    buf = _io.BytesIO()
-    with pytest.raises(NotImplementedError, match="BytesIO"):
-        skvideo.io.FFmpegWriter(buf)
+def test_writer_rejects_non_file_like_memory_dest():
+    """Memory destinations must expose .write(). Plain str passes the
+    URL/file branch; only objects without write() should trip here."""
+    # Pick something that hasattr('read') (so memory branch fires) but
+    # not write(). io.IOBase doesn't help — easiest is to construct one
+    # manually.
+    class _ReadOnly:
+        def read(self, n=-1):
+            return b""
+    with pytest.raises(TypeError, match="write"):
+        skvideo.io.FFmpegWriter(_ReadOnly())

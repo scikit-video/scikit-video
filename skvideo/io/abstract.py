@@ -2,6 +2,7 @@ import io
 import os
 import re
 import tempfile
+import threading
 import time
 import warnings
 
@@ -542,6 +543,10 @@ class VideoWriterAbstract(object):
         # natively; the wrapper just needs to get out of its way (issue #117
         # write-side, related #81).
         self._dest_kind = _classify_source(filename)
+        # Always-defined fields; the memory branch below may overwrite.
+        self._memory_dest = None
+        self._stdout_drain_thread = None
+        self._stdout_drain_error = None
 
         if self._dest_kind == "file":
             filename = os.path.abspath(os.fspath(filename))
@@ -564,13 +569,20 @@ class VideoWriterAbstract(object):
             self.extension = ""
             self._filename = filename
         else:
-            # Memory destination (BytesIO/file-like): commit 5 wires this up.
-            # Refuse cleanly here so users on this v1.1.14 commit see an
-            # informative error rather than a downstream crash.
-            raise NotImplementedError(
-                "Writing to a BytesIO / file-like object is not yet supported. "
-                "Use a file path or URL for now."
-            )
+            # Memory destination (BytesIO/file-like with .write). ffmpeg
+            # writes encoded bytes to stdout (pipe:1); a background thread
+            # drains stdout into the user's buffer so ffmpeg never blocks on
+            # a full pipe (issue #113 write-side).
+            if not hasattr(filename, "write"):
+                raise TypeError(
+                    "Memory destination must be a file-like object with a "
+                    "write() method (e.g. io.BytesIO()); got %r" % type(filename)
+                )
+            self._memory_dest = filename
+            self._stdout_drain_thread = None
+            self._stdout_drain_error = None
+            self.extension = ""
+            self._filename = "pipe:1"  # ffmpeg writes encoded bytes to stdout
 
         if not inputdict:
             inputdict = {}
@@ -584,6 +596,23 @@ class VideoWriterAbstract(object):
 
         if "-f" not in self.inputdict:
             self.inputdict["-f"] = "rawvideo"
+
+        # For memory destinations, ffmpeg writes to stdout which is not
+        # seekable. Apply streaming-friendly defaults if the caller didn't
+        # already specify them (issue #113 write-side):
+        #   -f mp4: pick a container; without this, ffmpeg can't infer
+        #     format from the "pipe:1" pseudo-filename
+        #   -movflags frag_keyframe+empty_moov: write a fragmented mp4 so
+        #     the moov atom appears up-front instead of requiring a seek
+        #     back to the start at end-of-encode (which would fail on a pipe).
+        # If the caller chose a different format (webm, matroska, mpegts, …),
+        # we trust them to know it's streamable.
+        if self._dest_kind == "memory":
+            if "-f" not in self.outputdict:
+                self.outputdict["-f"] = "mp4"
+            if self.outputdict.get("-f") == "mp4" and "-movflags" not in self.outputdict:
+                self.outputdict["-movflags"] = "frag_keyframe+empty_moov"
+
         self.warmStarted = False
         self._proc = None
 
@@ -668,6 +697,36 @@ class VideoWriterAbstract(object):
     def _prepareData(self, data):
         return data  # general case : do nothing
 
+    def _start_stdout_drain_thread(self):
+        """Drain ffmpeg stdout into ``self._memory_dest`` in a background thread.
+
+        Used only for memory destinations (issue #113 write-side). The
+        thread reads stdout in 64KB chunks until EOF, copies each chunk
+        into the user's buffer, and stores any exception in
+        ``self._stdout_drain_error`` so ``close()`` can re-raise it from
+        the main thread.
+
+        Without continuous draining, ffmpeg would block once stdout's
+        ~64KB pipe buffer filled — deadlocking the writer.
+        """
+        stdout = self._proc.stdout
+        dest = self._memory_dest
+
+        def _drain():
+            try:
+                while True:
+                    chunk = stdout.read(64 * 1024)
+                    if not chunk:
+                        break
+                    dest.write(chunk)
+            except Exception as exc:
+                self._stdout_drain_error = exc
+
+        self._stdout_drain_thread = threading.Thread(
+            target=_drain, daemon=True, name="skvideo-stdout-drain"
+        )
+        self._stdout_drain_thread.start()
+
     def close(self):
         """Closes the video and terminates FFmpeg process
 
@@ -680,12 +739,47 @@ class VideoWriterAbstract(object):
             return  # no process
         if self._proc.poll() is not None:
             return  # process already dead
-        # communicate() closes stdin, then drains stdout/stderr while
-        # waiting — this avoids the deadlock that wait() would hit if
-        # FFmpeg's stderr pipe filled. When stderr is None (verbosity>0),
-        # the second tuple element is None and we have nothing to surface.
-        # Don't call stdin.close() ourselves first: communicate() flushes
-        # stdin and raises ValueError if it's already closed.
+
+        if self._dest_kind == "memory":
+            # Memory destination: stdout is owned by the drain thread. We
+            # close stdin to tell ffmpeg "no more frames", wait for ffmpeg
+            # to flush + exit, then join the drain thread to be sure the
+            # last bytes landed in the user's buffer. communicate() can't
+            # be used here because it would also try to read stdout.
+            if self._proc.stdin and not self._proc.stdin.closed:
+                self._proc.stdin.close()
+            self._proc.wait()
+            if self._stdout_drain_thread is not None:
+                self._stdout_drain_thread.join(timeout=30)
+            stderr_data = b""
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b""
+                except Exception:
+                    pass
+            returncode = self._proc.returncode
+            self._proc = None
+            self.DEVNULL.close()
+            if self._stdout_drain_error is not None:
+                # The drain thread crashed; surface that ahead of the
+                # ffmpeg exit code, which is likely a side effect.
+                raise RuntimeError(
+                    "BytesIO destination write failed: %r" % self._stdout_drain_error
+                )
+            if returncode != 0:
+                msg = "FFmpeg exited with code %d" % returncode
+                if stderr_data:
+                    msg += ":\n" + stderr_data.decode(errors='replace')
+                raise RuntimeError(msg)
+            return
+
+        # File / URL destination: communicate() closes stdin, then drains
+        # stdout/stderr while waiting — this avoids the deadlock that
+        # wait() would hit if FFmpeg's stderr pipe filled. When stderr is
+        # None (verbosity>0), the second tuple element is None and we have
+        # nothing to surface. Don't call stdin.close() ourselves first:
+        # communicate() flushes stdin and raises ValueError if it's
+        # already closed.
         _, stderr_data = self._proc.communicate()
         returncode = self._proc.returncode
         self._proc = None
