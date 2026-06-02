@@ -206,3 +206,12 @@ def test_backend_missing_raises_runtimeerror_under_O():
     )
     out = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
     assert "RUNTIMEERROR" in out.stdout, (out.stdout, out.stderr[-200:])
+
+
+def test_ssim_rejects_too_small_frames():
+    """ssim on frames smaller than the 11x11 window silently returned NaN
+    (the map trims to empty); it must raise a clear ValueError instead."""
+    import skvideo.measure as M
+    tiny = np.zeros((2, 8, 8, 1), dtype=np.uint8)
+    with pytest.raises(ValueError):
+        M.ssim(tiny, tiny)
