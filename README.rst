@@ -39,7 +39,7 @@ Requirements:
 
 - FFmpeg >= 2.8 on the system PATH (primary tested backend). The libav/avconv
   backend is retained in the codebase for compatibility but is not validated
-  as part of the 1.1.12 release.
+  by the test suite.
 - Python >= 3.10
 - numpy >= 1.22
 - scipy >= 1.9
@@ -76,55 +76,31 @@ Then check that ``skvideo`` resolves to the expected location::
     print(skvideo.__file__)
 
 
-What's new in 1.1.12
+What's new in 1.1.14
 --------------------
 
-This release modernizes scikit-video to work with current Python, NumPy, and
-SciPy. There are **no breaking API changes**; existing code that worked with
-1.1.11 should continue to work unchanged. Three new opt-in additions are
-described below.
+scikit-video is actively maintained again. The 1.1.12–1.1.14 line modernizes
+the package for current Python (3.10–3.13), NumPy 2.x, and SciPy, with **no
+breaking API changes** — code that worked with 1.1.11 should continue to work
+unchanged. Highlights of 1.1.14:
 
-Compatibility and packaging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- **Non-local I/O.** ``vread`` / ``vreader`` / ``vwrite`` and the
+  ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept file paths, URL
+  strings (``http://``, ``https://``, ``rtsp://``, ...), and file-like objects
+  (``io.BytesIO``) interchangeably (issues #117, #113, #81). A ``UserWarning``
+  is emitted if a URL scheme isn't compiled into the local FFmpeg build.
+- **Python-3 correctness pass.** Fixed several public functions that crashed on
+  modern Python (e.g. ``measure.Li3DDCT_features``, ``utils.canny``,
+  ``motion.globalEdgeMotion``, ``from skvideo import *``), replaced
+  ``assert``-based input validation with real exceptions (so it survives
+  ``python -O``), and made probe failures warn instead of silently returning
+  empty metadata.
+- **Earlier in the 1.1.12–1.1.13 line:** ``pyproject.toml`` packaging (restores
+  ``pip install`` on modern Python/NumPy), ``pathlib.Path`` support everywhere,
+  audio passthrough (``audiosrc=``) and multi-stream ``ffprobe`` in the writer,
+  repeated-flag dict values, and a windowed-read ``start_frame`` argument.
 
-- Replaced ``setup.py`` / ``numpy.distutils`` packaging with a ``pyproject.toml``
-  using standard setuptools. This restores ``pip install`` on Python 3.12+ and
-  NumPy >= 1.26, which removed ``numpy.distutils``.
-- Replaced deprecated ``ndarray.tostring()`` with ``tobytes()`` for NumPy 2.x
-  compatibility (issue #181, PR #182).
-- Removed vestigial ``scipy.misc`` imports that broke on SciPy >= 1.12, and
-  switched ``stpyr`` to ``scipy.special.factorial`` (the long-time successor to
-  ``scipy.misc.factorial``).
-- Dropped support for Python 2.7 and Python <= 3.9. Supported Python versions
-  are now 3.10, 3.11, 3.12, and 3.13.
-- ``opencv-python-headless`` is now declared as a hard dependency so that
-  ``import skvideo.measure`` works on a fresh install (previously a hidden
-  requirement).
-- Replaced the dead ``nose`` test runner with ``pytest``.
-- Replaced Travis CI / CircleCI configuration with a GitHub Actions workflow
-  that runs the test suite on Linux and macOS across Python 3.10–3.13.
-
-New opt-in features
-~~~~~~~~~~~~~~~~~~~
-
-- **Audio passthrough in ``vwrite`` / ``FFmpegWriter``** (issues #173, #176).
-  Pass ``audiosrc='source.mp4'`` to mux the first audio stream from a source
-  file into the output. Default is lossless stream-copy
-  (``-c:a copy -shortest``); override with ``outputdict={'-c:a': 'aac'}``
-  to re-encode, or ``outputdict={'-map': '1:a'}`` to keep all source audio
-  streams instead of just the first. Missing or audio-less ``audiosrc`` paths
-  raise at construction time rather than producing a silent videoless output.
-- **Multi-stream ``ffprobe`` support** (issue #165). Returned metadata dict
-  now always includes ``audio_streams`` and ``video_streams`` lists (empty
-  list when none), in addition to the existing single-stream ``audio`` and
-  ``video`` keys. Use the plural keys for files with multiple audio or video
-  streams.
-- **Repeated ffmpeg flags via list values** (issue #168). ``outputdict`` and
-  ``inputdict`` accept ``list``/``tuple`` values to emit a flag multiple
-  times. Example: ``outputdict={'-metadata': ['title=foo', 'artist=bar']}``
-  produces ``-metadata title=foo -metadata artist=bar`` on the ffmpeg command
-  line. Empty list values raise ``ValueError`` to surface programmer errors
-  early.
+See ``CHANGELOG.rst`` for the complete per-version history.
 
 
 TODO/Roadmap
@@ -152,4 +128,4 @@ Tests that require FFmpeg or libav are automatically skipped if the
 corresponding binary is not on the system PATH.
 
 
-Copyright 2015-2025, scikit-video developers (BSD license).
+Copyright 2015-2026, scikit-video developers (BSD license).
