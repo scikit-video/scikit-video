@@ -71,3 +71,61 @@ def test_ffprobe_warns_on_unparseable_file(tmp_path):
     with pytest.warns(UserWarning):
         info = skvideo.io.ffprobe(str(bogus))
     assert info == {}
+
+
+def test_fullref_metric_rejects_shape_mismatch():
+    """Full-reference metrics must reject mismatched ref/dis shapes with a
+    real exception (was a bare `assert`, stripped under -O where mismatched
+    arrays broadcast to a plausible-but-wrong score)."""
+    import skvideo.measure as M
+    a = np.zeros((2, 16, 16, 1))
+    b = np.zeros((3, 16, 16, 1))
+    for fn in (M.mse, M.mae, M.psnr):
+        with pytest.raises(ValueError):
+            fn(a, b)
+
+
+def test_fullref_shape_mismatch_survives_O():
+    import subprocess, sys
+    code = (
+        "import numpy as np, skvideo.measure as m\n"
+        "try:\n"
+        "    m.mse(np.zeros((2,16,16,1)), np.zeros((3,16,16,1)))\n"
+        "    print('NORAISE')\n"
+        "except ValueError:\n"
+        "    print('VALUEERROR')\n"
+    )
+    out = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
+    assert "VALUEERROR" in out.stdout, (out.stdout, out.stderr[-200:])
+
+
+def test_blockcomp_nondivisible_dims_pass_through_remainder():
+    """A frame whose dimensions aren't a multiple of mbSize (e.g. 1080/16)
+    must not have its uncovered border silently zeroed; the remainder passes
+    through instead."""
+    import skvideo.motion as MO
+    frame = np.ones((17, 17, 1)) * 7.0
+    vid = np.stack([frame, frame])
+    mv = np.zeros((1, 17 // 8, 17 // 8, 2), dtype=np.int64)
+    comp = MO.blockComp(vid, mv, mbSize=8)
+    # bottom row (index 16) is outside any whole 8x8 block -> must be 7, not 0
+    assert comp[1, 16, :, 0].min() == 7.0
+
+
+def test_blockcomp_single_frame_does_not_crash():
+    import skvideo.motion as MO
+    out = MO.blockComp(np.ones((16, 16, 1)), np.zeros((2, 2, 2), dtype=np.int64), mbSize=8)
+    assert out.shape == (16, 16, 1)
+
+
+def test_globalEdgeMotion_blank_frames_report_no_motion():
+    import skvideo.motion as MO
+    z = np.zeros((40, 40), np.float32)
+    assert list(MO.globalEdgeMotion(z, z, method="hamming")) == [0, 0]
+    assert list(MO.globalEdgeMotion(z, z, method="hausdorff")) == [0, 0]
+
+
+def test_vwrite_rejects_zero_frames(tmp_path):
+    import skvideo.io
+    with pytest.raises(ValueError):
+        skvideo.io.vwrite(str(tmp_path / "empty.mp4"), np.empty((0, 16, 16, 3)))

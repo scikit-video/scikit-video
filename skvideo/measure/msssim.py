@@ -86,7 +86,8 @@ def msssim(referenceVideoData, distortedVideoData, method='product'):
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    assert(referenceVideoData.shape == distortedVideoData.shape)
+    if referenceVideoData.shape != distortedVideoData.shape:
+        raise ValueError("reference and distorted videos must have the same shape; got %s vs %s" % (referenceVideoData.shape, distortedVideoData.shape))
 
     T, M, N, C = referenceVideoData.shape
 

@@ -120,7 +120,8 @@ def ssim(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bitdept
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    assert(referenceVideoData.shape == distortedVideoData.shape)
+    if referenceVideoData.shape != distortedVideoData.shape:
+        raise ValueError("reference and distorted videos must have the same shape; got %s vs %s" % (referenceVideoData.shape, distortedVideoData.shape))
 
 
     T, M, N, C = referenceVideoData.shape
@@ -198,7 +199,8 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
     referenceVideoData = vshape(referenceVideoData)
     distortedVideoData = vshape(distortedVideoData)
 
-    assert(referenceVideoData.shape == distortedVideoData.shape)
+    if referenceVideoData.shape != distortedVideoData.shape:
+        raise ValueError("reference and distorted videos must have the same shape; got %s vs %s" % (referenceVideoData.shape, distortedVideoData.shape))
 
 
     T, M, N, C = referenceVideoData.shape

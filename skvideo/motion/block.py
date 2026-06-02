@@ -947,7 +947,8 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
     luminancedata = rgb2gray(videodata)
 
     numFrames, height, width, channels = luminancedata.shape
-    assert numFrames > 1, "Must have more than 1 frame for motion estimation!"
+    if numFrames <= 1:
+        raise ValueError("Must have more than 1 frame for motion estimation!")
 
     # luminance is 1 channel, so flatten for computation
     luminancedata = luminancedata.reshape((numFrames, height, width))
@@ -991,7 +992,12 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 def _subcomp(framedata, motionVect, mbSize):
     M, N, C = framedata.shape
 
-    compImg = np.zeros((M, N, C))
+    # Start from a copy of the frame so any border region not covered by a
+    # whole macroblock (when M or N isn't a multiple of mbSize, e.g. 1080 /
+    # 16) passes through unchanged instead of being silently zeroed. For
+    # frames whose dimensions divide evenly by mbSize, every cell is
+    # overwritten below, so this is identical to the old zero-init.
+    compImg = framedata.astype(np.float64)
 
     for i in range(0, M - mbSize + 1, mbSize):
         for j in range(0, N - mbSize + 1, mbSize):
@@ -1037,7 +1043,10 @@ def blockComp(videodata, motionVect, mbSize=8):
     T, M, N, C = videodata.shape
 
     if T == 1:	# a single frame is passed in
-        return _subcomp(videodata, motionVect, mbSize)
+        # vshape gives (1, M, N, C); _subcomp expects a single (M, N, C)
+        # frame. Passing the 4D array crashed with "too many values to
+        # unpack".
+        return _subcomp(videodata[0], motionVect, mbSize)
 
     else: # more frames passed in
         # allocate compensation data

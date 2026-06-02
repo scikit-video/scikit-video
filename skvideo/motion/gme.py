@@ -63,15 +63,16 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
     frame1 = vshape(frame1)
     frame2 = vshape(frame2)
     
-    assert(frame1.shape == frame2.shape)
+    if frame1.shape != frame2.shape:
+        raise ValueError("frame1 and frame2 must have the same shape; got %s vs %s" % (frame1.shape, frame2.shape))
 
     T, M, N, C = frame1.shape
 
     if C == 3:
         frame1 = rgb2gray(frame1)
         frame2 = rgb2gray(frame2)
-    else:
-        assert C == 1, "called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,)
+    elif C != 1:
+        raise ValueError("called with frames having %d channels. Please supply only the luminance channel or RGB images." % (C,))
 
     # if type bool, then these are edge maps. No need to convert them, but
     # still squeeze to 2D so the roll/morphology ops below see (M, N) like
@@ -84,6 +85,13 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
         E_2 = canny(frame2.squeeze())
     else:
         E_2 = frame2.squeeze()
+
+    # If either frame has no edges, there is no edge correspondence to
+    # minimize: every displacement ties (hamming would argmin to the first,
+    # i.e. (-r, -r)) and the hausdorff distance does an empty-array reduction
+    # and crashes. Report no detectable motion.
+    if not E_1.any() or not E_2.any():
+        return [0, 0]
 
     distances = []
     displacements = []
