@@ -1,4 +1,4 @@
-1.1.13 (unreleased)
+1.1.13 (2026-06-01)
 -------------------
 - ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
   ``skvideo.io.vread``, ``vwrite``, ``vreader``, ``ffprobe``, and the
