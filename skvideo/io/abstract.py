@@ -1,4 +1,6 @@
+import io
 import os
+import re
 import time
 import warnings
 
@@ -6,6 +8,41 @@ import numpy as np
 
 from .. import _HAS_FFMPEG
 from ..utils import *
+
+
+# Matches URL schemes ffmpeg supports for input/output (http, https, rtsp, rtmp,
+# rtmps, udp, tcp, ftp, sftp, srt, unix, file, pipe, concat, async, hls, ...).
+# We classify any string that looks like `<scheme>://<...>` as a URL and let
+# ffmpeg validate the specific protocol.
+_URL_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*://")
+
+
+def _classify_source(source):
+    """Classify an input/output source into one of three kinds.
+
+    Returns one of ``"file"``, ``"url"``, ``"memory"``. Used by the reader and
+    writer to dispatch around filesystem-only operations like ``os.path.getsize``,
+    ``os.path.isfile``, and ``os.access(..., os.W_OK)`` (issue #117, #113, #81).
+
+    - ``str`` or ``Path`` matching ``<scheme>://...`` → ``"url"``
+    - ``BytesIO`` or any object with a ``read`` / ``write`` method → ``"memory"``
+    - everything else → ``"file"`` (the existing behavior)
+
+    A pure string filename like ``"video.mp4"`` is classified as ``"file"``; the
+    URL check is intentionally strict (``://`` required) so Windows drive
+    letters and oddly-named local files don't false-positive.
+    """
+    # File-like / BytesIO objects expose read or write
+    if hasattr(source, "read") or hasattr(source, "write"):
+        return "memory"
+    # os.fspath() turns Path into str without changing strings
+    try:
+        source_str = os.fspath(source)
+    except TypeError:
+        return "file"  # fallback; downstream will surface the real error
+    if _URL_SCHEME_RE.match(source_str):
+        return "url"
+    return "file"
 
 
 class VideoReaderAbstract(object):
