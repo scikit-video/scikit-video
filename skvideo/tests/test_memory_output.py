@@ -100,3 +100,29 @@ def test_bytesio_writer_drain_thread_cleans_up():
     assert not writer._stdout_drain_thread.is_alive(), (
         "drain thread is still alive after close()"
     )
+
+
+def test_bytesio_writer_surfaces_destination_write_failure():
+    """If the user's destination .write() raises (closed file, full disk,
+    custom sink hitting I/O error, ...), close() must re-raise the error
+    in the main thread instead of swallowing it silently.
+
+    The _stdout_drain_error channel is the contract here — the drain
+    thread can't raise across the thread boundary directly, so it stores
+    the exception for close() to surface (Codex round 1 finding: the
+    plumbing existed but wasn't tested).
+    """
+    class _BadSink:
+        """Looks like a writable buffer, but every write fails."""
+        def write(self, data):
+            raise IOError("simulated sink write failure")
+
+    writer = skvideo.io.FFmpegWriter(_BadSink())
+    with pytest.raises(RuntimeError, match="destination write failed"):
+        # The drain thread will fail on its first write; the failure
+        # surfaces when we tear down. Whether the failure shows up in
+        # writeFrame() (if ffmpeg blocks fast enough) or in close()
+        # depends on timing, so accept either.
+        for _ in range(20):
+            writer.writeFrame(np.zeros((64, 64, 3), dtype=np.uint8))
+        writer.close()
