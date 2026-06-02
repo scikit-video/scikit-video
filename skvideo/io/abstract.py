@@ -196,15 +196,17 @@ class VideoReaderAbstract(object):
         if not outputdict:
             outputdict = {}
 
-        # General information. Filesystem ops are file-only — URLs and memory
-        # sources skip them. ffmpeg/ffprobe handle URLs natively (note: probing
-        # a remote URL incurs network latency on FFmpegReader construction).
+        # General information. URLs skip filesystem ops entirely; memory
+        # sources reach here as "file" because we already spooled them to
+        # a real temp path above. ffmpeg/ffprobe handle URLs natively
+        # (note: probing a remote URL incurs network latency on
+        # FFmpegReader construction).
         if self._source_kind == "file":
             _, self.extension = os.path.splitext(filename)
             self.size = os.path.getsize(filename)
         else:
-            # URLs don't have a meaningful filesystem extension; use empty so
-            # downstream checks (which mostly gate on .yuv / .raw) skip cleanly.
+            # URL: no meaningful filesystem extension; use empty so downstream
+            # checks (which mostly gate on .yuv / .raw) skip cleanly.
             self.extension = ""
             self.size = 0
         self.probeInfo = self._probe()
@@ -303,14 +305,15 @@ class VideoReaderAbstract(object):
         israw = str.encode(self.extension) in [b".raw", b".yuv"]
         # iswebcam covers cases where input has no finite frame count (live
         # device, streaming URL). The os.path.isfile heuristic still routes
-        # /dev/video* and similar to this branch; URLs and memory sources are
-        # detected via _source_kind so we don't re-hit a filesystem call.
+        # /dev/video* and similar to this branch. Memory sources have
+        # already been spooled to a temp file path above, so they take the
+        # file branch with isfile==True. URLs need explicit handling.
         if self._source_kind == "file":
             iswebcam = not os.path.isfile(filename)
         else:
-            # URL: treat as a stream unless the metadata gave us a frame count.
-            # Memory (BytesIO): finite by construction, so not a webcam.
-            iswebcam = (self._source_kind == "url") and (self.INFO_NB_FRAMES not in viddict)
+            # URL: treat as a stream unless the metadata gave us a frame
+            # count (e.g. mp4 over http reports nb_frames).
+            iswebcam = self.INFO_NB_FRAMES not in viddict
 
         if ("-vframes" in outputdict):
             self.inputframenum = int(outputdict["-vframes"])
@@ -344,10 +347,11 @@ class VideoReaderAbstract(object):
         if israw or iswebcam:
             inputdict['-pix_fmt'] = self.pix_fmt
         elif self._source_kind != "file":
-            # URL / BytesIO: ffprobe already told us the codec; the
-            # extension-based sanity check doesn't apply (and the extension
-            # itself is meaningless for these sources). Trust ffmpeg to
-            # surface a decode error if it can't handle the input.
+            # URL: ffprobe already validated the codec; the wrapper's
+            # extension-based sanity check has no extension to check
+            # against. Trust ffmpeg to surface a decode error if it can't
+            # handle the input. (Memory inputs reach here as "file" via
+            # the temp-spool path, so they DO get the assert below.)
             pass
         else:
             decoders = self._getSupportedDecoders()
