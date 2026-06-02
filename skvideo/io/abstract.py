@@ -101,7 +101,11 @@ class VideoReaderAbstract(object):
         # check if FFMPEG exists in the path
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
-        filename = os.fspath(filename)
+        self._source_kind = _classify_source(filename)
+        # Only run os.fspath when we have a path-like — file-like objects
+        # don't implement __fspath__ and must keep their original identity.
+        if self._source_kind != "memory":
+            filename = os.fspath(filename)
         self._filename = filename
         self.verbosity = verbosity
 
@@ -111,9 +115,17 @@ class VideoReaderAbstract(object):
         if not outputdict:
             outputdict = {}
 
-        # General information
-        _, self.extension = os.path.splitext(filename)
-        self.size = os.path.getsize(filename)
+        # General information. Filesystem ops are file-only — URLs and memory
+        # sources skip them. ffmpeg/ffprobe handle URLs natively (note: probing
+        # a remote URL incurs network latency on FFmpegReader construction).
+        if self._source_kind == "file":
+            _, self.extension = os.path.splitext(filename)
+            self.size = os.path.getsize(filename)
+        else:
+            # URLs don't have a meaningful filesystem extension; use empty so
+            # downstream checks (which mostly gate on .yuv / .raw) skip cleanly.
+            self.extension = ""
+            self.size = 0
         self.probeInfo = self._probe()
 
         # smartphone video data is weird
@@ -208,7 +220,16 @@ class VideoReaderAbstract(object):
         self.bpp = int(bpplut[self.pix_fmt][1])
 
         israw = str.encode(self.extension) in [b".raw", b".yuv"]
-        iswebcam = not os.path.isfile(filename)
+        # iswebcam covers cases where input has no finite frame count (live
+        # device, streaming URL). The os.path.isfile heuristic still routes
+        # /dev/video* and similar to this branch; URLs and memory sources are
+        # detected via _source_kind so we don't re-hit a filesystem call.
+        if self._source_kind == "file":
+            iswebcam = not os.path.isfile(filename)
+        else:
+            # URL: treat as a stream unless the metadata gave us a frame count.
+            # Memory (BytesIO): finite by construction, so not a webcam.
+            iswebcam = (self._source_kind == "url") and (self.INFO_NB_FRAMES not in viddict)
 
         if ("-vframes" in outputdict):
             self.inputframenum = int(outputdict["-vframes"])
@@ -223,7 +244,8 @@ class VideoReaderAbstract(object):
             # we can compute it based on the input size and color space
             self.inputframenum = int(self.size / (self.inputwidth * self.inputheight * (self.bpp / 8.0)))
         elif iswebcam:
-            # webcam can stream frames endlessly, lets use the special default value of 0 to indicate that
+            # webcam (or live URL) can stream frames endlessly, lets use the
+            # special default value of 0 to indicate that
             self.inputframenum = 0
         else:
             self.inputframenum = self._probCountFrames()
@@ -240,6 +262,12 @@ class VideoReaderAbstract(object):
 
         if israw or iswebcam:
             inputdict['-pix_fmt'] = self.pix_fmt
+        elif self._source_kind != "file":
+            # URL / BytesIO: ffprobe already told us the codec; the
+            # extension-based sanity check doesn't apply (and the extension
+            # itself is meaningless for these sources). Trust ffmpeg to
+            # surface a decode error if it can't handle the input.
+            pass
         else:
             decoders = self._getSupportedDecoders()
             if decoders != NotImplemented:
