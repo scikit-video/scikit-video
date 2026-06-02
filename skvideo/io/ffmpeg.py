@@ -126,6 +126,15 @@ class FFmpegWriter(VideoWriterAbstract):
 
     verbosity : int
         0 (default) for quiet, 1 to print the ffmpeg command.
+
+    Notes
+    -----
+    The FFmpeg subprocess is launched lazily on the first ``writeFrame``
+    call. Constructing a writer and calling ``close()`` without writing any
+    frames is a no-op and produces no output file — this keeps cleanup in a
+    ``finally`` (or a construct-only validation) from raising. Use the
+    high-level ``skvideo.io.vwrite``, which rejects empty (0-frame) input
+    with ``ValueError``, if you want that guarded.
     """
 
     def __init__(self, filename, inputdict=None, outputdict=None,

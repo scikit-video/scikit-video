@@ -49,8 +49,12 @@ def globalEdgeMotion(frame1, frame2, r=6, method='hamming'):
 
     Returns
     ----------
-    globalMotionVector  : ndarray, shape (2,)
-        The motion to minimize edge distances by moving frame2 with respect to frame1.
+    globalMotionVector  : list of int, length 2
+        The motion to minimize edge distances by moving frame2 with respect
+        to frame1. Returns ``[0, 0]`` when either frame contains no edges
+        (no edge correspondence to minimize), so a blank/edgeless frame
+        yields "no detected motion" rather than a spurious or crashing
+        result.
 
     References
     ----------

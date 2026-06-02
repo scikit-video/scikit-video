@@ -992,6 +992,17 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
 def _subcomp(framedata, motionVect, mbSize):
     M, N, C = framedata.shape
 
+    # Validate the motion-vector grid against the macroblock grid. Without
+    # this, a too-small grid crashed with a cryptic IndexError and a
+    # too-large grid silently ignored the extra vectors.
+    motionVect = np.asarray(motionVect)
+    expectedGrid = (M // mbSize, N // mbSize)
+    if motionVect.shape[:2] != expectedGrid:
+        raise ValueError(
+            "motion-vector grid %s does not match the %s macroblock grid for "
+            "a %dx%d frame with mbSize=%d."
+            % (tuple(motionVect.shape[:2]), expectedGrid, M, N, mbSize))
+
     # Start from a copy of the frame so any border region not covered by a
     # whole macroblock (when M or N isn't a multiple of mbSize, e.g. 1080 /
     # 16) passes through unchanged instead of being silently zeroed. For
@@ -1035,7 +1046,18 @@ def blockComp(videodata, motionVect, mbSize=8):
     Returns
     -------
     compImg : ndarray
-        ndarray holding the motion compensated image frame, shape (T, M, N, C)
+        ndarray holding the motion compensated frames, shape (T, M, N, C)
+        and dtype ``float64``. A single input frame returns shape
+        (1, M, N, C).
+
+    Notes
+    -----
+    ``motionVect``'s grid must match the macroblock grid
+    (``M // mbSize`` by ``N // mbSize``); a mismatch raises ``ValueError``.
+    When ``M`` or ``N`` is not a multiple of ``mbSize``, the uncovered
+    bottom/right border is copied through from the input frame unchanged
+    (it cannot be motion-compensated). A motion vector that points outside
+    the frame leaves that block as the original (uncompensated) pixels.
 
     """
 
@@ -1045,8 +1067,9 @@ def blockComp(videodata, motionVect, mbSize=8):
     if T == 1:	# a single frame is passed in
         # vshape gives (1, M, N, C); _subcomp expects a single (M, N, C)
         # frame. Passing the 4D array crashed with "too many values to
-        # unpack".
-        return _subcomp(videodata[0], motionVect, mbSize)
+        # unpack". Return (1, M, N, C) to match the multi-frame path and
+        # the documented (T, M, N, C) shape.
+        return _subcomp(videodata[0], motionVect, mbSize)[np.newaxis, :, :, :]
 
     else: # more frames passed in
         # allocate compensation data

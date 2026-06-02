@@ -115,7 +115,21 @@ def test_blockcomp_nondivisible_dims_pass_through_remainder():
 def test_blockcomp_single_frame_does_not_crash():
     import skvideo.motion as MO
     out = MO.blockComp(np.ones((16, 16, 1)), np.zeros((2, 2, 2), dtype=np.int64), mbSize=8)
-    assert out.shape == (16, 16, 1)
+    # single-frame result is (1, M, N, C), consistent with the multi-frame path
+    assert out.shape == (1, 16, 16, 1)
+
+
+def test_blockcomp_rejects_mismatched_motion_grid():
+    """A motion-vector grid that doesn't match the macroblock grid must raise
+    a clear ValueError, not a cryptic IndexError (too small) or silently
+    ignore extra vectors (too large)."""
+    import skvideo.motion as MO
+    frame = np.ones((16, 16, 1))  # 2x2 macroblock grid at mbSize=8
+    vid = np.stack([frame, frame])
+    with pytest.raises(ValueError):
+        MO.blockComp(vid, np.zeros((1, 1, 1, 2), dtype=np.int64), mbSize=8)
+    with pytest.raises(ValueError):
+        MO.blockComp(vid, np.zeros((1, 3, 3, 2), dtype=np.int64), mbSize=8)
 
 
 def test_globalEdgeMotion_blank_frames_report_no_motion():
