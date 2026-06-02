@@ -536,20 +536,41 @@ class VideoWriterAbstract(object):
         """
         self.DEVNULL = open(os.devnull, 'wb')
 
-        filename = os.path.abspath(os.fspath(filename))
-        _, self.extension = os.path.splitext(filename)
+        # Classify the output destination so we can skip filesystem-only
+        # operations (os.path.abspath, os.access W_OK) for URL outputs like
+        # rtmp:// or http:// PUT targets. ffmpeg handles the network side
+        # natively; the wrapper just needs to get out of its way (issue #117
+        # write-side, related #81).
+        self._dest_kind = _classify_source(filename)
 
-        # check that the extension makes sense
-        encoders = self._getSupportedEncoders()
-        if encoders != NotImplemented:
-            assert str.encode(
-                self.extension).lower() in encoders, "Unknown encoder extension: " + self.extension.lower()
+        if self._dest_kind == "file":
+            filename = os.path.abspath(os.fspath(filename))
+            _, self.extension = os.path.splitext(filename)
+            # check that the extension makes sense
+            encoders = self._getSupportedEncoders()
+            if encoders != NotImplemented:
+                assert str.encode(
+                    self.extension).lower() in encoders, "Unknown encoder extension: " + self.extension.lower()
 
-        self._filename = filename
-        basepath, _ = os.path.split(filename)
+            self._filename = filename
+            basepath, _ = os.path.split(filename)
 
-        # check to see if filename is a valid file location
-        assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+            # check to see if filename is a valid file location
+            assert os.access(basepath, os.W_OK), "Cannot write to directory: " + basepath
+        elif self._dest_kind == "url":
+            # URL output: ffmpeg picks the format from the URL itself
+            # (e.g. rtmp://... → FLV) or from -f in outputdict. Skip the
+            # extension allowlist and the writable-directory check.
+            self.extension = ""
+            self._filename = filename
+        else:
+            # Memory destination (BytesIO/file-like): commit 5 wires this up.
+            # Refuse cleanly here so users on this v1.1.14 commit see an
+            # informative error rather than a downstream crash.
+            raise NotImplementedError(
+                "Writing to a BytesIO / file-like object is not yet supported. "
+                "Use a file path or URL for now."
+            )
 
         if not inputdict:
             inputdict = {}
