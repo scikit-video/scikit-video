@@ -1,8 +1,16 @@
 1.1.15 (unreleased)
 -------------------
-- **Correctness completion pass.** Continues the v1.1.14 hardening: remaining
-  user-facing ``assert`` validation converted to real exceptions, per-metric
-  minimum-size guards, and residual Python-2 cleanup. (in progress)
+Correctness-completion pass continuing the v1.1.14 hardening:
+
+- Remaining user-facing ``assert`` validation now raises real exceptions
+  (survives ``python -O``): backend-availability checks (FFmpeg / libav /
+  mediainfo and the libav version) raise ``RuntimeError``; ``mprobe`` XML-parse
+  guards and the ``utils.mscn`` / ``utils.image`` input checks raise
+  ``ValueError``. Only internal ``self._proc is not None`` invariants remain
+  as asserts.
+- ``ssim`` now raises ``ValueError`` for frames smaller than its 11x11 window
+  instead of silently returning ``NaN``.
+- Ported the last Python-2 ``xrange`` (``utils/stpyr.py``) to ``range``.
 
 1.1.14 (2026-06-02)
 -------------------
