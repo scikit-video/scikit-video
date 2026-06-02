@@ -65,3 +65,17 @@ def test_writer_rejects_non_file_like_memory_dest():
             return b""
     with pytest.raises(TypeError, match="write"):
         skvideo.io.FFmpegWriter(_ReadOnly())
+
+
+def test_writer_close_releases_devnull():
+    """A writer constructed but never warm-started (no frames written) must
+    still release the DEVNULL handle opened in __init__. URL/validation-only
+    writers hit close() with _proc is None; if that path returns early
+    without closing DEVNULL, every such writer leaks a file descriptor."""
+    writer = skvideo.io.FFmpegWriter(
+        "rtmp://example.invalid/live/stream",
+        outputdict={"-f": "flv"},
+    )
+    assert writer._proc is None  # never warm-started
+    writer.close()
+    assert writer.DEVNULL.closed

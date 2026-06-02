@@ -83,8 +83,17 @@ def _spool_memory_to_tempfile(source):
             if not chunk:
                 break
             tf.write(chunk)
-    finally:
+    except BaseException:
+        # The copy failed partway (e.g. source.read raised). The temp file
+        # is already on disk with delete=False, so unlink it here before
+        # re-raising — the caller never gets a path and can't clean up.
         tf.close()
+        try:
+            os.unlink(tf.name)
+        except OSError:
+            pass
+        raise
+    tf.close()
     return tf.name
 
 
@@ -133,7 +142,8 @@ class VideoReaderAbstract(object):
             so the actual first frame returned may snap to the nearest
             keyframe at or before the requested position. Combine with
             ``num_frames`` for a windowed read. For frame-exact extraction,
-            pass ``inputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead;
+            pass ``outputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead
+            (``-vf`` is an output filter, so it must go in ``outputdict``);
             that is slower because it decodes from the start of the file.
 
         Returns
@@ -154,6 +164,12 @@ class VideoReaderAbstract(object):
         # needs random access that subprocess stdin can't provide reliably.
         # After spooling, treat as a file for all downstream branching.
         if self._source_kind == "memory":
+            if not hasattr(filename, "read"):
+                raise TypeError(
+                    "Input source is a file-like object without a read() "
+                    "method; FFmpegReader needs a readable source (got %r)."
+                    % type(filename)
+                )
             self._temp_input_path = _spool_memory_to_tempfile(filename)
             filename = self._temp_input_path
             self._source_kind = "file"
@@ -169,7 +185,7 @@ class VideoReaderAbstract(object):
         # missing width/height, decoder mismatch) unlinks the spooled temp
         # file before re-raising. Without this, callers never get a
         # reference to the half-constructed reader, so close() is
-        # unreachable and the temp file leaks (Codex round 1 finding).
+        # unreachable and the temp file leaks.
         try:
             self._finish_init(filename, inputdict, outputdict, verbosity, start_frame)
         except Exception:
@@ -185,7 +201,7 @@ class VideoReaderAbstract(object):
         """The rest of __init__, wrapped so spool failure cleanup can apply.
 
         Extracted purely for the try/except boundary; semantics are
-        unchanged from doing this work inline (Codex round 1: temp-leak fix).
+        unchanged from doing this work inline.
         """
         self._filename = filename
         self.verbosity = verbosity
@@ -770,10 +786,20 @@ class VideoWriterAbstract(object):
         #111). Previously a failing encode produced a silent empty/corrupt
         output file with no indication of what went wrong.
         """
-        if self._proc is None:  # pragma: no cover
-            return  # no process
+        if self._proc is None:
+            # Writer was constructed but never warm-started (no frames
+            # written), e.g. URL/parameter validation paths. The FFmpeg
+            # subprocess was never launched, but DEVNULL was opened in
+            # __init__, so release it here to avoid leaking the fd.
+            if self.DEVNULL is not None and not self.DEVNULL.closed:
+                self.DEVNULL.close()
+            return
         if self._proc.poll() is not None:
-            return  # process already dead
+            # Process already exited; release DEVNULL and drop the handle.
+            self._proc = None
+            if self.DEVNULL is not None and not self.DEVNULL.closed:
+                self.DEVNULL.close()
+            return
 
         if self._dest_kind == "memory":
             # Memory destination: stdout is owned by the drain thread. We

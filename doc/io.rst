@@ -54,6 +54,7 @@ Sometimes, particular use cases require fine tuning FFmpeg's reading parameters.
 
 .. code-block:: python
 
+	import numpy as np
 	import skvideo.io
 	import skvideo.datasets
 
@@ -205,8 +206,8 @@ Write a high-quality H.264 with a constant rate factor:
 
 Preserve an alpha (transparency) channel. Two things are required:
 the codec/container must support alpha (H.264/``.mp4`` does **not**;
-use FFV1 in ``.mkv``, QTRLE/PNG in ``.mov``, or VP9 in ``.webm``), and
-the output ``-pix_fmt`` must keep the alpha plane (e.g. ``rgba``):
+use FFV1 in ``.mkv``, or QTRLE or PNG in ``.mov``), and the output
+``-pix_fmt`` must keep the alpha plane (e.g. ``rgba``):
 
 .. code-block:: python
 
@@ -225,6 +226,12 @@ drop the alpha plane:
 
     vid = skvideo.io.vread("out.mkv", outputdict={"-pix_fmt": "rgba"})
     # vid.shape == (T, H, W, 4)
+
+VP9 in ``.webm`` can also carry alpha, but FFmpeg does not always
+auto-select the alpha-aware decoder on read, so a plain ``rgba`` read may
+come back fully opaque. Name the decoder explicitly to recover the alpha
+plane: ``vread("out.webm", inputdict={"-vcodec": "libvpx-vp9"},
+outputdict={"-pix_fmt": "rgba"})``.
 
 **Repeating the same flag** (e.g. multiple ``-metadata`` or ``-map``
 entries) is done with a list value — scikit-video emits the flag once per
@@ -258,9 +265,13 @@ instead — slower because FFmpeg decodes from the start of the file:
 
     skvideo.io.vread(
         "clip.mp4",
-        inputdict={"-vf": "select='gte(n\\,1000)'"},
+        outputdict={"-vf": "select='gte(n\\,1000)'"},
         num_frames=200,
     )
+
+The ``select`` filter is an *output* filter, so it goes in ``outputdict``
+(after ``-i``). Placing ``-vf`` in ``inputdict`` applies it before the
+input is opened and yields no frames.
 
 **Muxing audio from a separate source** (added in v1.1.12) uses the
 ``audiosrc`` constructor argument rather than ``inputdict``:

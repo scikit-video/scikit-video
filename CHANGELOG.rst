@@ -47,10 +47,25 @@
   #186 (reported by page200).
 - Documentation: added an alpha-channel (transparency) writing recipe to
   the I/O guide. Preserving alpha requires both an alpha-capable
-  codec/container (FFV1/.mkv, QTRLE or PNG/.mov, VP9/.webm, but not
-  H.264/.mp4) and reading back with ``outputdict={"-pix_fmt": "rgba"}``,
-  since the reader defaults to ``rgb24`` and otherwise drops the alpha
-  plane. Addresses the usage confusion in #143.
+  codec/container (FFV1/.mkv, or QTRLE or PNG/.mov; not H.264/.mp4) and
+  reading back with ``outputdict={"-pix_fmt": "rgba"}``, since the reader
+  defaults to ``rgb24`` and otherwise drops the alpha plane. VP9/.webm
+  alpha is also documented with the caveat that the decoder may need to
+  be named explicitly on read. Addresses the usage confusion in #143.
+- Fixed a file-descriptor leak: ``FFmpegWriter.close()`` returned early
+  without closing its ``DEVNULL`` handle when the writer was constructed
+  but never warm-started (no frames written), e.g. URL/validation-only
+  writers. ``close()`` now releases ``DEVNULL`` on every path.
+- Fixed temp-file leaks on the BytesIO/file-like read path: spooling now
+  unlinks its ``NamedTemporaryFile`` if the source read fails partway,
+  and ``vread`` closes the reader in a ``finally`` so a mid-read error no
+  longer leaks the spooled file. A file-like input without a ``read()``
+  method is now rejected up front with a clear ``TypeError`` instead of
+  failing deep inside the copy.
+- Documentation fix: the frame-exact ``select`` recipe (and the
+  ``start_frame`` docstring) placed ``-vf`` in ``inputdict``; ``-vf`` is
+  an output filter and yields no frames there. Corrected to ``outputdict``.
+  Also added a missing ``import numpy as np`` to the reader example.
 
 1.1.13 (2026-06-01)
 -------------------

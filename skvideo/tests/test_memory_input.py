@@ -96,8 +96,6 @@ def test_no_temp_leak_when_constructor_fails():
     """If the constructor raises after spooling (e.g. probe can't parse the
     bytes), the spooled temp file must still be cleaned up — the caller
     never gets a reference, so they can't call close() themselves.
-
-    Codex round 1 review flagged this lifecycle gap.
     """
     import glob
     import tempfile as _tempfile
@@ -124,3 +122,66 @@ def test_no_temp_leak_when_constructor_fails():
             len(leaked), sorted(leaked)
         )
     )
+
+
+def test_write_only_input_rejected():
+    """A file-like object without read() can't be an input source. Reject it
+    with a clear TypeError up front rather than failing deep inside the
+    spool copy with an opaque AttributeError (and leaking a temp file)."""
+    class _WriteOnly:
+        def write(self, b):
+            return len(b)
+    with pytest.raises(TypeError, match="read"):
+        skvideo.io.FFmpegReader(_WriteOnly())
+
+
+def test_no_temp_leak_when_source_read_fails():
+    """If source.read() raises partway through spooling, the temp file must
+    be unlinked before the exception propagates."""
+    import glob
+    import tempfile as _tempfile
+
+    pattern = os.path.join(_tempfile.gettempdir(), "skvideo_in_*")
+
+    class _Boom:
+        def read(self, n=-1):
+            raise IOError("simulated read failure")
+
+    before = set(glob.glob(pattern))
+    with pytest.raises(Exception):
+        skvideo.io.FFmpegReader(_Boom())
+    after = set(glob.glob(pattern))
+    leaked = after - before
+    for path in leaked:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    assert not leaked, "Spool read failure leaked: %s" % sorted(leaked)
+
+
+def test_vread_cleans_spool_on_read_error(bunny_bytes, monkeypatch):
+    """vread() must close the reader even if frame reading raises mid-loop,
+    so a spooled BytesIO temp file is unlinked (the read path is wrapped in
+    try/finally)."""
+    import glob
+    import tempfile as _tempfile
+
+    pattern = os.path.join(_tempfile.gettempdir(), "skvideo_in_*")
+
+    def boom(self):
+        raise RuntimeError("simulated mid-read failure")
+        yield  # pragma: no cover  (makes this a generator)
+
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "nextFrame", boom)
+    before = set(glob.glob(pattern))
+    with pytest.raises(RuntimeError):
+        skvideo.io.vread(io.BytesIO(bunny_bytes))
+    after = set(glob.glob(pattern))
+    leaked = after - before
+    for path in leaked:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    assert not leaked, "vread read failure leaked spool: %s" % sorted(leaked)

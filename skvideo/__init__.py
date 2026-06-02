@@ -41,11 +41,13 @@ _FFMPEG_SUPPORTED_ENCODERS = []
 _LIBAV_SUPPORTED_EXT = []
 
 # Lazy cache of `ffmpeg -protocols` output (issue #117, v1.1.14 protocol
-# detection). A single tuple ``(input_list, output_list)`` so the publish
-# is atomic — two threads racing past the cache check can never observe
-# one half populated and the other half None (Codex round 1 finding).
-# Reset to None by setFFmpegPath so a different ffmpeg binary triggers
-# fresh detection.
+# detection). Stored as a single tuple ``(input_list, output_list)`` and
+# published in one assignment, so a reader that races past the cache
+# check sees either None or a fully populated tuple, never a half-filled
+# pair. This is not a lock: a concurrent setFFmpegPath() reset can still
+# race a populate, in which case detection simply runs again; the cost
+# is a redundant `ffmpeg -protocols` call, not corruption. Reset to None
+# by setFFmpegPath so a different ffmpeg binary triggers fresh detection.
 _FFMPEG_PROTOCOLS = None
 
 _FFPROBE_APPLICATION = "ffprobe"

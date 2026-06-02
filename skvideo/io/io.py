@@ -176,15 +176,19 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             outputdict['-pix_fmt'] = 'gray'
 
         reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity, start_frame=start_frame)
-        T, M, N, C = reader.getShape()
+        try:
+            T, M, N, C = reader.getShape()
 
-        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-        for idx, frame in enumerate(reader.nextFrame()):
-            videodata[idx, :, :, :] = frame
+            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            for idx, frame in enumerate(reader.nextFrame()):
+                videodata[idx, :, :, :] = frame
 
-        if as_grey:
-            videodata = vshape(videodata[:, :, :, 0])
-        reader.close()
+            if as_grey:
+                videodata = vshape(videodata[:, :, :, 0])
+        finally:
+            # Always close so a spooled temp file (BytesIO input) is unlinked
+            # even if reading raises partway through.
+            reader.close()
 
         return videodata
     elif backend == "libav":
@@ -198,13 +202,14 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             outputdict['-vframes'] = str(num_frames)
 
         reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
-        T, M, N, C = reader.getShape()
+        try:
+            T, M, N, C = reader.getShape()
 
-        videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-        for idx, frame in enumerate(reader.nextFrame()):
-            videodata[idx, :, :, :] = frame
-
-        reader.close()
+            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            for idx, frame in enumerate(reader.nextFrame()):
+                videodata[idx, :, :, :] = frame
+        finally:
+            reader.close()
         return videodata
 
     else:
