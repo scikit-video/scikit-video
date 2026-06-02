@@ -113,8 +113,10 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
     h, w = img.shape
 
     if (h < blocksizerow) or (w < blocksizecol):
-        print("Input frame is too small")
-        exit(0)
+        raise ValueError(
+            "Input frame (%dx%d) is smaller than the block size %dx%d."
+            % (h, w, blocksizerow, blocksizecol)
+        )
 
     # ensure that the patch divides evenly into img
     hoffset = (h % blocksizerow)

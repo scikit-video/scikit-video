@@ -343,10 +343,13 @@ def rgb2gray(videodata):
     if C == 1:
         return videodata
     elif C == 3: # assume RGB
-        videodata = videodata[:, :, :, 0]*0.2989 + videodata[:, :, :, 1]*0.5870 + videodata[:, :, :, 2]*0.1140 
+        videodata = videodata[:, :, :, 0]*0.2989 + videodata[:, :, :, 1]*0.5870 + videodata[:, :, :, 2]*0.1140
         return vshape(videodata)
     else:
-        raise NotImplemented
+        raise NotImplementedError(
+            "rgb2gray only supports 1-channel (grayscale) or 3-channel "
+            "(RGB) input; got %d channels." % C
+        )
 
 __all__ = [
     'xmltodictparser',

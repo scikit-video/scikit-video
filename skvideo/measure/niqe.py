@@ -53,8 +53,10 @@ def extract_on_patches(img, patch_size):
 def _get_patches_generic(img, patch_size, is_train, stride):
     h, w = np.shape(img)
     if h < patch_size or w < patch_size:
-        print("Input image is too small")
-        exit(0)
+        raise ValueError(
+            "Input image (%dx%d) is smaller than the patch size %d."
+            % (h, w, patch_size)
+        )
 
     # ensure that the patch divides evenly into img
     hoffset = (h % patch_size)
