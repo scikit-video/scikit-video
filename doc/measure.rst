@@ -8,6 +8,14 @@ Measurement Tools
 
 :mod:`skvideo.measure` provides quality assessment tools, scene detection, and other measurement operations.
 
+.. note::
+
+   The quality metrics assume **finite, real-valued pixel data**. Non-finite
+   input (``NaN`` / ``inf``) is the caller's responsibility; it is not
+   rejected and will propagate into non-finite scores. Sanitize your input
+   (e.g. with ``np.nan_to_num``) before measuring if it may contain
+   non-finite values.
+
 Reduced-Reference Quality Assessment
 ------------------------------------
 
