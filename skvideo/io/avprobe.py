@@ -1,4 +1,5 @@
 import subprocess as sp
+import warnings
 
 from ..utils import *
 from .. import _HAS_AVCONV, _LIBAV_MAJOR_VERSION
@@ -48,5 +49,12 @@ def avprobe(filename):
             streamsbytype[d["codec_type"].lower()] = d
 
         return streamsbytype
-    except:
+    except Exception as exc:
+        warnings.warn(
+            "avprobe could not parse %r (%s); returning empty metadata. "
+            "Expected for raw video (supply stream parameters via inputdict); "
+            "for a normal media file this usually means it is unreadable or "
+            "not a recognized format." % (filename, exc),
+            UserWarning,
+        )
         return {}

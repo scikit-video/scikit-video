@@ -59,3 +59,15 @@ def test_input_validation_survives_O_optimization():
         "mse did not raise under -O; stdout=%r stderr=%r"
         % (out.stdout, out.stderr[-200:])
     )
+
+
+def test_ffprobe_warns_on_unparseable_file(tmp_path):
+    """ffprobe returning {} is load-bearing for raw video, but it must no
+    longer do so silently: an unparseable file should emit a UserWarning
+    explaining why, rather than vanishing behind a later generic error."""
+    import skvideo.io
+    bogus = tmp_path / "not_a_video.mp4"
+    bogus.write_bytes(b"this is plainly not a media file")
+    with pytest.warns(UserWarning):
+        info = skvideo.io.ffprobe(str(bogus))
+    assert info == {}
