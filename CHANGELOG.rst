@@ -36,6 +36,15 @@
 - Documentation: I/O guide gains a "Remote and in-memory I/O" section
   covering URL inputs/outputs, BytesIO round-trip, the streaming-mp4
   default for memory destinations, and a note on ffprobe latency.
+- Documentation fix: the "Tuning FFmpeg Parameters" writer recipe added in
+  v1.1.13 incorrectly placed the output framerate in ``outputdict["-r"]``.
+  Because ``FFmpegWriter`` feeds headerless ``rawvideo`` (assumed 25 fps),
+  ``-r`` must go in ``inputdict`` to set the written video's framerate;
+  ``outputdict["-r"]`` only resamples against the assumed input rate and
+  yields the wrong duration. Recipes corrected and a note added explaining
+  the input-vs-output ``-r`` asymmetry (and why it differs from
+  ``FFmpegReader``). Reopens the documentation concern from #160/#96; see
+  #186 (reported by page200).
 
 1.1.13 (2026-06-01)
 -------------------

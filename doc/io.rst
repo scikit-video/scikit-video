@@ -120,6 +120,21 @@ https://ffmpeg.org/ffmpeg.html.
 command line (they describe how to interpret the input), and ``outputdict``
 parameters are placed *after* (they describe what to do on the way out).
 
+.. note::
+
+   ``FFmpegWriter`` feeds your NumPy frames to FFmpeg as headerless
+   ``rawvideo`` over a pipe, so the stream carries no framerate of its
+   own (FFmpeg assumes 25 fps unless told otherwise). To set the
+   framerate of the written video, put ``-r`` in **inputdict**, not
+   ``outputdict``. ``-r`` before ``-i`` declares the framerate of the
+   incoming frames; ``-r`` after ``-i`` (i.e. in ``outputdict``) is a
+   *resampler* that drops or duplicates frames relative to the input
+   rate. Setting only ``outputdict["-r"]`` resamples against the
+   assumed 25 fps and produces the wrong duration. (This is the reverse
+   of ``FFmpegReader``, whose input is a real container with its own
+   framerate header, so resampling on the output side is the natural
+   knob there.)
+
 **Common reading recipes**
 
 Force a different output pixel format (default is ``rgb24``):
@@ -151,28 +166,32 @@ Read a raw YUV file with no header (size and format must be supplied):
 
 **Common writing recipes**
 
-Pick a specific codec, bitrate, and framerate:
+Pick a specific codec, bitrate, and framerate. Note ``-r`` (the
+framerate of the frames you write) goes in ``inputdict``; see the note
+above:
 
 .. code-block:: python
 
     writer = skvideo.io.FFmpegWriter(
         "out.mp4",
+        inputdict={"-r": "30"},      # framerate of the written video
         outputdict={
             "-vcodec": "libx264",
             "-b:v": "2000k",
-            "-r": "30",
         },
     )
 
-Resample to a different framerate (FFmpeg drops or duplicates frames as
-needed):
+Resample to a different framerate, i.e. write at a different rate than the
+frames are produced (FFmpeg drops or duplicates frames as needed). Here
+``inputdict["-r"]`` sets the source rate and ``outputdict["-r"]`` is the
+resampler:
 
 .. code-block:: python
 
     writer = skvideo.io.FFmpegWriter(
         "out.mp4",
-        inputdict={"-r": "60"},      # source framerate
-        outputdict={"-r": "30"},     # target framerate
+        inputdict={"-r": "60"},      # rate of the frames you write
+        outputdict={"-r": "30"},     # resample to this rate on output
     )
 
 Write a high-quality H.264 with a constant rate factor:
