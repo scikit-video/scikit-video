@@ -129,6 +129,15 @@
     meaningless ``(-r, -r)`` or a crash.
   - ``vwrite`` on a zero-frame array now raises ``ValueError`` instead of
     silently writing no file.
+  - ``blockComp`` validates the motion-vector grid against the macroblock
+    grid (a mismatch raised a cryptic ``IndexError`` or silently ignored
+    extra vectors; now ``ValueError``), and its single-frame result is now
+    ``(1, M, N, C)`` to match the documented shape.
+  - Documented previously-implicit behaviors: ``blockComp`` output dtype
+    (``float64``), non-divisible-border passthrough, out-of-bounds-vector
+    passthrough; ``globalEdgeMotion``'s ``[0, 0]`` edgeless sentinel; and
+    that a low-level ``FFmpegWriter`` closed without frames is an
+    intentional no-op (use ``vwrite`` for the guarded 0-frame check).
 
 1.1.13 (2026-06-01)
 -------------------
