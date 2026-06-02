@@ -145,8 +145,9 @@ class VideoReaderAbstract(object):
             pass ``outputdict={"-vf": "select='gte(n\\\\,N)'", "-vsync":
             "0"}`` instead (``-vf`` is an output filter, so it must go in
             ``outputdict``; ``-vsync 0`` stops FFmpeg from re-padding the
-            dropped frames back to a constant rate). That is slower because
-            it decodes from the start of the file.
+            dropped frames back to a constant rate, and on FFmpeg 5.1+ is
+            equivalent to ``-fps_mode passthrough``). That is slower
+            because it decodes from the start of the file.
 
         Returns
         -------

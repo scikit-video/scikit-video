@@ -274,7 +274,11 @@ Two details matter here. ``select`` is an *output* filter, so it goes in
 frames. And ``-vsync 0`` is required: ``select`` drops frames, and without
 it FFmpeg re-pads the gaps back to a constant frame rate by duplicating
 frames, which silently undoes the selection. With ``-vsync 0`` each
-surviving frame is emitted exactly once.
+surviving frame is emitted exactly once. (On FFmpeg 5.1 and newer,
+``-vsync 0`` is a deprecated alias for ``-fps_mode passthrough`` and may
+print a deprecation notice; ``-vsync 0`` is used here because it works
+across the FFmpeg versions scikit-video supports. On a recent-only
+FFmpeg you can use ``"-fps_mode": "passthrough"`` instead.)
 
 **Muxing audio from a separate source** (added in v1.1.12) uses the
 ``audiosrc`` constructor argument rather than ``inputdict``:
