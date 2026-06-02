@@ -29,10 +29,15 @@ def _minCost(costs):
     return dx, dy, mi
 
 def _checkBounded(xval, yval, w, h, mbSize):
+    # A block at (xval, yval) occupies [xval, xval+mbSize) x [yval, yval+mbSize),
+    # so it fits when xval+mbSize <= w and yval+mbSize <= h. The previous test
+    # used >=, which wrongly rejected the block ending exactly at the frame
+    # edge — dropping every bottom/right macroblock (e.g. with a 16x16 frame
+    # and 8x8 blocks only the top-left block survived motion compensation).
     if ((yval < 0) or
-       (yval + mbSize >= h) or
+       (yval + mbSize > h) or
        (xval < 0) or
-       (xval + mbSize >= w)):
+       (xval + mbSize > w)):
         return False
     else:
         return True
