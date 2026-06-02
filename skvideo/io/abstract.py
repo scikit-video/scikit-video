@@ -142,9 +142,11 @@ class VideoReaderAbstract(object):
             so the actual first frame returned may snap to the nearest
             keyframe at or before the requested position. Combine with
             ``num_frames`` for a windowed read. For frame-exact extraction,
-            pass ``outputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead
-            (``-vf`` is an output filter, so it must go in ``outputdict``);
-            that is slower because it decodes from the start of the file.
+            pass ``outputdict={"-vf": "select='gte(n\\\\,N)'", "-vsync":
+            "0"}`` instead (``-vf`` is an output filter, so it must go in
+            ``outputdict``; ``-vsync 0`` stops FFmpeg from re-padding the
+            dropped frames back to a constant rate). That is slower because
+            it decodes from the start of the file.
 
         Returns
         -------
@@ -164,10 +166,17 @@ class VideoReaderAbstract(object):
         # needs random access that subprocess stdin can't provide reliably.
         # After spooling, treat as a file for all downstream branching.
         if self._source_kind == "memory":
-            if not hasattr(filename, "read"):
+            # Must be readable. hasattr("read") alone is too weak: a file
+            # opened in write mode ("wb") still exposes a read attribute
+            # that raises io.UnsupportedOperation when called. Prefer the
+            # readable() probe when the object provides it, and require a
+            # callable read otherwise.
+            read = getattr(filename, "read", None)
+            readable = getattr(filename, "readable", None)
+            if not callable(read) or (callable(readable) and not readable()):
                 raise TypeError(
-                    "Input source is a file-like object without a read() "
-                    "method; FFmpegReader needs a readable source (got %r)."
+                    "Input source is not readable; FFmpegReader needs a "
+                    "file-like object opened for reading (got %r)."
                     % type(filename)
                 )
             self._temp_input_path = _spool_memory_to_tempfile(filename)

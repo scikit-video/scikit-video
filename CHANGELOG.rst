@@ -64,8 +64,20 @@
   failing deep inside the copy.
 - Documentation fix: the frame-exact ``select`` recipe (and the
   ``start_frame`` docstring) placed ``-vf`` in ``inputdict``; ``-vf`` is
-  an output filter and yields no frames there. Corrected to ``outputdict``.
-  Also added a missing ``import numpy as np`` to the reader example.
+  an output filter and yields no frames there. Corrected to ``outputdict``
+  and added the required ``-vsync 0`` (without it FFmpeg re-pads the
+  frames ``select`` drops back to a constant rate, silently undoing the
+  selection). Also added a missing ``import numpy as np`` to the reader
+  example.
+- ``vread`` now trims its result to the number of frames actually
+  produced. When an output filter such as ``-vf select`` yields fewer
+  frames than ``getShape()`` predicted from ``nb_frames``, the returned
+  array previously kept the extra, uninitialized ``np.empty`` rows.
+- The readable-input check for file-like sources is stricter: a file
+  opened in write mode (``"wb"``) exposes a ``read`` attribute that
+  raises when called, so it now fails the ``readable()`` probe and is
+  rejected with a clear ``TypeError`` instead of an opaque
+  ``io.UnsupportedOperation`` from inside the spool copy.
 
 1.1.13 (2026-06-01)
 -------------------

@@ -180,8 +180,15 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             T, M, N, C = reader.getShape()
 
             videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            count = 0
             for idx, frame in enumerate(reader.nextFrame()):
                 videodata[idx, :, :, :] = frame
+                count = idx + 1
+            # An output filter (e.g. -vf select) can yield fewer frames than
+            # getShape() predicted from nb_frames; trim so the caller never
+            # sees uninitialized np.empty rows.
+            if count < T:
+                videodata = videodata[:count]
 
             if as_grey:
                 videodata = vshape(videodata[:, :, :, 0])
@@ -206,8 +213,12 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
             T, M, N, C = reader.getShape()
 
             videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+            count = 0
             for idx, frame in enumerate(reader.nextFrame()):
                 videodata[idx, :, :, :] = frame
+                count = idx + 1
+            if count < T:
+                videodata = videodata[:count]
         finally:
             reader.close()
         return videodata

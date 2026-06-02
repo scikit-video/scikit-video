@@ -131,8 +131,19 @@ def test_write_only_input_rejected():
     class _WriteOnly:
         def write(self, b):
             return len(b)
-    with pytest.raises(TypeError, match="read"):
+    with pytest.raises(TypeError, match="readable"):
         skvideo.io.FFmpegReader(_WriteOnly())
+
+
+def test_write_mode_file_handle_rejected(tmp_path):
+    """A real file opened in write mode ("wb") exposes a .read attribute
+    that raises io.UnsupportedOperation when called, so a plain
+    hasattr("read") check would pass it and then fail deep in the spool
+    copy. The readable() probe must reject it up front with a TypeError."""
+    p = tmp_path / "out.mp4"
+    with open(p, "wb") as wb:
+        with pytest.raises(TypeError, match="readable"):
+            skvideo.io.FFmpegReader(wb)
 
 
 def test_no_temp_leak_when_source_read_fails():

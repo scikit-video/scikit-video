@@ -265,13 +265,16 @@ instead — slower because FFmpeg decodes from the start of the file:
 
     skvideo.io.vread(
         "clip.mp4",
-        outputdict={"-vf": "select='gte(n\\,1000)'"},
+        outputdict={"-vf": "select='gte(n\\,1000)'", "-vsync": "0"},
         num_frames=200,
     )
 
-The ``select`` filter is an *output* filter, so it goes in ``outputdict``
-(after ``-i``). Placing ``-vf`` in ``inputdict`` applies it before the
-input is opened and yields no frames.
+Two details matter here. ``select`` is an *output* filter, so it goes in
+``outputdict`` (after ``-i``); placing ``-vf`` in ``inputdict`` yields no
+frames. And ``-vsync 0`` is required: ``select`` drops frames, and without
+it FFmpeg re-pads the gaps back to a constant frame rate by duplicating
+frames, which silently undoes the selection. With ``-vsync 0`` each
+surviving frame is emitted exactly once.
 
 **Muxing audio from a separate source** (added in v1.1.12) uses the
 ``audiosrc`` constructor argument rather than ``inputdict``:
