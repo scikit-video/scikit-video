@@ -1,3 +1,65 @@
+1.1.13 (unreleased)
+-------------------
+- ``pathlib.Path`` objects are now accepted everywhere a filename is expected:
+  ``skvideo.io.vread``, ``vwrite``, ``vreader``, ``ffprobe``, and the
+  ``FFmpegReader`` / ``FFmpegWriter`` constructors. Previously a ``Path`` could
+  cause ``ffprobe`` to silently fail and the downstream caller to raise a
+  misleading "No way to determine width or height" error. Fixes #148, #163.
+- ``FFmpegWriter._proc`` is now initialized to ``None`` in ``__init__`` so that
+  calling ``close()`` (or exiting a ``with`` block) before any frames are
+  written no longer raises ``AttributeError``. Fixes #139.
+- ``FFmpegReader`` no longer leaks an ffmpeg process when ``verbosity > 0``.
+  Previously ``_createProcess()`` ran ``subprocess.Popen`` twice — once inside
+  an ``if verbosity > 0`` branch and once unconditionally after — causing
+  broken-pipe errors for some users. Fixes #174.
+- ``VideoReaderAbstract.close()`` now guards against ``self._proc.stderr is
+  None``, which is the configured state when ``verbosity > 0``.
+- ``FFmpegWriter`` now surfaces FFmpeg's actual error output instead of
+  silently producing an empty/corrupt file when encoding fails. ``close()``
+  raises ``RuntimeError`` with FFmpeg's stderr if the process exited
+  non-zero; the existing ``writeFrame`` ``IOError`` handler now actually
+  reads and includes the stderr that the original code template referenced
+  but never populated. Non-verbose mode now uses ``stderr=PIPE`` instead of
+  routing stderr to ``DEVNULL`` via ``STDOUT``. Fixes #111.
+- ``skvideo.measure.videobliinds`` ``temporal_dc_variation_feature_extraction``
+  no longer raises ``ValueError: operands could not be broadcast together``
+  when a motion vector points outside the reference frame. Out-of-bounds
+  blocks are marked NaN and ``nanstd`` / ``nanmean`` aggregate over the
+  remainder. Default motion method (N3SS) is unchanged. Fixes #97 (patch
+  contributed by amarion35, adapted with corrected bounds checks).
+- Documentation: added a "Tuning FFmpeg Parameters" section to the I/O
+  guide covering ``inputdict`` / ``outputdict`` semantics, common reading
+  and writing recipes (pixel format, resize, codec, bitrate, framerate
+  resampling), repeated-flag list values (v1.1.12), fraction framerate
+  support (v1.1.13), and ``audiosrc`` muxing (v1.1.12). Fixes #160, #96.
+  Also corrected a stale Python 2 ``xrange`` example in the writer code
+  snippet.
+- ``vread`` / ``vreader`` / ``FFmpegReader`` accept a new ``start_frame``
+  argument to skip the first N frames before reading. Combine with
+  ``num_frames`` for a windowed read::
+
+      videodata = skvideo.io.vread("clip.mp4", start_frame=1000, num_frames=200)
+
+  Uses FFmpeg's fast keyframe-based ``-ss`` input seek, so the first
+  frame returned may snap to the nearest keyframe at or before the
+  requested position. Passing both ``start_frame`` and
+  ``inputdict['-ss']`` raises ``ValueError``. Fixes #166.
+- The "ffmpeg/ffprobe not found in path" and "avconv/avprobe not found in
+  path" warnings now explicitly say "binaries" and reference
+  ``setFFmpegPath`` / ``setLibAVPath`` so users can recognize the fix.
+  Previously the wording was easy to misread as referring to the
+  ``skvideo/io/ffmpeg.py`` wrapper module. Fixes #159.
+- ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
+  ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
+  ``int('30000/1001')`` raised ``ValueError``. Fixes #128.
+- Documentation: corrected ``skvideo.io.write`` typo to ``skvideo.io.vwrite``
+  in the I/O guide. Fixes #158.
+- Motion: replaced all 45 instances of removed ``np.int()`` with ``int()`` in
+  ``skvideo.motion.block`` for NumPy 2.x compatibility. Cherry-picked the SE3SS
+  indexing fix from PR #142 with an additional correction (``cost = costs[dxy
+  - 1]``) to avoid an IndexError when ``argmin`` returns the last element.
+  Closes #142.
+
 1.1.12 (2026-05-24)
 -------------------
 - Replaced setup.py / numpy.distutils packaging with pyproject.toml + setuptools.

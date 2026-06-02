@@ -54,14 +54,14 @@ class FFmpegReader(VideoReaderAbstract):
         if verbosity > 0:
             cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
-            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=sp.PIPE, stderr=None)
+            stderr = None
         else:
             cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
                                                                                                       self._filename] + oargs + [
                       '-']
+            stderr = sp.PIPE
         self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                              stdout=sp.PIPE, stderr=sp.PIPE)
+                              stdout=sp.PIPE, stderr=stderr)
         self._cmd = " ".join(cmd)
 
     def _probCountFrames(self):
@@ -190,12 +190,15 @@ class FFmpegWriter(VideoWriterAbstract):
 
         self._cmd = " ".join(cmd)
 
-        # Launch process
+        # Launch process. stderr=PIPE in non-verbose mode so close() and the
+        # writeFrame IOError handler can surface FFmpeg's actual error output
+        # (issue #111). verbosity>0 leaves stderr unredirected so the user
+        # sees FFmpeg's output live and we have no captured stream to read.
         if self.verbosity > 0:
             print(self._cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
         else:
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                                  stdout=self.DEVNULL, stderr=sp.STDOUT)
+                                  stdout=self.DEVNULL, stderr=sp.PIPE)
 

@@ -22,7 +22,7 @@ class VideoReaderAbstract(object):
     DEFAULT_INPUT_PIX_FMT = "yuvj444p"
     OUTPUT_METHOD = None  # "rawvideo"
 
-    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0):
+    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0, start_frame=0):
         """Initializes FFmpeg in reading mode with the given parameters
 
         During initialization, additional parameters about the video file
@@ -47,6 +47,15 @@ class VideoReaderAbstract(object):
             Output dictionary parameters, i.e. how to encode the data
             when sending back to the python process.
 
+        start_frame : int
+            Skip the first ``start_frame`` frames of the input (issue #166).
+            Uses FFmpeg's fast keyframe-based ``-ss`` seek (input seeking),
+            so the actual first frame returned may snap to the nearest
+            keyframe at or before the requested position. Combine with
+            ``num_frames`` for a windowed read. For frame-exact extraction,
+            pass ``inputdict={"-vf": "select='gte(n\\\\,N)'"}`` instead;
+            that is slower because it decodes from the start of the file.
+
         Returns
         -------
         none
@@ -55,6 +64,7 @@ class VideoReaderAbstract(object):
         # check if FFMPEG exists in the path
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
+        filename = os.fspath(filename)
         self._filename = filename
         self.verbosity = verbosity
 
@@ -97,6 +107,24 @@ class VideoReaderAbstract(object):
                 self.inputfps = float(frtxt)
         else:
             self.inputfps = self.DEFAULT_FRAMERATE
+
+        # Frame-range seek (issue #166). start_frame is converted to a
+        # seconds-based -ss before -i so FFmpeg performs a fast keyframe
+        # seek. Refuse to silently mix this with a user-supplied -ss.
+        if start_frame > 0:
+            if "-ss" in inputdict:
+                raise ValueError(
+                    "Cannot use both start_frame and inputdict['-ss']; "
+                    "choose one."
+                )
+            if not self.inputfps or float(self.inputfps) <= 0:
+                raise ValueError(
+                    "Cannot use start_frame without a positive input "
+                    "framerate (got %r). Drop start_frame or supply a "
+                    "valid inputdict['-r']." % self.inputfps
+                )
+            inputdict["-ss"] = str(start_frame / float(self.inputfps))
+        self._start_frame = start_frame
 
         # check for transposition tag
         if ('tag' in viddict):
@@ -166,6 +194,12 @@ class VideoReaderAbstract(object):
                 warnings.warn(
                     "Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.",
                     UserWarning)
+
+        # Adjust the expected frame count for start_frame seek so getShape()
+        # reports what nextFrame() will actually yield. If the user also
+        # passed -vframes, that already governs the output count.
+        if start_frame > 0 and "-vframes" not in outputdict and self.inputframenum > 0:
+            self.inputframenum = max(0, self.inputframenum - start_frame)
 
         if israw or iswebcam:
             inputdict['-pix_fmt'] = self.pix_fmt
@@ -260,7 +294,8 @@ class VideoReaderAbstract(object):
         if self._proc is not None and self._proc.poll() is None:
             self._proc.stdin.close()
             self._proc.stdout.close()
-            self._proc.stderr.close()
+            if self._proc.stderr is not None:
+                self._proc.stderr.close()
             self._terminate(0.2)
         self._proc = None
 
@@ -378,7 +413,7 @@ class VideoWriterAbstract(object):
         """
         self.DEVNULL = open(os.devnull, 'wb')
 
-        filename = os.path.abspath(filename)
+        filename = os.path.abspath(os.fspath(filename))
         _, self.extension = os.path.splitext(filename)
 
         # check that the extension makes sense
@@ -406,6 +441,7 @@ class VideoWriterAbstract(object):
         if "-f" not in self.inputdict:
             self.inputdict["-f"] = "rawvideo"
         self.warmStarted = False
+        self._proc = None
 
     def _warmStart(self, M, N, C, dtype):
         self.warmStarted = True
@@ -491,16 +527,30 @@ class VideoWriterAbstract(object):
     def close(self):
         """Closes the video and terminates FFmpeg process
 
+        Raises ``RuntimeError`` if FFmpeg exited with a non-zero return
+        code, including its stderr output in the exception message (issue
+        #111). Previously a failing encode produced a silent empty/corrupt
+        output file with no indication of what went wrong.
         """
         if self._proc is None:  # pragma: no cover
             return  # no process
         if self._proc.poll() is not None:
             return  # process already dead
-        if self._proc.stdin:
-            self._proc.stdin.close()
-        self._proc.wait()
+        # communicate() closes stdin, then drains stdout/stderr while
+        # waiting — this avoids the deadlock that wait() would hit if
+        # FFmpeg's stderr pipe filled. When stderr is None (verbosity>0),
+        # the second tuple element is None and we have nothing to surface.
+        # Don't call stdin.close() ourselves first: communicate() flushes
+        # stdin and raises ValueError if it's already closed.
+        _, stderr_data = self._proc.communicate()
+        returncode = self._proc.returncode
         self._proc = None
         self.DEVNULL.close()
+        if returncode != 0:
+            msg = "FFmpeg exited with code %d" % returncode
+            if stderr_data:
+                msg += ":\n" + stderr_data.decode(errors='replace')
+            raise RuntimeError(msg)
 
     def writeFrame(self, im):
         """Sends ndarray frames to FFmpeg
@@ -534,9 +584,18 @@ class VideoWriterAbstract(object):
         try:
             self._proc.stdin.write(vid.tobytes())
         except IOError as e:
-            # Show the command and stderr from pipe
-            msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}\n\nFFMPEG STDERR ' \
-                  'OUTPUT:\n'.format(e, self._cmd)
+            # Surface FFmpeg's stderr alongside the broken-pipe error so the
+            # user sees what FFmpeg actually rejected (e.g. bad codec, bad
+            # pixel format), not just "Broken pipe" (issue #111).
+            stderr_data = b''
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b''
+                except Exception:
+                    pass
+            msg = '{0:}\n\nFFMPEG COMMAND:\n{1:}'.format(e, self._cmd)
+            if stderr_data:
+                msg += '\n\nFFMPEG STDERR OUTPUT:\n' + stderr_data.decode(errors='replace')
             raise IOError(msg)
 
     def _getSupportedEncoders(self):

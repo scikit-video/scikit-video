@@ -1,4 +1,4 @@
-__version__ = "1.1.12"
+__version__ = "1.1.13.dev0"
 
 from .utils import check_output, where
 import os
@@ -303,7 +303,17 @@ def setFFmpegPath(path):
     if os.path.isfile(os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION)) and os.path.isfile(os.path.join(_FFMPEG_PATH, _FFPROBE_APPLICATION)):
         _HAS_FFMPEG = 1
     else:
-        warnings.warn("ffmpeg/ffprobe not found in path: " + str(path), UserWarning)
+        # Be explicit that we're looking for the ffmpeg/ffprobe BINARIES,
+        # not Python modules. Issue #159: the old wording made users think
+        # the warning was about skvideo/io/ffmpeg.py (the wrapper module).
+        warnings.warn(
+            "ffmpeg/ffprobe binaries not found at %s. Install FFmpeg and "
+            "make sure %s and %s exist there, or call "
+            "skvideo.setFFmpegPath() to point at a different directory." % (
+                str(path), _FFMPEG_APPLICATION, _FFPROBE_APPLICATION,
+            ),
+            UserWarning,
+        )
         _HAS_FFMPEG = 0
         global _FFMPEG_MAJOR_VERSION
         global _FFMPEG_MINOR_VERSION
@@ -353,7 +363,14 @@ def setLibAVPath(path):
     if os.path.isfile(os.path.join(_AVCONV_PATH, _AVCONV_APPLICATION)) and os.path.isfile(os.path.join(_AVCONV_PATH, _AVPROBE_APPLICATION)):
         _HAS_AVCONV = 1
     else:
-        warnings.warn("avconv/avprobe not found in path: " + str(path), UserWarning)
+        warnings.warn(
+            "avconv/avprobe binaries not found at %s. Install libav and "
+            "make sure %s and %s exist there, or call "
+            "skvideo.setLibAVPath() to point at a different directory." % (
+                str(path), _AVCONV_APPLICATION, _AVPROBE_APPLICATION,
+            ),
+            UserWarning,
+        )
         _HAS_AVCONV = 0
         global _LIBAV_MAJOR_VERSION
         global _LIBAV_MINOR_VERSION
