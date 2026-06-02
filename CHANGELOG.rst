@@ -44,6 +44,11 @@
   frame returned may snap to the nearest keyframe at or before the
   requested position. Passing both ``start_frame`` and
   ``inputdict['-ss']`` raises ``ValueError``. Fixes #166.
+- The "ffmpeg/ffprobe not found in path" and "avconv/avprobe not found in
+  path" warnings now explicitly say "binaries" and reference
+  ``setFFmpegPath`` / ``setLibAVPath`` so users can recognize the fix.
+  Previously the wording was easy to misread as referring to the
+  ``skvideo/io/ffmpeg.py`` wrapper module. Fixes #159.
 - ``inputdict['-r']`` now accepts FFmpeg fraction strings such as
   ``'30000/1001'`` (as returned by ``ffprobe avg_frame_rate``); previously
   ``int('30000/1001')`` raised ``ValueError``. Fixes #128.
