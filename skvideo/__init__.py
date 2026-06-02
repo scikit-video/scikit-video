@@ -508,10 +508,10 @@ if (len(_AVCONV_PATH) > 0):
 
 
 __all__ = [
-    getFFmpegPath,
-    getFFmpegVersion,
-    setFFmpegPath,
-    getLibAVPath,
-    getLibAVVersion,
-    setLibAVPath,
+    "getFFmpegPath",
+    "getFFmpegVersion",
+    "setFFmpegPath",
+    "getLibAVPath",
+    "getLibAVVersion",
+    "setLibAVPath",
 ]
