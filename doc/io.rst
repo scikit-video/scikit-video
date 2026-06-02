@@ -203,6 +203,29 @@ Write a high-quality H.264 with a constant rate factor:
         outputdict={"-vcodec": "libx264", "-crf": "18", "-pix_fmt": "yuv420p"},
     )
 
+Preserve an alpha (transparency) channel. Two things are required:
+the codec/container must support alpha (H.264/``.mp4`` does **not**;
+use FFV1 in ``.mkv``, QTRLE/PNG in ``.mov``, or VP9 in ``.webm``), and
+the output ``-pix_fmt`` must keep the alpha plane (e.g. ``rgba``):
+
+.. code-block:: python
+
+    # frames is an (T, H, W, 4) uint8 array
+    writer = skvideo.io.FFmpegWriter(
+        "out.mkv",
+        inputdict={"-r": "10"},
+        outputdict={"-vcodec": "ffv1", "-pix_fmt": "rgba"},
+    )
+
+When reading the file back, you must also ask for a 4-channel pixel
+format — the reader defaults to ``rgb24`` and would otherwise silently
+drop the alpha plane:
+
+.. code-block:: python
+
+    vid = skvideo.io.vread("out.mkv", outputdict={"-pix_fmt": "rgba"})
+    # vid.shape == (T, H, W, 4)
+
 **Repeating the same flag** (e.g. multiple ``-metadata`` or ``-map``
 entries) is done with a list value — scikit-video emits the flag once per
 list element:

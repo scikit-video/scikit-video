@@ -45,6 +45,12 @@
   the input-vs-output ``-r`` asymmetry (and why it differs from
   ``FFmpegReader``). Reopens the documentation concern from #160/#96; see
   #186 (reported by page200).
+- Documentation: added an alpha-channel (transparency) writing recipe to
+  the I/O guide. Preserving alpha requires both an alpha-capable
+  codec/container (FFV1/.mkv, QTRLE or PNG/.mov, VP9/.webm, but not
+  H.264/.mp4) and reading back with ``outputdict={"-pix_fmt": "rgba"}``,
+  since the reader defaults to ``rgb24`` and otherwise drops the alpha
+  plane. Addresses the usage confusion in #143.
 
 1.1.13 (2026-06-01)
 -------------------
