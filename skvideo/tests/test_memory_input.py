@@ -1,5 +1,6 @@
 """Tests for BytesIO / file-like input support (issue #113)."""
 import io
+import os
 from pathlib import Path
 
 import numpy as np
@@ -89,3 +90,37 @@ def test_file_path_does_not_create_temp_file(tmp_path, bunny_bytes):
         assert reader._temp_input_path is None
     finally:
         reader.close()
+
+
+def test_no_temp_leak_when_constructor_fails():
+    """If the constructor raises after spooling (e.g. probe can't parse the
+    bytes), the spooled temp file must still be cleaned up — the caller
+    never gets a reference, so they can't call close() themselves.
+
+    Codex round 1 review flagged this lifecycle gap.
+    """
+    import glob
+    import tempfile as _tempfile
+
+    # Use the system tempdir directly: macOS uses /var/folders/... not /tmp.
+    tempdir = _tempfile.gettempdir()
+    pattern = os.path.join(tempdir, "skvideo_in_*")
+
+    junk = io.BytesIO(b"this is not a video file")
+    before = set(glob.glob(pattern))
+    with pytest.raises(Exception):
+        skvideo.io.FFmpegReader(junk)
+    after = set(glob.glob(pattern))
+    leaked = after - before
+    # Clean up any leak the test exposed so we don't litter the temp dir
+    # across CI runs.
+    for path in leaked:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    assert not leaked, (
+        "Constructor failure left %d temp file(s) behind: %s" % (
+            len(leaked), sorted(leaked)
+        )
+    )

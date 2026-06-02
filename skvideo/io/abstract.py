@@ -164,6 +164,29 @@ class VideoReaderAbstract(object):
             # raise because protocol detection is best-effort.
             _warn_if_unsupported_protocol(filename, "input")
         filename = os.fspath(filename)
+
+        # Wrap the rest of __init__ so that any failure (bad ffprobe,
+        # missing width/height, decoder mismatch) unlinks the spooled temp
+        # file before re-raising. Without this, callers never get a
+        # reference to the half-constructed reader, so close() is
+        # unreachable and the temp file leaks (Codex round 1 finding).
+        try:
+            self._finish_init(filename, inputdict, outputdict, verbosity, start_frame)
+        except Exception:
+            if self._temp_input_path is not None:
+                try:
+                    os.unlink(self._temp_input_path)
+                except OSError:
+                    pass
+                self._temp_input_path = None
+            raise
+
+    def _finish_init(self, filename, inputdict, outputdict, verbosity, start_frame):
+        """The rest of __init__, wrapped so spool failure cleanup can apply.
+
+        Extracted purely for the try/except boundary; semantics are
+        unchanged from doing this work inline (Codex round 1: temp-leak fix).
+        """
         self._filename = filename
         self.verbosity = verbosity
 
