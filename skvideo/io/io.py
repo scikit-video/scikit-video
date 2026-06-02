@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from .abstract import _classify_source
 from .avconv import LibAVReader
 from .avconv import LibAVWriter
 from .ffmpeg import FFmpegReader
@@ -9,6 +10,18 @@ from .ffmpeg import FFmpegWriter
 from .. import _HAS_AVCONV
 from .. import _HAS_FFMPEG
 from ..utils import *
+
+
+def _normalize_source(fname):
+    """Path-likes go through os.fspath; file-like objects pass through unchanged.
+
+    Callers downstream (the Reader/Writer constructors) handle the BytesIO /
+    file-like case via _classify_source + spool_memory_to_tempfile, so we
+    must not try to coerce these into strings here.
+    """
+    if _classify_source(fname) == "memory":
+        return fname
+    return os.fspath(fname)
 
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, audiosrc=None):
@@ -51,7 +64,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
     none
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}
@@ -141,7 +154,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         width, and C is depth.
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}
@@ -255,7 +268,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         Passed to the given plugin.
 
     """
-    fname = os.fspath(fname)
+    fname = _normalize_source(fname)
 
     if not inputdict:
         inputdict = {}

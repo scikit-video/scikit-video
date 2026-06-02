@@ -1,0 +1,91 @@
+"""Tests for BytesIO / file-like input support (issue #113)."""
+import io
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+import skvideo.io
+import skvideo.datasets
+
+
+@pytest.fixture(scope="module")
+def bunny_bytes():
+    """The bigbuckbunny mp4 loaded fully into memory as bytes."""
+    with open(skvideo.datasets.bigbuckbunny(), "rb") as fh:
+        return fh.read()
+
+
+def test_vread_from_bytesio(bunny_bytes):
+    """vread() should accept a BytesIO of mp4 bytes and decode it."""
+    buf = io.BytesIO(bunny_bytes)
+    videodata = skvideo.io.vread(buf, num_frames=3)
+    assert videodata.shape == (3, 720, 1280, 3)
+
+
+def test_ffmpegreader_from_bytesio(bunny_bytes):
+    """FFmpegReader directly should also accept BytesIO; previously
+    crashed at os.path.getsize() / os.fspath() on the BytesIO object."""
+    buf = io.BytesIO(bunny_bytes)
+    reader = skvideo.io.FFmpegReader(buf)
+    try:
+        shape = reader.getShape()
+        # Frame count comes from probe; height/width/channels are deterministic.
+        assert shape[1:] == (720, 1280, 3)
+    finally:
+        reader.close()
+
+
+def test_vreader_from_bytesio(bunny_bytes):
+    """The generator API mirrors vread()."""
+    buf = io.BytesIO(bunny_bytes)
+    frames = []
+    for frame in skvideo.io.vreader(buf, num_frames=2):
+        frames.append(frame)
+    assert len(frames) == 2
+    assert frames[0].shape == (720, 1280, 3)
+
+
+def test_bytesio_at_nonzero_position(bunny_bytes):
+    """If the caller hands us a BytesIO with the cursor already advanced,
+    we should still read from the start (we seek(0) internally)."""
+    buf = io.BytesIO(bunny_bytes)
+    buf.seek(1024)  # caller already consumed some bytes
+    videodata = skvideo.io.vread(buf, num_frames=2)
+    assert videodata.shape == (2, 720, 1280, 3)
+
+
+def test_open_file_handle(tmp_path, bunny_bytes):
+    """An open binary file handle works just like a BytesIO; its .name
+    attribute should let us preserve the extension on the temp spool."""
+    p = tmp_path / "video.mp4"
+    p.write_bytes(bunny_bytes)
+    with open(p, "rb") as fh:
+        videodata = skvideo.io.vread(fh, num_frames=2)
+    assert videodata.shape == (2, 720, 1280, 3)
+
+
+def test_temp_file_cleaned_up_on_close(bunny_bytes):
+    """The spooled temp file must be unlinked when the reader closes,
+    otherwise long-running processes leak files into /tmp."""
+    buf = io.BytesIO(bunny_bytes)
+    reader = skvideo.io.FFmpegReader(buf)
+    spooled_path = reader._temp_input_path
+    assert spooled_path is not None
+    assert Path(spooled_path).exists()
+    reader.close()
+    assert not Path(spooled_path).exists(), (
+        "Spooled temp file %s still exists after close()" % spooled_path
+    )
+
+
+def test_file_path_does_not_create_temp_file(tmp_path, bunny_bytes):
+    """Regression guard: a regular file path must NOT trigger spooling.
+    _temp_input_path stays None so close() has nothing to unlink."""
+    p = tmp_path / "video.mp4"
+    p.write_bytes(bunny_bytes)
+    reader = skvideo.io.FFmpegReader(str(p))
+    try:
+        assert reader._temp_input_path is None
+    finally:
+        reader.close()

@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import tempfile
 import time
 import warnings
 
@@ -43,6 +44,46 @@ def _classify_source(source):
     if _URL_SCHEME_RE.match(source_str):
         return "url"
     return "file"
+
+
+def _spool_memory_to_tempfile(source):
+    """Copy a file-like ``source`` into a NamedTemporaryFile and return its path.
+
+    Called when the reader's input is a BytesIO or other file-like (issue
+    #113). Container formats like mp4 need random access to read header
+    atoms that live at the end of the file, which subprocess stdin can't
+    reliably provide. Spooling to disk lets the rest of the read path
+    treat the source uniformly with a regular filename.
+
+    The temp file is created with ``delete=False``; the caller (typically
+    ``VideoReaderAbstract.close``) is responsible for unlinking it. If the
+    source has a ``.name`` attribute with a recognizable extension, that
+    extension is preserved on the temp file; otherwise ``.mp4`` is used
+    as a sensible default (ffmpeg always content-detects format regardless
+    of extension, but our wrapper's extension-based decoder-allowlist check
+    needs *some* valid extension).
+    """
+    if hasattr(source, "seek"):
+        source.seek(0)
+    suffix = ".mp4"
+    name = getattr(source, "name", None)
+    if isinstance(name, str):
+        _, ext = os.path.splitext(name)
+        if ext:
+            suffix = ext
+    tf = tempfile.NamedTemporaryFile(
+        prefix="skvideo_in_", suffix=suffix, delete=False
+    )
+    try:
+        # Stream-copy in chunks so we don't materialize huge buffers.
+        while True:
+            chunk = source.read(1024 * 1024)
+            if not chunk:
+                break
+            tf.write(chunk)
+    finally:
+        tf.close()
+    return tf.name
 
 
 class VideoReaderAbstract(object):
@@ -102,10 +143,19 @@ class VideoReaderAbstract(object):
         assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
 
         self._source_kind = _classify_source(filename)
-        # Only run os.fspath when we have a path-like — file-like objects
-        # don't implement __fspath__ and must keep their original identity.
-        if self._source_kind != "memory":
-            filename = os.fspath(filename)
+        # Track temp files spooled from memory sources so close() can clean
+        # them up. None for file / url sources.
+        self._temp_input_path = None
+        # Memory sources (BytesIO, file-like): spool to a temp file so the
+        # rest of __init__ — ffprobe, extension heuristics, frame reading —
+        # can operate on a regular path. mp4's moov atom in particular
+        # needs random access that subprocess stdin can't provide reliably.
+        # After spooling, treat as a file for all downstream branching.
+        if self._source_kind == "memory":
+            self._temp_input_path = _spool_memory_to_tempfile(filename)
+            filename = self._temp_input_path
+            self._source_kind = "file"
+        filename = os.fspath(filename)
         self._filename = filename
         self.verbosity = verbosity
 
@@ -363,6 +413,14 @@ class VideoReaderAbstract(object):
                 self._proc.stderr.close()
             self._terminate(0.2)
         self._proc = None
+        # Clean up the spooled temp file for memory sources (issue #113).
+        # Best-effort: ignore if already removed or unreachable.
+        if self._temp_input_path is not None:
+            try:
+                os.unlink(self._temp_input_path)
+            except OSError:
+                pass
+            self._temp_input_path = None
 
     def _terminate(self, timeout=1.0):
         """ Terminate the sub process.
