@@ -234,18 +234,25 @@ See the :class:`skvideo.io.FFmpegWriter` API reference for the full
 Remote and in-memory I/O
 ------------------------
 
-As of v1.1.14, every function and class that accepts a video filename also
-accepts:
+As of v1.1.14, the I/O entry points accept three kinds of source/destination:
 
+* a **file path** — string or ``pathlib.Path`` (existing behavior).
 * a **URL string** — anything matching ``<scheme>://...``, such as
   ``http://``, ``https://``, ``rtsp://``, ``rtmp://``, ``udp://``,
   ``ftp://``, etc. FFmpeg's own protocol handlers take it from there.
 * a **file-like object** — ``io.BytesIO``, an open file handle, anything
-  with a ``.read()`` / ``.write()`` method.
+  with a ``.read()`` (for input) or ``.write()`` (for output) method.
 
-This covers the read side and the write side: pass a URL or a BytesIO to
-``vread`` / ``vreader`` / ``FFmpegReader`` to consume, or to ``vwrite`` /
-``FFmpegWriter`` to produce.
+Specifically:
+
+* :func:`skvideo.io.vread`, :func:`skvideo.io.vreader`, and
+  :class:`skvideo.io.FFmpegReader` accept all three on input.
+* :func:`skvideo.io.vwrite` and :class:`skvideo.io.FFmpegWriter` accept
+  all three on output.
+* :func:`skvideo.io.ffprobe` accepts a file path or a URL string. It does
+  **not** accept a file-like object — wrap the bytes in a
+  ``NamedTemporaryFile`` and call ``ffprobe`` on the resulting path if
+  you need metadata from in-memory bytes.
 
 **Read from a URL:**
 

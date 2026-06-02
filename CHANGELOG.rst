@@ -7,7 +7,9 @@
   …), or a file-like object such as ``io.BytesIO``. The wrapper no longer
   blocks ffmpeg with filesystem-only checks (``os.path.getsize``,
   ``os.path.isfile``, ``os.access(W_OK)``) when the source isn't a local
-  file. Closes #117, #113, #81 (read+write sides for all three).
+  file. Closes #117, #113, #81 on the reader and writer paths. (Note:
+  ``skvideo.io.ffprobe`` itself accepts URLs but not file-like objects;
+  wrap to a ``NamedTemporaryFile`` if you need to probe in-memory bytes.)
 - ``ffprobe`` is invoked against the URL directly for URL inputs, so probing
   is transparent. Note this incurs network latency on ``FFmpegReader``
   construction proportional to the URL's round-trip time.
