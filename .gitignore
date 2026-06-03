@@ -23,3 +23,6 @@ dist/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Metric-accuracy validation harness - kept local until results are published
+validation/
