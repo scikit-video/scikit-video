@@ -514,7 +514,9 @@ class TestRoundTripAndMetricNumerics:
         """Spec: "BRISQUE / NIQE / VideoBliinds within ±0.5 of pinned reference (BLAS-tolerant)." """
         ref = skvideo_modules.io.vread(bunny_path, as_grey=True)[:2]
 
-        assert_array_almost_equal(skvideo_modules.measure.niqe(ref), np.array([11.50, 11.28]), decimal=0)
+        # 1.1.16: NIQE switched to the reference LIVE pristine model; values
+        # shifted from the old inaccurate ~11.5 to ~4.1.
+        assert_array_almost_equal(skvideo_modules.measure.niqe(ref), np.array([4.13, 4.10]), decimal=0)
 
     def test_videobliinds_features_match_pinned_reference(self, skvideo_modules, bunny_path):
         """Spec: "BRISQUE / NIQE / VideoBliinds decimal=2 against pinned reference arrays." """
