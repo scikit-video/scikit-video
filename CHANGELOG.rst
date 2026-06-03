@@ -1,3 +1,25 @@
+1.1.16 (unreleased)
+-------------------
+NIQE accuracy fix.
+
+- **NIQE now uses the reference pristine model** from the LIVE NIQE Software
+  Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained
+  model that correlated poorly with human judgement. On the LIVE IQA database,
+  NIQE's Spearman correlation (SROCC) with DMOS improves from ~0.54 to ~0.84
+  (779 distorted images); Gaussian-blur, which was effectively broken, goes
+  from ~0.32 to ~0.93. The model is redistributed under its permissive license
+  (see ``skvideo/measure/data/niqe_model_NOTICE.txt``).
+- **Feature-extractor corrections** to match the reference NIQE algorithm:
+  the diagonal (D1/D2) paired-product sub-bands now use their own right AGGD
+  scale parameter instead of duplicating the left one; the MSCN normalization
+  uses ``replicate`` border handling; and scale-2 downsampling uses an
+  antialiased (PIL bicubic) resize instead of ``cv2`` cubic.
+- **BREAKING:** NIQE output values change. Previous values were inaccurate, so
+  scores are not comparable across this boundary.
+- Known remaining gap: LIVE SROCC ~0.84 vs the reference ~0.91. The residual is
+  attributable to ``imresize`` not exactly matching MATLAB's antialiased
+  kernel; a true MATLAB-equivalent ``imresize`` port is deferred follow-up.
+
 1.1.15 (2026-06-02)
 -------------------
 Correctness-completion pass continuing the v1.1.14 hardening:
