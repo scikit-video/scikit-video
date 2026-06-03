@@ -16,9 +16,13 @@ algorithm, not incidental config:
   - skvideo computes in float32, skimage in float64, so agreement is
     expected at ~float32 precision (~1e-5), not exact.
 
-MS-SSIM has no independent reference installed (tensorflow / piq / torch
-are unavailable), so it gets a sanity check only (identity == 1,
-monotonic decrease) until a reference env exists. See the validation plan.
+MS-SSIM is cross-checked against `sewar.full_ref.msssim` (a pure
+numpy/scipy/opencv reference - no torch/tf needed). MS-SSIM cascades 5
+scales with inter-scale downsampling whose exact filter/crop is an
+implementation choice, so cross-implementation agreement is looser than
+single-scale SSIM (~4e-3 observed vs ~3e-5 for SSIM); a structural bug
+would be 0.01-0.1. A sanity test (identity, monotonicity) also runs even
+when sewar is absent. See the validation plan.
 
     pytest validation/test_ssim.py -q
 """
@@ -73,8 +77,7 @@ def test_ssim_matches_skimage():
 
 
 def test_msssim_sanity():
-    """No independent MS-SSIM reference installed yet; verify identity and
-    monotonic degradation. Full value cross-check is deferred (see plan)."""
+    """Runs even without a reference: identity == 1 and monotonic degradation."""
     base = _content_image(seed=1)
     rng = np.random.default_rng(1)
 
@@ -87,3 +90,28 @@ def test_msssim_sanity():
         v = ms(np.clip(base + rng.normal(0, s, base.shape), 0, 255))
         assert v < prev, f"MS-SSIM not monotonic at noise sigma={s}"
         prev = v
+
+
+def test_msssim_matches_sewar():
+    """skvideo MS-SSIM must match sewar's independent implementation. Looser
+    tolerance than SSIM (1e-2) because 5-scale cascades differ legitimately
+    in inter-scale downsampling; a structural bug would still exceed it."""
+    sewar_fr = pytest.importorskip("sewar.full_ref")
+    base = _content_image(seed=2)  # 256x256 -> skvideo scaleFix is a no-op throughout
+    rng = np.random.default_rng(2)
+
+    def sv(dis):
+        return float(M.msssim(base[None, :, :, None], dis[None, :, :, None])[0])
+
+    def sw(dis):
+        return float(np.real(sewar_fr.msssim(base.astype(np.uint8), dis.astype(np.uint8), MAX=255)))
+
+    cases = [("identical", base.copy())]
+    for s in (5, 15, 30):
+        cases.append((f"noise{s}", np.clip(base + rng.normal(0, s, base.shape), 0, 255)))
+    for sg in (1.0, 2.5):
+        cases.append((f"blur{sg}", ndi.gaussian_filter(base, sg)))
+
+    for name, dis in cases:
+        diff = abs(sv(dis) - sw(dis))
+        assert diff < 1e-2, f"{name}: skvideo vs sewar MS-SSIM diff {diff:.2e} exceeds 1e-2"
