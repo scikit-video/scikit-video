@@ -8,8 +8,8 @@
 
 .. code-block:: console
 
-    # v1.1.12 — PyPI upload in progress, install from GitHub:
-    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.1.12.tar.gz
+    # v1.1.15 - PyPI upload in progress, install from GitHub:
+    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.1.15.tar.gz
 
     # Once PyPI is updated (coming soon):
     # python -m pip install scikit-video
