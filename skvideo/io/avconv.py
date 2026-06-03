@@ -36,7 +36,8 @@ class LibAVReader(VideoReaderAbstract):
     OUTPUT_METHOD = "rawvideo"
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
@@ -56,11 +57,27 @@ class LibAVReader(VideoReaderAbstract):
                                   stdout=sp.PIPE, stderr=None)
 
     def _probCountFrames(self):
-        # open process, grabbing number of frames using ffprobe
+        # open process, grabbing number of frames using avprobe
         probecmd = [_AVCONV_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
-        return int(check_output(probecmd).decode().split('\n')[0])
+        try:
+            output = check_output(probecmd).decode().split('\n')[0]
+        except sp.CalledProcessError:
+            raise RuntimeError(
+                "Could not count the frames of %r: avprobe could not read it. "
+                "The input is most likely empty, truncated, or not a video "
+                "that libav can decode. For raw video pass -s and -pix_fmt "
+                "(and ideally -vframes) in inputdict." % self._filename
+            )
+        try:
+            return int(output)
+        except ValueError:
+            raise RuntimeError(
+                "Could not count the frames of %r: avprobe returned no frame "
+                "count (%r). Pass -vframes in inputdict to declare the frame "
+                "count explicitly." % (self._filename, output)
+            )
 
     def _probe(self):
         return avprobe(self._filename)
@@ -74,7 +91,8 @@ class LibAVWriter(VideoWriterAbstract):
     """
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_AVCONV, "Cannot find installation of libav (which comes with avprobe)."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVWriter,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):

@@ -129,6 +129,12 @@ def ssim(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bitdept
     if not (C == 1):
         raise ValueError("ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,))
 
+    # The SSIM map is computed with an 11-tap window and then trimmed 5px on
+    # each side; frames smaller than 11x11 trim to an empty map and silently
+    # produce NaN. Reject up front with a clear error instead.
+    if M < 11 or N < 11:
+        raise ValueError("ssim requires frames of at least 11x11 pixels; got %dx%d." % (M, N))
+
     ssim_scores = np.zeros(T, dtype=np.float32)
 
     for t in range(T):
@@ -207,6 +213,11 @@ def ssim_full(referenceVideoData, distortedVideoData, K_1 = 0.01, K_2 = 0.03, bi
 
     if not (C == 1):
         raise ValueError("ssim called with videos containing %d channels. Please supply only the luminance channel" % (C,))
+
+    # Same 11x11 minimum as ssim(): smaller frames produce empty (M-10, N-10)
+    # maps and silently return NaN.
+    if M < 11 or N < 11:
+        raise ValueError("ssim_full requires frames of at least 11x11 pixels; got %dx%d." % (M, N))
 
     factor = int(np.max((1, np.round(np.min((M, N))/256.0))))
 

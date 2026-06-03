@@ -76,15 +76,19 @@ Then check that ``skvideo`` resolves to the expected location::
     print(skvideo.__file__)
 
 
-What's new in 1.1.14
+What's new in 1.1.15
 --------------------
 
-scikit-video is actively maintained again. The 1.1.12–1.1.14 line modernizes
+scikit-video is actively maintained again. The 1.1.12–1.1.15 line modernizes
 the package for current Python (3.10–3.13), NumPy 2.x, and SciPy, with **no
-breaking API changes** — code that worked with 1.1.11 should continue to work
-unchanged. Highlights of 1.1.14:
+breaking API changes**; code that worked with 1.1.11 should continue to work
+unchanged. Highlights:
 
-- **Non-local I/O.** ``vread`` / ``vreader`` / ``vwrite`` and the
+- **Correctness completion (1.1.15).** Remaining user-facing ``assert``
+  validation now raises real exceptions (so it survives ``python -O``);
+  ``ssim`` rejects sub-window-size frames instead of returning ``NaN``; last
+  Python-2 ``xrange`` removed.
+- **Non-local I/O (1.1.14).** ``vread`` / ``vreader`` / ``vwrite`` and the
   ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept file paths, URL
   strings (``http://``, ``https://``, ``rtsp://``, ...), and file-like objects
   (``io.BytesIO``) interchangeably (issues #117, #113, #81). A ``UserWarning``

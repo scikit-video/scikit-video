@@ -187,3 +187,91 @@ def test_setffmpegpath_bad_path_clears_codec_caches():
     finally:
         skvideo.setFFmpegPath(orig)  # restore for the rest of the session
     assert skvideo._HAS_FFMPEG == 1
+
+
+def test_backend_missing_raises_runtimeerror_under_O():
+    """Backend-availability checks must be real exceptions, not asserts, so a
+    missing ffmpeg is reported even under `python -O` (where asserts vanish)."""
+    import subprocess
+    import sys
+    code = (
+        "import importlib\n"
+        "m = importlib.import_module('skvideo.io.ffprobe')\n"
+        "m._HAS_FFMPEG = 0\n"   # simulate ffmpeg not installed
+        "try:\n"
+        "    m.ffprobe('whatever.mp4')\n"
+        "    print('NORAISE')\n"
+        "except RuntimeError:\n"
+        "    print('RUNTIMEERROR')\n"
+    )
+    out = subprocess.run([sys.executable, "-O", "-c", code], capture_output=True, text=True)
+    assert "RUNTIMEERROR" in out.stdout, (out.stdout, out.stderr[-200:])
+
+
+def test_ssim_rejects_too_small_frames():
+    """ssim / ssim_full on frames smaller than the 11x11 window silently
+    returned NaN (the map trims to empty); both must raise ValueError."""
+    import skvideo.measure as M
+    tiny = np.zeros((2, 8, 8, 1), dtype=np.uint8)
+    with pytest.raises(ValueError):
+        M.ssim(tiny, tiny)
+    with pytest.raises(ValueError):
+        M.ssim_full(tiny, tiny)
+
+
+def test_empty_bytesio_raises_clear_runtimeerror_not_calledprocesserror():
+    """An empty/undecodable memory source with -s/-pix_fmt falls through to
+    the count-frames probe, which previously leaked a raw
+    subprocess.CalledProcessError. It must raise a clear RuntimeError that
+    tells the user the input is unreadable and how to declare frame count.
+    CalledProcessError is NOT a RuntimeError, so this assertion fails if the
+    raw error leaks."""
+    import io as _io
+    import warnings
+    import skvideo.io
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(RuntimeError):
+            skvideo.io.vread(
+                _io.BytesIO(b""),
+                inputdict={"-s": "16x16", "-pix_fmt": "rgb24"},
+            )
+
+
+def test_empty_bytesio_error_path_leaks_no_tempfile():
+    """The constructor spools the memory source to a temp file before the
+    probe fails; the failure cleanup must still unlink it."""
+    import glob
+    import io as _io
+    import os
+    import tempfile
+    import warnings
+    import skvideo.io
+    pattern = os.path.join(tempfile.gettempdir(), "skvideo_in_*")
+    before = set(glob.glob(pattern))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for _ in range(3):
+            try:
+                skvideo.io.vread(
+                    _io.BytesIO(b""),
+                    inputdict={"-s": "16x16", "-pix_fmt": "rgb24"},
+                )
+            except RuntimeError:
+                pass
+    assert set(glob.glob(pattern)) == before
+
+
+def test_start_frame_past_eof_emits_no_resourcewarning():
+    """Seeking past EOF makes ffmpeg exit before close() runs. close() must
+    still close the pipe file objects (it previously skipped them when the
+    process had already exited, leaking a ResourceWarning)."""
+    import warnings
+    import skvideo.datasets
+    import skvideo.io
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ResourceWarning)
+        v = skvideo.io.vread(
+            skvideo.datasets.bigbuckbunny(), start_frame=99999, num_frames=2
+        )
+    assert v.shape[0] == 0

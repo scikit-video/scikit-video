@@ -155,7 +155,8 @@ class VideoReaderAbstract(object):
 
         """
         # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         self._source_kind = _classify_source(filename)
         # Track temp files spooled from memory sources so close() can clean
@@ -467,12 +468,20 @@ class VideoReaderAbstract(object):
         return self.inputframenum, self.outputheight, self.outputwidth, self.outputdepth
 
     def close(self):
-        if self._proc is not None and self._proc.poll() is None:
-            self._proc.stdin.close()
-            self._proc.stdout.close()
+        if self._proc is not None:
+            # Close the pipe file objects regardless of process state. If
+            # ffmpeg already exited (e.g. start_frame seeks past EOF), the
+            # pipes are still open Python file objects and skipping them
+            # leaks a ResourceWarning. Only a still-running process needs
+            # terminating.
+            if self._proc.stdin is not None:
+                self._proc.stdin.close()
+            if self._proc.stdout is not None:
+                self._proc.stdout.close()
             if self._proc.stderr is not None:
                 self._proc.stderr.close()
-            self._terminate(0.2)
+            if self._proc.poll() is None:
+                self._terminate(0.2)
         self._proc = None
         # Clean up the spooled temp file for memory sources (issue #113).
         # Best-effort: ignore if already removed or unreachable.

@@ -229,10 +229,10 @@ class Steerable:
     def normalize(self, coef, height, order):
         filtsize = (3, 3)
         norm_bands = []
-        for pyr_h in xrange(height-2):
+        for pyr_h in range(height-2):
             inner_norm_bands = []
             sublevel = coef[pyr_h+1]
-            for cband in xrange(order):
+            for cband in range(order):
                 child = coef[0]
                 parent = []
                 w, h = np.shape(sublevel[cband])

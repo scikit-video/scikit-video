@@ -26,7 +26,8 @@ def mprobe(filename):
        about the passed-in source video.
 
     """
-    assert _HAS_MEDIAINFO, "`mediainfo` not found in path. Is it installed?"
+    if not _HAS_MEDIAINFO:
+        raise RuntimeError("`mediainfo` not found in path. Is it installed?")
 
     try:
         # '-f' gets full output, and --Output=XML is xml formatted output
@@ -37,26 +38,32 @@ def mprobe(filename):
 
         d = xmltodictparser(xml)
 
-        assert "Mediainfo" in d
+        if "Mediainfo" not in d:
+            raise ValueError("mediainfo XML missing the 'Mediainfo' root element")
         d = d["Mediainfo"]
 
-        assert "File" in d
+        if "File" not in d:
+            raise ValueError("mediainfo XML missing the 'File' element")
         d = d["File"]
 
-        assert "track" in d
+        if "track" not in d:
+            raise ValueError("mediainfo XML missing 'track' elements")
         unorderedtracks = d["track"]
 
         # tracksbytype normalizes the input by key
         tracksbytype = {}
         if type(unorderedtracks) is list:
             for d in unorderedtracks:
-                assert "@type" in d
+                if "@type" not in d:
+                    raise ValueError("mediainfo track missing '@type'")
                 # can't have more than 1 key. If this case arises
                 # an issue should be made in the tracker for a fix.
-                assert d["@type"] not in tracksbytype 
+                if d["@type"] in tracksbytype:
+                    raise ValueError("mediainfo returned duplicate track @type %r" % d["@type"])
                 tracksbytype[d["@type"]] = d
         else: # not list
-            assert "@type" in unorderedtracks
+            if "@type" not in unorderedtracks:
+                raise ValueError("mediainfo track missing '@type'")
             tracksbytype[unorderedtracks["@type"]] = unorderedtracks
 
         return tracksbytype

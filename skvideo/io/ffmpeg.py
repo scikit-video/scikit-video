@@ -41,7 +41,8 @@ class FFmpegReader(VideoReaderAbstract):
     OUTPUT_METHOD = "image2pipe"
 
     def __init__(self, *args, **kwargs):
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         super(FFmpegReader,self).__init__(*args, **kwargs)
 
     def _createProcess(self, inputdict, outputdict, verbosity):
@@ -69,7 +70,23 @@ class FFmpegReader(VideoReaderAbstract):
         probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
-        return int(check_output(probecmd).decode().split('\n')[0])
+        try:
+            output = check_output(probecmd).decode().split('\n')[0]
+        except sp.CalledProcessError:
+            raise RuntimeError(
+                "Could not count the frames of %r: ffprobe could not read it. "
+                "The input is most likely empty, truncated, or not a video "
+                "that ffmpeg can decode. For raw video pass -s and -pix_fmt "
+                "(and ideally -vframes) in inputdict." % self._filename
+            )
+        try:
+            return int(output)
+        except ValueError:
+            raise RuntimeError(
+                "Could not count the frames of %r: ffprobe returned no frame "
+                "count (%r). Pass -vframes in inputdict to declare the frame "
+                "count explicitly." % (self._filename, output)
+            )
 
     def _probe(self):
         return ffprobe(self._filename)
@@ -139,7 +156,8 @@ class FFmpegWriter(VideoWriterAbstract):
 
     def __init__(self, filename, inputdict=None, outputdict=None,
                  audiosrc=None, verbosity=0):
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         if audiosrc is not None:
             # Fail fast at construction time rather than letting ffmpeg
             # produce a silent videoless output that the user discovers

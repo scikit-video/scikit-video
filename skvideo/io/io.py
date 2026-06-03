@@ -82,7 +82,8 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict,
                               audiosrc=audiosrc, verbosity=verbosity)
@@ -93,7 +94,8 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         if audiosrc is not None:
             raise NotImplementedError("audiosrc passthrough is only supported with backend='ffmpeg'")
         # check if FFMPEG exists in the path
-        assert _HAS_AVCONV, "Cannot find installation of libav."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav.")
         writer = LibAVWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for t in range(T):
             writer.writeFrame(videodata[t])
@@ -167,7 +169,8 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of real FFmpeg (which comes with ffprobe)."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
@@ -203,7 +206,8 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         return videodata
     elif backend == "libav":
         # check if FFMPEG exists in the path
-        assert _HAS_AVCONV, "Cannot find installation of libav."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav.")
 
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
@@ -297,7 +301,8 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        assert _HAS_FFMPEG, "Cannot find installation of ffmpeg."
+        if not _HAS_FFMPEG:
+            raise RuntimeError("Cannot find installation of ffmpeg.")
 
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
@@ -320,7 +325,8 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
 
     elif backend == "libav":
         # check if FFMPEG exists in the path
-        assert _HAS_AVCONV, "Cannot find installation of libav."
+        if not _HAS_AVCONV:
+            raise RuntimeError("Cannot find installation of libav.")
 
         if ((height != 0) and (width != 0)):
             inputdict['-s'] = str(width) + 'x' + str(height)
