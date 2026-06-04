@@ -17,13 +17,18 @@ NIQE accuracy fix.
 - **BREAKING:** NIQE output values change. Previous values were inaccurate, so
   scores are not comparable across this boundary.
 - Measured LIVE SROCC is ~0.84 (was ~0.54), with per-distortion correlations of
-  0.87-0.97 and Gaussian blur recovered to ~0.93. This is below the commonly
-  cited ~0.91, but that figure reflects the official MATLAB LIVE evaluation
-  protocol, not a better implementation: an independent, MATLAB-validated NIQE
-  (BasicSR) evaluated on the same LIVE images yields the same ~0.83 SROCC,
-  matching skvideo within 0.004 across all distortions. skvideo's NIQE is
-  therefore a faithful implementation; the residual vs the published number is
-  an evaluation-protocol difference (image/luma handling, DMOS), not a defect.
+  0.87-0.97 and Gaussian blur recovered to ~0.93. To confirm this is the
+  faithful-NIQE ceiling on our evaluation harness and not a residual skvideo
+  defect, an independent NIQE of a different lineage (BasicSR / XPixelGroup,
+  unrelated to skvideo's code) was evaluated on the same LIVE images: it yields
+  SROCC 0.834, matching skvideo's 0.838 within 0.004 across every distortion.
+  Two faithful implementations converging at ~0.84 indicates the implementation
+  is correct. The commonly cited ~0.91 is a published literature figure (the
+  original MATLAB NIQE under the authors' own evaluation protocol); it was *not*
+  re-run on this harness, so the gap is attributed to evaluation-protocol
+  differences (image/luma handling, DMOS, LIVE subset) rather than independently
+  reproduced here. No in-metric change closes the gap; reaching ~0.91 would
+  require reproducing the original MATLAB protocol, not altering the metric.
 
 1.1.15 (2026-06-02)
 -------------------
