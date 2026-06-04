@@ -16,14 +16,13 @@ NIQE accuracy fix.
   antialiased (PIL bicubic) resize instead of ``cv2`` cubic.
 - **BREAKING:** NIQE output values change. Previous values were inaccurate, so
   scores are not comparable across this boundary.
-- Known remaining gap: LIVE SROCC ~0.84 vs the reference ~0.91. All identifiable
-  extractor components now match the reference algorithm (pristine model, MSCN
-  window/border, AGGD estimation, feature formula, antialiased downscale); a
-  MATLAB-equivalent ``imresize`` was tried and gave no improvement over the
-  antialiased PIL resize, and ``aggd_features`` is an exact port of the
-  reference estimator. The residual is therefore small accumulated numerical
-  difference (float32 vs MATLAB float64, zero-handling, separable filtering),
-  not a single fixable discrepancy.
+- Measured LIVE SROCC is ~0.84 (was ~0.54), with per-distortion correlations of
+  0.87-0.97 and Gaussian blur recovered to ~0.93. This is short of the reference
+  implementation's published ~0.91 overall. skvideo's NIQE matches the reference
+  algorithm in every component checked (pristine model, MSCN window/border, AGGD
+  estimation, feature formula, antialiased downscale), and the small residual is
+  not explained by any identified difference; its cause has not been fully run
+  down (would require comparison against an independent reference implementation).
 
 1.1.15 (2026-06-02)
 -------------------
