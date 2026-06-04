@@ -16,9 +16,14 @@ NIQE accuracy fix.
   antialiased (PIL bicubic) resize instead of ``cv2`` cubic.
 - **BREAKING:** NIQE output values change. Previous values were inaccurate, so
   scores are not comparable across this boundary.
-- Known remaining gap: LIVE SROCC ~0.84 vs the reference ~0.91. The residual is
-  attributable to ``imresize`` not exactly matching MATLAB's antialiased
-  kernel; a true MATLAB-equivalent ``imresize`` port is deferred follow-up.
+- Known remaining gap: LIVE SROCC ~0.84 vs the reference ~0.91. All identifiable
+  extractor components now match the reference algorithm (pristine model, MSCN
+  window/border, AGGD estimation, feature formula, antialiased downscale); a
+  MATLAB-equivalent ``imresize`` was tried and gave no improvement over the
+  antialiased PIL resize, and ``aggd_features`` is an exact port of the
+  reference estimator. The residual is therefore small accumulated numerical
+  difference (float32 vs MATLAB float64, zero-handling, separable filtering),
+  not a single fixable discrepancy.
 
 1.1.15 (2026-06-02)
 -------------------
