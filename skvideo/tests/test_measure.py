@@ -88,7 +88,12 @@ def test_measure_Viideo():
     dis = skvideo.io.vread(vidpaths, as_grey=True)
     dis = dis[:80, :200, :200]
     score = skvideo.measure.viideo_score(dis)
-    assert_almost_equal(score, 0.72179317, decimal=2)
+    # Value changed 2026-06 by the VIIDEO accuracy fix: viideo_score is now a
+    # faithful port of the LIVE reference computeVIIDEOscore.m (verified to
+    # ~1e-5 against Octave on the release demo clips). The prior 0.72179317 was
+    # the old broken port (NIQE gamma grid + truncated edge patches). This pin
+    # is self-referential, not external ground truth.
+    assert_almost_equal(score, 0.69935427, decimal=2)
 
 def test_measure_VideoBliinds():
     vidpaths = skvideo.datasets.bigbuckbunny()
