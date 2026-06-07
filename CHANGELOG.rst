@@ -1,6 +1,6 @@
 1.1.16 (unreleased)
 -------------------
-NIQE accuracy fix.
+NIQE and VIIDEO accuracy fixes.
 
 - **NIQE now uses the reference pristine model** from the LIVE NIQE Software
   Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained
@@ -29,6 +29,37 @@ NIQE accuracy fix.
   differences (image/luma handling, DMOS, LIVE subset) rather than independently
   reproduced here. No in-metric change closes the gap; reaching ~0.91 would
   require reproducing the original MATLAB protocol, not altering the metric.
+
+- **VIIDEO is now a faithful port of the LIVE reference** (Mittal, Saad, Bovik,
+  "VIIDEO Software Release", 2014 / TIP 2016), replacing an implementation
+  assembled on skvideo's shared NIQE feature stack that deviated from the
+  reference ``computeVIIDEOscore.m`` by 7-11% per clip at the paper's block-72
+  geometry (the error grew with block size, so the metric was never correct for
+  any non-demo configuration). ``viideo_score`` is verified to match the
+  reference (run under Octave with the authentic MATLAB ``blkproc``) to ~1e-5 on
+  the release demo clips at both 18/8 and 72/36.
+- **Two root-cause defects fixed**, both contained in ``viideo.py`` so the
+  shared ``aggd_features`` (used by NIQE/BRISQUE) is untouched: (1) edge blocks
+  no longer have their context border truncated when a frame dimension divides
+  the block size -- this drove the block-size-dependent error; (2) VIIDEO now
+  uses its own AGGD shape grid (``0.2:0.01:5``) rather than NIQE's
+  (``0.2:0.001:10``), since VIIDEO's features are the quantized shape parameters.
+  Also: ``>0`` (not ``>=0``) right-tail binning, all-zero/invalid blocks marked
+  and dropped (inf + nonfinite-row deletion), ``nanmean`` aggregation, float64.
+- **BREAKING:** VIIDEO output values change. Previous values were inaccurate, so
+  scores are not comparable across this boundary.
+- The default ``blocksize``/``blockoverlap`` remain ``(18, 18)``/``(8, 8)`` --
+  the QCIF demo configuration from the LIVE release (``testscript.m``), not a
+  recommended setting. The paper's LIVE VQA results (Table II) used block 72;
+  the spatial overlap at that size is not stated upstream (the demo's 8/18 ratio
+  implies ~32, indistinguishable from 36 within sampling noise). Choose
+  block/overlap to match your intended reference; see the ``viideo_score``
+  docstring.
+- At block 72 the faithful implementation reproduces the paper's per-distortion
+  LIVE VQA SROCC (Table II) within sampling noise. Cross-checked: a pure-numpy
+  reimplementation and the Octave reference agree to ~1e-5 (two independent
+  implementations). The reference was run under Octave, not MATLAB, so
+  MATLAB-level bit-identity is likely but not independently confirmed.
 
 1.1.15 (2026-06-02)
 -------------------
