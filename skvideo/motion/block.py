@@ -10,17 +10,23 @@ def _costMAD(block1, block2):
     block2 = block2.astype(np.float32)
     return np.mean(np.abs(block1 - block2))
 
-def _minCost(costs):
+def _minCost(costs, tiebreak='center'):
     h, w = costs.shape
-    mi = costs[int((h-1)/2), int((w-1)/2)]
     dy = int((h-1)/2)
     dx = int((w-1)/2)
-    #mi = 65535
-    #dy = 0
-    #dx = 0
+    # tiebreak='center' (default) seeds the running min at the centre cost, so
+    # equal-cost ties keep the centre - a sensible bias for general motion
+    # estimation and the long-standing skvideo behaviour.
+    # tiebreak='reference' matches the LIVE minCost.m (seed 65537, row-major
+    # scan, strict <), so ties go to the top-left-most minimum. Required to
+    # reproduce Video-BLIINDS, whose reference uses that convention.
+    if tiebreak == 'center':
+        mi = costs[dy, dx]
+    else:
+        mi = 65537.0
 
-    for i in range(h): 
-      for j in range(w): 
+    for i in range(h):
+      for j in range(w):
         if costs[i, j] < mi:
           mi = costs[i, j]
           dy = i
@@ -502,7 +508,7 @@ def _SE3SS(imgP, imgI, mbSize, p):
     return vectors, computations / ((h * w) / mbSize**2)
 
 
-def _N3SS(imgP, imgI, mbSize, p):
+def _N3SS(imgP, imgI, mbSize, p, tiebreak='center'):
     # Computes motion vectors using *NEW* Three Step Search method
     #
     # Input
@@ -559,7 +565,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                     computations = computations + 1
 
 
-            dx, dy, min1 = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
+            dx, dy, min1 = _minCost(costs, tiebreak)  # finds which macroblock in imgI gave us min Cost
 
             x1 = x + (dx - 1) * stepSize
             y1 = y + (dy - 1) * stepSize
@@ -581,7 +587,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                     costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                     computations += 1
 
-            dx, dy, min2 = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
+            dx, dy, min2 = _minCost(costs, tiebreak)  # finds which macroblock in imgI gave us min Cost
             x2 = x + (dx - 1)
             y2 = y + (dy - 1)
 
@@ -623,7 +629,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                             continue
                         costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                         computations += 1
-                dx, dy, min2 = _minCost(costs)
+                dx, dy, min2 = _minCost(costs, tiebreak)
 
                 x += (dx - 1)
                 y += (dy - 1)
@@ -650,7 +656,7 @@ def _N3SS(imgP, imgI, mbSize, p):
                             costs[costRow, costCol] = _costMAD(imgP[i:i + mbSize, j:j + mbSize], imgI[refBlkVer:refBlkVer + mbSize, refBlkHor:refBlkHor + mbSize])
                             computations = computations + 1
                             l_count += 1
-                    dx, dy, mi = _minCost(costs)  # finds which macroblock in imgI gave us min Cost
+                    dx, dy, mi = _minCost(costs, tiebreak)  # finds which macroblock in imgI gave us min Cost
                     x += (dx - 1) * stepSize
                     y += (dy - 1) * stepSize
 
@@ -969,7 +975,7 @@ def blockMotion(videodata, method='DS', mbSize=8, p=2, **plugin_args):
             motionData[i, :, :, :] = motion
     elif method == "N3SS":
         for i in range(numFrames - 1):
-            motion, comps = _N3SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p)
+            motion, comps = _N3SS(luminancedata[i + 1, :, :], luminancedata[i, :, :], mbSize, p, plugin_args.get('tiebreak', 'center'))
             motionData[i, :, :, :] = motion
     elif method == "SE3SS":
         for i in range(numFrames - 1):

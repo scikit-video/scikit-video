@@ -2,7 +2,6 @@ from os.path import dirname
 from os.path import join
 
 import numpy as np
-import cv2
 import scipy.fftpack
 import scipy.io
 import scipy.ndimage
@@ -19,7 +18,10 @@ def motion_feature_extraction(frames):
     mblock=10
     h = gen_gauss_window(2, 0.5)
     # step 1: motion vector calculation
-    motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=int(1.5*mblock))
+    # tiebreak='reference' matches the LIVE reference minCost.m (top-left wins
+    # equal-cost ties); without it ~0.5% of motion vectors differ and the
+    # motion-coherence feature diverges ~7% from the Video-BLIINDS reference.
+    motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=int(1.5*mblock), tiebreak='reference')
     motion_vectors = motion_vectors.astype(np.float32)
 
     # step 2: compute coherency
@@ -128,7 +130,13 @@ def computequality(img, blocksizerow, blocksizecol, mu_prisparam, cov_prisparam)
         img = img[:, :-woffset]
 
     img = img.astype(np.float32)
-    img2 = cv2.resize(img, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+    # Scale-2 downsample must match the reference (MATLAB imresize, bicubic +
+    # antialiasing) for the NIQE features to be faithful. The previous
+    # cv2.resize(INTER_CUBIC) is NOT antialiased and made the scale-2 features
+    # (and the NIQE naturalness score) diverge 3-15% from the LIVE reference.
+    # This mirrors the NIQE accuracy fix in niqe.py, which never reached this
+    # duplicated computequality.
+    img2 = imresize(img, 0.5, interp='bicubic')
 
     mscn1, var, mu = compute_image_mscn_transform(img, extend_mode='nearest')
     mscn1 = mscn1.astype(np.float32)
