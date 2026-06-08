@@ -1,6 +1,6 @@
 1.1.16 (unreleased)
 -------------------
-NIQE, VIIDEO, and Video-BLIINDS accuracy fixes.
+NIQE, VIIDEO, Video-BLIINDS, and BRISQUE accuracy fixes.
 
 - **NIQE now uses the reference pristine model** from the LIVE NIQE Software
   Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained
@@ -91,6 +91,24 @@ NIQE, VIIDEO, and Video-BLIINDS accuracy fixes.
   over the clean macroblock grid, which is better-defined; replicating the
   reference here would mean reproducing allocation garbage whose exact value is
   MATLAB-version-dependent.
+
+- **BRISQUE half-scale resize fixed.** ``brisque_features`` downsampled the
+  second scale with ``cv2.resize(INTER_CUBIC)`` (not antialiased) instead of
+  the antialiased ``imresize(...,'bicubic')`` the reference (utlive/BRISQUE)
+  uses -- the same resize bug as Video-BLIINDS and the NIQE fix. The
+  second-subband features (indices 18-35) now match the reference. Accuracy was
+  measured on LIVE IQA (779 images) by running both feature pipelines through
+  the reference's trained SVM (libsvm, allmodel/allrange) vs DMOS: the broken
+  resize cost ~0.15 SROCC (0.927 -> 0.782, worst on jp2k 0.734), and the fix
+  fully recovers it (back to 0.927 = reference level). Under the paper's own
+  protocol (1000 content-separated 80/20 splits, epsilon-SVR retrained per
+  split), fixed skvideo features give median SROCC 0.922, matching the
+  reference's 0.926 and reproducing the published ~0.93 within sampling
+  variation. (BRISQUE remains features-only; no score is shipped.) A separate
+  ~1% full-scale divergence (suspected float32 cancellation in the shared
+  compute_image_mscn_transform) is left untouched -- it has negligible accuracy
+  impact and the helper is shared with NIQE.
+- **BREAKING:** BRISQUE second-subband feature values (indices 18-35) change.
 
 1.1.15 (2026-06-02)
 -------------------
