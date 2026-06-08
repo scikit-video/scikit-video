@@ -83,8 +83,14 @@ NIQE, VIIDEO, and Video-BLIINDS accuracy fixes.
 
 - **BREAKING:** Video-BLIINDS feature values change (indices 18-36 and 44-45).
   Previous values were inaccurate, so feature vectors are not comparable across
-  this boundary. Known residual: the global-motion feature (45) is ~0.7% from
-  the reference due to a separate ``mode()`` difference, not addressed here.
+  this boundary. Known discrepancy (intentionally NOT matched): the global-motion
+  feature (45) is ~0.7% from the reference because the reference's global-motion
+  step averages over the full preallocated motion-vector array, which includes
+  ~50 unfilled (zero) vectors -- an artifact of a non-integer preallocation
+  (zeros(2, 432*768/100) = 3317.76) in the original MATLAB. skvideo computes it
+  over the clean macroblock grid, which is better-defined; replicating the
+  reference here would mean reproducing allocation garbage whose exact value is
+  MATLAB-version-dependent.
 
 1.1.15 (2026-06-02)
 -------------------
