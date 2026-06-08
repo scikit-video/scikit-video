@@ -1,6 +1,6 @@
 1.1.16 (unreleased)
 -------------------
-NIQE and VIIDEO accuracy fixes.
+NIQE, VIIDEO, and Video-BLIINDS accuracy fixes.
 
 - **NIQE now uses the reference pristine model** from the LIVE NIQE Software
   Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained
@@ -60,6 +60,31 @@ NIQE and VIIDEO accuracy fixes.
   reimplementation and the Octave reference agree to ~1e-5 (two independent
   implementations). The reference was run under Octave, not MATLAB, so
   MATLAB-level bit-identity is likely but not independently confirmed.
+
+- **Video-BLIINDS feature fidelity fixed** in two places, verified against the
+  original Video-BLIINDS MATLAB (Saad & Bovik, utlive/videobliinds) run under
+  Octave. ``videobliinds_features`` is features-only (no score; the original's
+  score is a separate R SVR model), so this concerns the feature vector:
+
+  - **Scale-2 NIQE resize:** ``computequality`` downsampled with
+    ``cv2.resize(INTER_CUBIC)`` (not antialiased) instead of the antialiased
+    ``imresize(...,'bicubic')`` the reference and the fixed ``niqe.py`` use --
+    a copy of the NIQE fix that never reached this duplicated function. The
+    scale-2 NIQE features (indices 18-35) and the NIQE score (36) now match the
+    reference to ~1e-4 (were 3-15% off).
+  - **Motion-vector tie-breaking:** ``blockMotion``'s ``_minCost`` seeds the
+    running minimum at the centre candidate (centre wins equal-cost ties); the
+    reference ``minCost.m`` seeds at 65537 and scans row-major (top-left wins).
+    A new ``tiebreak`` argument (default ``'center'`` -- unchanged for all
+    existing callers; ``'reference'`` -- LIVE semantics) is threaded through
+    ``_N3SS``/``blockMotion``, and Video-BLIINDS requests ``'reference'``. The
+    motion-coherence feature (44) now matches the reference to ~7e-5 (was ~3%).
+    ``blockMotion``'s default output is byte-identical for every other caller.
+
+- **BREAKING:** Video-BLIINDS feature values change (indices 18-36 and 44-45).
+  Previous values were inaccurate, so feature vectors are not comparable across
+  this boundary. Known residual: the global-motion feature (45) is ~0.7% from
+  the reference due to a separate ``mode()`` difference, not addressed here.
 
 1.1.15 (2026-06-02)
 -------------------
