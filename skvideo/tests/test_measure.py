@@ -63,21 +63,22 @@ def test_measure_BRISQUE():
     dis = dis[0, :200, :200]
     features = skvideo.measure.brisque_features(dis)
 
-    # Reference regenerated 2026-05 against numpy 2.4, scipy 1.17, opencv 4.13,
-    # ffmpeg 8.1. The first half (indices 0-17, "first subband") is essentially
-    # unchanged from the 2018 baseline; the second half (indices 18-35, "second
-    # subband") drifted by up to ~0.4 because the second-subband MSCN goes
-    # through cv2.resize whose default interpolation behavior has changed.
+    # Second-subband features (indices 18-35) changed 2026-06 by the resize fix:
+    # the half-scale downsample now uses antialiased imresize(...,'bicubic')
+    # matching the BRISQUE reference, instead of cv2.resize(INTER_CUBIC). This
+    # brings the second subband into agreement with the original BRISQUE MATLAB
+    # and recovers LIVE IQA accuracy (validated). First subband (0-17), which is
+    # not downsampled, is unchanged. Self-pinned.
     output = np.array([
         2.2890000343, 0.2322352976, 0.8130000234, 0.0714223012,
         0.0303128175, 0.0790385231, 0.7820000052, 0.1253915578,
         0.0196698494, 0.1092294082, 0.8009999990, 0.0333176553,
         0.0419099517, 0.0649650022, 0.8009999990, 0.0416956730,
-        0.0396165289, 0.0685476810, 2.8050000668, 0.3836214840,
-        0.9129999876, -0.0166532192, 0.1542353481, 0.1358711720,
-        0.8759999871, 0.1370459199, 0.0800065324, 0.2339500189,
-        0.8019999862, -0.0352361463, 0.1921713501, 0.1484891176,
-        0.8050000072, 0.0092620207, 0.1591690481, 0.1704723388,
+        0.0396165289, 0.0685476810, 3.1700000763, 0.3377887607,
+        0.9840000272, 0.0400287546, 0.0888387486, 0.1259527653,
+        0.9520000219, 0.1778330803, 0.0371659324, 0.2002338618,
+        0.8489999771, -0.0157392956, 0.1383639872, 0.1215888560,
+        0.8629999757, 0.0312444791, 0.1079883352, 0.1403260976,
     ])
 
     for i in range(features.shape[1]):
