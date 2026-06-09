@@ -1,6 +1,11 @@
-1.1.16 (unreleased)
--------------------
-NIQE, VIIDEO, Video-BLIINDS, and BRISQUE accuracy fixes.
+1.2.0 (unreleased)
+------------------
+Metric accuracy overhaul: NIQE, VIIDEO, Video-BLIINDS, and BRISQUE.
+
+This is a minor-version bump (not a patch) because it changes the numerical
+output of four metrics. The function signatures are unchanged, but scores and
+feature vectors are **not comparable across this boundary** -- the previous
+values were inaccurate. See the per-metric BREAKING notes below.
 
 - **NIQE now uses the reference pristine model** from the LIVE NIQE Software
   Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained

@@ -185,7 +185,7 @@ def test_measure_NIQE():
 
     scores = skvideo.measure.niqe(ref)
 
-    # NIQE uses the reference LIVE pristine model as of 1.1.16; values shifted
+    # NIQE uses the reference LIVE pristine model as of 1.2.0; values shifted
     # from the old inaccurate model (~11.5) to ~4.1 (clean content scores low,
     # as expected for a naturalness metric). decimal=0 keeps a generous
     # tolerance for BLAS/resize differences across platforms (OpenBLAS on Linux
