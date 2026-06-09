@@ -126,6 +126,15 @@ values were inaccurate. See the per-metric BREAKING notes below.
   helper stable; VIIDEO already uses ``> 0`` locally (its features are the
   quantized shape parameters, where the binning is part of the algorithm).
 
+- **ST-RRED validated faithful; regression test re-enabled.** No change to the
+  metric output -- ``strred`` already matched the LIVE Octave reference to
+  ~1e-6 per frame pair. The full LIVE VQA correlation was run to confirm it
+  end-to-end: Spearman correlation with DMOS is **0.8007** (n=150),
+  reproducing the published ~0.80. ``test_measure_STRRED`` (previously skipped
+  pending a BLAS check) is re-enabled with BLAS-robust assertions -- the
+  ``strred(x, x) == 0`` identity, output shape/finiteness, and a loose
+  tolerance on the aggregate -- verified on both OpenBLAS and Accelerate.
+
 1.1.15 (2026-06-02)
 -------------------
 Correctness-completion pass continuing the v1.1.14 hardening:
