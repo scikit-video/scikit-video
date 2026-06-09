@@ -1,4 +1,4 @@
-1.2.0 (unreleased)
+1.2.0 (2026-06-08)
 ------------------
 Metric accuracy overhaul: NIQE, VIIDEO, Video-BLIINDS, and BRISQUE.
 
