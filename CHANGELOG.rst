@@ -110,6 +110,17 @@ NIQE, VIIDEO, Video-BLIINDS, and BRISQUE accuracy fixes.
   impact and the helper is shared with NIQE.
 - **BREAKING:** BRISQUE second-subband feature values (indices 18-35) change.
 
+- **Known deviation (not changed): AGGD zero-binning.** The shared
+  ``aggd_features`` helper (used by NIQE, BRISQUE, and Video-BLIINDS) places
+  exact-zero samples in the right tail (``imdata >= 0``), whereas the reference
+  ``estimateaggdparam.m`` excludes zeros from both tails (left ``< 0``, right
+  ``> 0``). On natural-image MSCN coefficients and paired products exact zeros
+  are vanishingly rare, so this is numerically negligible: an A/B across NIQE,
+  BRISQUE, and VIIDEO moved SROCC by only ~0.001-0.002 (slightly *negative*).
+  It is therefore an accuracy non-event and left unchanged to keep the shared
+  helper stable; VIIDEO already uses ``> 0`` locally (its features are the
+  quantized shape parameters, where the binning is part of the algorithm).
+
 1.1.15 (2026-06-02)
 -------------------
 Correctness-completion pass continuing the v1.1.14 hardening:
