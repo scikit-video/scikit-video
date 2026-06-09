@@ -2,7 +2,6 @@ from ..utils import *
 from ..utils.image import imresize
 
 import numpy as np
-import cv2
 import scipy.io
 
 from os.path import dirname
@@ -22,8 +21,8 @@ def _niqe_extract_subband_feats(mscncoefs):
     return np.array([alpha_m, (bl+br)/2.0,
             alpha1, N1, bl1, br1,  # (V)
             alpha2, N2, bl2, br2,  # (H)
-            alpha3, N3, bl3, bl3,  # (D1)
-            alpha4, N4, bl4, bl4,  # (D2)
+            alpha3, N3, bl3, br3,  # (D1)
+            alpha4, N4, bl4, br4,  # (D2)
     ])
 
 def get_patches_train_features(img, patch_size, stride=8):
@@ -69,12 +68,12 @@ def _get_patches_generic(img, patch_size, is_train, stride):
 
 
     img = img.astype(np.float32)
-    img2 = cv2.resize(img, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+    img2 = imresize(img, 0.5, interp='bicubic')
 
-    mscn1, var, mu = compute_image_mscn_transform(img)
+    mscn1, var, mu = compute_image_mscn_transform(img, extend_mode='nearest')
     mscn1 = mscn1.astype(np.float32)
 
-    mscn2, _, _ = compute_image_mscn_transform(img2)
+    mscn2, _, _ = compute_image_mscn_transform(img2, extend_mode='nearest')
     mscn2 = mscn2.astype(np.float32)
 
 
@@ -121,6 +120,10 @@ def niqe(inputVideoData):
     patch_size = 96
     module_path = dirname(__file__)
 
+    # Pristine model parameters are the reference NIQE model from the LIVE
+    # NIQE Software Release (Mittal, Soundararajan, Bovik, 2012), redistributed
+    # under its permissive license (see data/niqe_model_NOTICE.txt). Stored
+    # under the pop_mu/pop_cov keys this module expects.
     # TODO: memoize
     params = scipy.io.loadmat(join(module_path, 'data', 'niqe_image_params.mat'))
     pop_mu = np.ravel(params["pop_mu"])

@@ -63,21 +63,22 @@ def test_measure_BRISQUE():
     dis = dis[0, :200, :200]
     features = skvideo.measure.brisque_features(dis)
 
-    # Reference regenerated 2026-05 against numpy 2.4, scipy 1.17, opencv 4.13,
-    # ffmpeg 8.1. The first half (indices 0-17, "first subband") is essentially
-    # unchanged from the 2018 baseline; the second half (indices 18-35, "second
-    # subband") drifted by up to ~0.4 because the second-subband MSCN goes
-    # through cv2.resize whose default interpolation behavior has changed.
+    # Second-subband features (indices 18-35) changed 2026-06 by the resize fix:
+    # the half-scale downsample now uses antialiased imresize(...,'bicubic')
+    # matching the BRISQUE reference, instead of cv2.resize(INTER_CUBIC). This
+    # brings the second subband into agreement with the original BRISQUE MATLAB
+    # and recovers LIVE IQA accuracy (validated). First subband (0-17), which is
+    # not downsampled, is unchanged. Self-pinned.
     output = np.array([
         2.2890000343, 0.2322352976, 0.8130000234, 0.0714223012,
         0.0303128175, 0.0790385231, 0.7820000052, 0.1253915578,
         0.0196698494, 0.1092294082, 0.8009999990, 0.0333176553,
         0.0419099517, 0.0649650022, 0.8009999990, 0.0416956730,
-        0.0396165289, 0.0685476810, 2.8050000668, 0.3836214840,
-        0.9129999876, -0.0166532192, 0.1542353481, 0.1358711720,
-        0.8759999871, 0.1370459199, 0.0800065324, 0.2339500189,
-        0.8019999862, -0.0352361463, 0.1921713501, 0.1484891176,
-        0.8050000072, 0.0092620207, 0.1591690481, 0.1704723388,
+        0.0396165289, 0.0685476810, 3.1700000763, 0.3377887607,
+        0.9840000272, 0.0400287546, 0.0888387486, 0.1259527653,
+        0.9520000219, 0.1778330803, 0.0371659324, 0.2002338618,
+        0.8489999771, -0.0157392956, 0.1383639872, 0.1215888560,
+        0.8629999757, 0.0312444791, 0.1079883352, 0.1403260976,
     ])
 
     for i in range(features.shape[1]):
@@ -88,7 +89,12 @@ def test_measure_Viideo():
     dis = skvideo.io.vread(vidpaths, as_grey=True)
     dis = dis[:80, :200, :200]
     score = skvideo.measure.viideo_score(dis)
-    assert_almost_equal(score, 0.72179317, decimal=2)
+    # Value changed 2026-06 by the VIIDEO accuracy fix: viideo_score is now a
+    # faithful port of the LIVE reference computeVIIDEOscore.m (verified to
+    # ~1e-5 against Octave on the release demo clips). The prior 0.72179317 was
+    # the old broken port (NIQE gamma grid + truncated edge patches). This pin
+    # is self-referential, not external ground truth.
+    assert_almost_equal(score, 0.69935427, decimal=2)
 
 def test_measure_VideoBliinds():
     vidpaths = skvideo.datasets.bigbuckbunny()
@@ -96,23 +102,28 @@ def test_measure_VideoBliinds():
     dis = dis[:20, :200, :200]
     features = skvideo.measure.videobliinds_features(dis)
 
-    # Reference regenerated 2026-05 against numpy 2.4, scipy 1.17, opencv 4.13,
-    # ffmpeg 8.1. Spatial features (indices 0-35) drift like BRISQUE; index 36
-    # (a temporal motion feature) drifted ~1.0 (9.49 -> 10.48) because the
-    # underlying motion estimation path uses cv2 ops whose behavior changed.
+    # Values changed 2026-06 by two Video-BLIINDS faithfulness fixes, bringing
+    # the features into agreement with the original Video-BLIINDS MATLAB:
+    #   (1) resize: computequality now downsamples with antialiased
+    #       imresize(...,'bicubic') (was cv2.resize INTER_CUBIC) -> changed the
+    #       scale-2 NIQE features [18:35] and the NIQE score [36].
+    #   (2) motion tie-break: blockMotion(...,tiebreak='reference') matches the
+    #       reference minCost.m (top-left wins equal-cost ties) -> slightly
+    #       changed the motion features [44:45].
+    # Scale-1 NIQE [0:17] and DCT/spectral [37:43] are unchanged. Self-pinned.
     output = np.array([
         2.5088000000, 0.7242788489, 0.8861750000, 0.0949017145,
         0.0752771542, 0.1532683975, 0.8329750000, 0.1458550347,
         0.0474738216, 0.1561622395, 0.8581500000, 0.0439089416,
         0.0938119084, 0.1288480221, 0.8574000000, 0.0702115546,
-        0.0838724282, 0.1380829532, 2.9695750000, 1.0097186096,
-        0.9545750000, -0.0123873948, 0.2504456385, 0.2378865204,
-        0.9100500000, 0.1605339799, 0.1529654875, 0.2934319825,
-        0.8392250000, -0.0375286518, 0.2195999380, 0.1915193106,
-        0.8581500000, 0.0059698765, 0.2092617224, 0.2096975983,
-        10.4805235012, 1.0096157789, 0.2503749225, 0.7135545222,
+        0.0838724282, 0.1380829532, 3.1720250000, 0.9701545832,
+        1.0041750000, 0.0404103531, 0.2127559627, 0.2530737028,
+        0.9610000000, 0.1864457556, 0.1247718168, 0.3004232500,
+        0.8754000000, -0.0188169924, 0.2069193063, 0.1919921613,
+        0.9019250000, 0.0305220692, 0.1923565446, 0.2152514981,
+        9.4891487887, 1.0096157789, 0.2503749225, 0.7135545222,
         0.6722771783, 0.6699124985, 0.6920615775, 0.6218846752,
-        0.4412644506, 0.1425193101,
+        0.4408835769, 0.1416096091,
     ])
 
 
@@ -174,12 +185,13 @@ def test_measure_NIQE():
 
     scores = skvideo.measure.niqe(ref)
 
-    # Reference regenerated 2026-05 against numpy 2.4, scipy 1.17, opencv 4.13,
-    # ffmpeg 8.1. Both scores drifted ~0.3 upward from the 2018 baseline
-    # (11.19/11.05 -> 11.50/11.28). Tolerance is ±0.5 to accommodate BLAS
-    # differences between platforms (OpenBLAS on Linux vs Accelerate on macOS).
-    assert_almost_equal(scores[0], 11.50, decimal=0)
-    assert_almost_equal(scores[1], 11.28, decimal=0)
+    # NIQE uses the reference LIVE pristine model as of 1.2.0; values shifted
+    # from the old inaccurate model (~11.5) to ~4.1 (clean content scores low,
+    # as expected for a naturalness metric). decimal=0 keeps a generous
+    # tolerance for BLAS/resize differences across platforms (OpenBLAS on Linux
+    # vs Accelerate on macOS).
+    assert_almost_equal(scores[0], 4.13, decimal=0)
+    assert_almost_equal(scores[1], 4.10, decimal=0)
 
 def test_measure_MAE():
     vidpaths = skvideo.datasets.fullreferencepair()

@@ -1,3 +1,131 @@
+1.2.0 (2026-06-08)
+------------------
+Metric accuracy overhaul: NIQE, VIIDEO, Video-BLIINDS, and BRISQUE.
+
+This is a minor-version bump (not a patch) because it changes the numerical
+output of four metrics. The function signatures are unchanged, but scores and
+feature vectors are **not comparable across this boundary** -- the previous
+values were inaccurate. See the per-metric BREAKING notes below.
+
+- **NIQE now uses the reference pristine model** from the LIVE NIQE Software
+  Release (Mittal, Soundararajan, Bovik, 2012), replacing a separately-trained
+  model that correlated poorly with human judgement. On the LIVE IQA database,
+  NIQE's Spearman correlation (SROCC) with DMOS improves from ~0.54 to ~0.84
+  (779 distorted images); Gaussian-blur, which was effectively broken, goes
+  from ~0.32 to ~0.93. The model is redistributed under its permissive license
+  (see ``skvideo/measure/data/niqe_model_NOTICE.txt``).
+- **Feature-extractor corrections** to match the reference NIQE algorithm:
+  the diagonal (D1/D2) paired-product sub-bands now use their own right AGGD
+  scale parameter instead of duplicating the left one; the MSCN normalization
+  uses ``replicate`` border handling; and scale-2 downsampling uses an
+  antialiased (PIL bicubic) resize instead of ``cv2`` cubic.
+- **BREAKING:** NIQE output values change. Previous values were inaccurate, so
+  scores are not comparable across this boundary.
+- Measured LIVE SROCC is ~0.84 (was ~0.54), with per-distortion correlations of
+  0.87-0.97 and Gaussian blur recovered to ~0.93. To confirm this is the
+  faithful-NIQE ceiling on our evaluation harness and not a residual skvideo
+  defect, an independent NIQE of a different lineage (BasicSR / XPixelGroup,
+  unrelated to skvideo's code) was evaluated on the same LIVE images: it yields
+  SROCC 0.834, matching skvideo's 0.838 within 0.004 across every distortion.
+  Two faithful implementations converging at ~0.84 indicates the implementation
+  is correct. The commonly cited ~0.91 is a published literature figure (the
+  original MATLAB NIQE under the authors' own evaluation protocol); it was *not*
+  re-run on this harness, so the gap is attributed to evaluation-protocol
+  differences (image/luma handling, DMOS, LIVE subset) rather than independently
+  reproduced here. No in-metric change closes the gap; reaching ~0.91 would
+  require reproducing the original MATLAB protocol, not altering the metric.
+
+- **VIIDEO is now a faithful port of the LIVE reference** (Mittal, Saad, Bovik,
+  "VIIDEO Software Release", 2014 / TIP 2016), replacing an implementation
+  assembled on skvideo's shared NIQE feature stack that deviated from the
+  reference ``computeVIIDEOscore.m`` by 7-11% per clip at the paper's block-72
+  geometry (the error grew with block size, so the metric was never correct for
+  any non-demo configuration). ``viideo_score`` is verified to match the
+  reference (run under Octave with the authentic MATLAB ``blkproc``) to ~1e-5 on
+  the release demo clips at both 18/8 and 72/36.
+- **Two root-cause defects fixed**, both contained in ``viideo.py`` so the
+  shared ``aggd_features`` (used by NIQE/BRISQUE) is untouched: (1) edge blocks
+  no longer have their context border truncated when a frame dimension divides
+  the block size -- this drove the block-size-dependent error; (2) VIIDEO now
+  uses its own AGGD shape grid (``0.2:0.01:5``) rather than NIQE's
+  (``0.2:0.001:10``), since VIIDEO's features are the quantized shape parameters.
+  Also: ``>0`` (not ``>=0``) right-tail binning, all-zero/invalid blocks marked
+  and dropped (inf + nonfinite-row deletion), ``nanmean`` aggregation, float64.
+- **BREAKING:** VIIDEO output values change. Previous values were inaccurate, so
+  scores are not comparable across this boundary.
+- The default ``blocksize``/``blockoverlap`` remain ``(18, 18)``/``(8, 8)`` --
+  the QCIF demo configuration from the LIVE release (``testscript.m``), not a
+  recommended setting. The paper's LIVE VQA results (Table II) used block 72;
+  the spatial overlap at that size is not stated upstream (the demo's 8/18 ratio
+  implies ~32, indistinguishable from 36 within sampling noise). Choose
+  block/overlap to match your intended reference; see the ``viideo_score``
+  docstring.
+- At block 72 the faithful implementation reproduces the paper's per-distortion
+  LIVE VQA SROCC (Table II) within sampling noise. Cross-checked: a pure-numpy
+  reimplementation and the Octave reference agree to ~1e-5 (two independent
+  implementations). The reference was run under Octave, not MATLAB, so
+  MATLAB-level bit-identity is likely but not independently confirmed.
+
+- **Video-BLIINDS feature fidelity fixed** in two places, verified against the
+  original Video-BLIINDS MATLAB (Saad & Bovik, utlive/videobliinds) run under
+  Octave. ``videobliinds_features`` is features-only (no score; the original's
+  score is a separate R SVR model), so this concerns the feature vector:
+
+  - **Scale-2 NIQE resize:** ``computequality`` downsampled with
+    ``cv2.resize(INTER_CUBIC)`` (not antialiased) instead of the antialiased
+    ``imresize(...,'bicubic')`` the reference and the fixed ``niqe.py`` use --
+    a copy of the NIQE fix that never reached this duplicated function. The
+    scale-2 NIQE features (indices 18-35) and the NIQE score (36) now match the
+    reference to ~1e-4 (were 3-15% off).
+  - **Motion-vector tie-breaking:** ``blockMotion``'s ``_minCost`` seeds the
+    running minimum at the centre candidate (centre wins equal-cost ties); the
+    reference ``minCost.m`` seeds at 65537 and scans row-major (top-left wins).
+    A new ``tiebreak`` argument (default ``'center'`` -- unchanged for all
+    existing callers; ``'reference'`` -- LIVE semantics) is threaded through
+    ``_N3SS``/``blockMotion``, and Video-BLIINDS requests ``'reference'``. The
+    motion-coherence feature (44) now matches the reference to ~7e-5 (was ~3%).
+    ``blockMotion``'s default output is byte-identical for every other caller.
+
+- **BREAKING:** Video-BLIINDS feature values change (indices 18-36 and 44-45).
+  Previous values were inaccurate, so feature vectors are not comparable across
+  this boundary. Known discrepancy (intentionally NOT matched): the global-motion
+  feature (45) is ~0.7% from the reference because the reference's global-motion
+  step averages over the full preallocated motion-vector array, which includes
+  ~50 unfilled (zero) vectors -- an artifact of a non-integer preallocation
+  (zeros(2, 432*768/100) = 3317.76) in the original MATLAB. skvideo computes it
+  over the clean macroblock grid, which is better-defined; replicating the
+  reference here would mean reproducing allocation garbage whose exact value is
+  MATLAB-version-dependent.
+
+- **BRISQUE half-scale resize fixed.** ``brisque_features`` downsampled the
+  second scale with ``cv2.resize(INTER_CUBIC)`` (not antialiased) instead of
+  the antialiased ``imresize(...,'bicubic')`` the reference (utlive/BRISQUE)
+  uses -- the same resize bug as Video-BLIINDS and the NIQE fix. The
+  second-subband features (indices 18-35) now match the reference. Accuracy was
+  measured on LIVE IQA (779 images) by running both feature pipelines through
+  the reference's trained SVM (libsvm, allmodel/allrange) vs DMOS: the broken
+  resize cost ~0.15 SROCC (0.927 -> 0.782, worst on jp2k 0.734), and the fix
+  fully recovers it (back to 0.927 = reference level). Under the paper's own
+  protocol (1000 content-separated 80/20 splits, epsilon-SVR retrained per
+  split), fixed skvideo features give median SROCC 0.922, matching the
+  reference's 0.926 and reproducing the published ~0.93 within sampling
+  variation. (BRISQUE remains features-only; no score is shipped.) A separate
+  ~1% full-scale divergence (suspected float32 cancellation in the shared
+  compute_image_mscn_transform) is left untouched -- it has negligible accuracy
+  impact and the helper is shared with NIQE.
+- **BREAKING:** BRISQUE second-subband feature values (indices 18-35) change.
+
+- **Known deviation (not changed): AGGD zero-binning.** The shared
+  ``aggd_features`` helper (used by NIQE, BRISQUE, and Video-BLIINDS) places
+  exact-zero samples in the right tail (``imdata >= 0``), whereas the reference
+  ``estimateaggdparam.m`` excludes zeros from both tails (left ``< 0``, right
+  ``> 0``). On natural-image MSCN coefficients and paired products exact zeros
+  are vanishingly rare, so this is numerically negligible: an A/B across NIQE,
+  BRISQUE, and VIIDEO moved SROCC by only ~0.001-0.002 (slightly *negative*).
+  It is therefore an accuracy non-event and left unchanged to keep the shared
+  helper stable; VIIDEO already uses ``> 0`` locally (its features are the
+  quantized shape parameters, where the binning is part of the algorithm).
+
 1.1.15 (2026-06-02)
 -------------------
 Correctness-completion pass continuing the v1.1.14 hardening:

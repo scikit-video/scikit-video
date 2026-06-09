@@ -21,7 +21,11 @@ def Li3DDCT_features(videoData):
     Returns
     -------
     features : ndarray
-        A matrix of shape (T, 36) of the computed features.
+        A 1-D feature vector of shape (315,) = 5 families x 63 AC coefficients,
+        each family pooled (averaged) over all non-overlapping 4-frame groups
+        of the video. The five families, in order, are: shape (mean/std of
+        |coeff|), AGGD alpha, log-energy, histogram entropy, and per-coefficient
+        histogram distance from the mean histogram.
 
     References
     ----------
@@ -38,7 +42,6 @@ def Li3DDCT_features(videoData):
     if not (T >= 4):
         raise ValueError("Only %d input frames. Please supply at least 4" % (T,))
 
-    feats = np.zeros((63*5,), dtype=np.float32)
     newM = np.int32(np.floor(M/4)*4)
     newN = np.int32(np.floor(N/4)*4)
 
@@ -100,9 +103,6 @@ def Li3DDCT_features(videoData):
         Energy2feats[idx, nonzeros] += -(hist3d[j, nonzeros] * np.log2(hist3d[j, nonzeros]))
 
       Distfeats[idx, :] = np.sum(np.abs(hist3d - meanHist3d.reshape(-1, 1)), axis=0)
-
-      #feats[i, 18*0:18*1] = _extract_subband_feats(full_scale)
-      #feats[i, 18*1:18*2] = _extract_subband_feats(half_scale)
 
     Sfeats = np.mean(Sfeats,axis=0)
     Gammafeats = np.mean(Gammafeats,axis=0)
