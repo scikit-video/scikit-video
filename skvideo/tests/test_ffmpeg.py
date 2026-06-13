@@ -132,6 +132,83 @@ def test_FFmpegReader_fps():
 
 
 @unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
+def test_FFmpegReader_can_skip_exact_frame_count_probe(monkeypatch, tmp_path):
+    filename = tmp_path / "unknown_count.mp4"
+    filename.write_bytes(b"probe path is mocked")
+    count_probe_calls = []
+
+    def fake_probe(self):
+        return {
+            "video": {
+                "@r_frame_rate": "30/1",
+                "@width": "16",
+                "@height": "8",
+                "@pix_fmt": "rgb24",
+            }
+        }
+
+    def fail_count_probe(self):
+        count_probe_calls.append(self._filename)
+        raise AssertionError("frame count probe should not run")
+
+    def fake_create_process(self, inputdict, outputdict, verbosity):
+        self._proc = None
+        self._cmd = "mock ffmpeg"
+
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_probe", fake_probe)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_probCountFrames", fail_count_probe)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_createProcess", fake_create_process)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_getSupportedDecoders", lambda self: NotImplemented)
+
+    reader = skvideo.io.FFmpegReader(str(filename), scan_frames=False)
+    try:
+        assert reader.getShape() == (0, 8, 16, 3)
+        assert count_probe_calls == []
+    finally:
+        reader.close()
+
+
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
+def test_vreader_skips_exact_frame_count_probe_for_unknown_count(monkeypatch, tmp_path):
+    filename = tmp_path / "unknown_count.mp4"
+    filename.write_bytes(b"probe path is mocked")
+    count_probe_calls = []
+
+    def fake_probe(self):
+        return {
+            "video": {
+                "@r_frame_rate": "30/1",
+                "@width": "16",
+                "@height": "8",
+                "@pix_fmt": "rgb24",
+            }
+        }
+
+    def fail_count_probe(self):
+        count_probe_calls.append(self._filename)
+        raise AssertionError("frame count probe should not run")
+
+    def fake_create_process(self, inputdict, outputdict, verbosity):
+        self._proc = None
+        self._cmd = "mock ffmpeg"
+
+    def fake_next_frame(self):
+        yield np.zeros((8, 16, 3), dtype=np.uint8)
+
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_probe", fake_probe)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_probCountFrames", fail_count_probe)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_createProcess", fake_create_process)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "_getSupportedDecoders", lambda self: NotImplemented)
+    monkeypatch.setattr(skvideo.io.FFmpegReader, "nextFrame", fake_next_frame)
+
+    frames = list(skvideo.io.vreader(str(filename)))
+
+    assert len(frames) == 1
+    assert frames[0].shape == (8, 16, 3)
+    assert count_probe_calls == []
+
+
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_FFmpegWriter():
     # generate random data for 5 frames
     outputfile = sys._getframe().f_code.co_name + ".mp4"

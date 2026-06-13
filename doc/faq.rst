@@ -50,7 +50,13 @@ This should produce output like
 Loading videos using vread is sooooo slow!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You may not have supplied `num_frames`. The autodetection process sometimes requires two passes on an input video (depending on the type of video), which can make a huge difference for a large video corpus. By supplying `num_frames`, your code may speed up tremendously.
+You may not have supplied `num_frames`. For full-array reads with
+``vread``, autodetection sometimes requires two passes on an input video
+(depending on the type of video), which can make a huge difference for a
+large video corpus. By supplying `num_frames`, your code may speed up
+tremendously. If you only need to iterate frames, ``vreader`` avoids the
+extra exact frame-count scan when the container metadata does not report a
+frame count; it streams until EOF instead.
 
 How do I report a bug with scikit-video?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

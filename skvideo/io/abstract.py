@@ -111,7 +111,9 @@ class VideoReaderAbstract(object):
     DEFAULT_INPUT_PIX_FMT = "yuvj444p"
     OUTPUT_METHOD = None  # "rawvideo"
 
-    def __init__(self, filename, inputdict=None, outputdict=None, verbosity=0, start_frame=0):
+    def __init__(
+            self, filename, inputdict=None, outputdict=None, verbosity=0,
+            start_frame=0, scan_frames=True):
         """Initializes FFmpeg in reading mode with the given parameters
 
         During initialization, additional parameters about the video file
@@ -148,6 +150,12 @@ class VideoReaderAbstract(object):
             dropped frames back to a constant rate, and on FFmpeg 5.1+ is
             equivalent to ``-fps_mode passthrough``). That is slower
             because it decodes from the start of the file.
+
+        scan_frames : bool
+            If true, scan the input with ffprobe/avprobe when metadata does
+            not expose a frame count. This preserves the historical exact
+            ``getShape()[0]`` behavior but can be very slow on large videos.
+            Generator-style readers can disable it and read until EOF.
 
         Returns
         -------
@@ -198,7 +206,9 @@ class VideoReaderAbstract(object):
         # reference to the half-constructed reader, so close() is
         # unreachable and the temp file leaks.
         try:
-            self._finish_init(filename, inputdict, outputdict, verbosity, start_frame)
+            self._finish_init(
+                filename, inputdict, outputdict, verbosity, start_frame,
+                scan_frames)
         except Exception:
             if self._temp_input_path is not None:
                 try:
@@ -208,7 +218,7 @@ class VideoReaderAbstract(object):
                 self._temp_input_path = None
             raise
 
-    def _finish_init(self, filename, inputdict, outputdict, verbosity, start_frame):
+    def _finish_init(self, filename, inputdict, outputdict, verbosity, start_frame, scan_frames):
         """The rest of __init__, wrapped so spool failure cleanup can apply.
 
         Extracted purely for the try/except boundary; semantics are
@@ -358,11 +368,19 @@ class VideoReaderAbstract(object):
             # webcam (or live URL) can stream frames endlessly, lets use the
             # special default value of 0 to indicate that
             self.inputframenum = 0
-        else:
+        elif scan_frames:
             self.inputframenum = self._probCountFrames()
             if verbosity != 0:
                 warnings.warn(
                     "Cannot determine frame count. Scanning input file, this is slow when repeated many times. Need `-vframes` in inputdict. Consult documentation on I/O.",
+                    UserWarning)
+        else:
+            self.inputframenum = 0
+            if verbosity != 0:
+                warnings.warn(
+                    "Cannot determine frame count from metadata. Reading until EOF; "
+                    "pass `num_frames`/`-vframes` to declare a limit, or construct "
+                    "the reader with scan_frames=True for an exact getShape()[0].",
                     UserWarning)
 
         # Adjust the expected frame count for start_frame seek so getShape()
