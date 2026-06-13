@@ -253,6 +253,8 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
     num_frames : int
         Only read the first `num_frames` number of frames from video.
         Setting `num_frames` to small numbers can significantly speed up video loading times.
+        If omitted and the container does not expose a frame count, the
+        generator reads until EOF instead of scanning the whole file up front.
 
     as_grey : bool
         If true, only load the luminance channel of the input video.
@@ -313,7 +315,9 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         if as_grey:
             outputdict['-pix_fmt'] = 'gray'
 
-        reader = FFmpegReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity, start_frame=start_frame)
+        reader = FFmpegReader(
+            fname, inputdict=inputdict, outputdict=outputdict,
+            verbosity=verbosity, start_frame=start_frame, scan_frames=False)
         try:
             for frame in reader.nextFrame():
                 if as_grey:
@@ -334,7 +338,9 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         if num_frames != 0:
             outputdict['-vframes'] = str(num_frames)
 
-        reader = LibAVReader(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
+        reader = LibAVReader(
+            fname, inputdict=inputdict, outputdict=outputdict,
+            verbosity=verbosity, scan_frames=False)
         try:
             for frame in reader.nextFrame():
                 yield frame
