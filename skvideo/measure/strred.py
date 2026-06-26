@@ -21,9 +21,9 @@ def est_params(frame, blk, sigma_nn):
 
     # force PSD
     eigval, eigvec = np.linalg.eig(cov_mat)
-    Q = np.matrix(eigvec)
-    xdiag = np.matrix(np.diag(np.maximum(eigval, 0)))
-    cov_mat = Q*xdiag*Q.T
+    Q = eigvec
+    xdiag = np.diag(np.maximum(eigval, 0))
+    cov_mat = Q @ xdiag @ Q.T
 
     temp = []
     for u in range(blk):

@@ -272,7 +272,7 @@ class Steerable:
                             rolling_window(sublevel[cband], filtsize).reshape(((w-2)*(h-2), 9)),
                             #grab coefficients from neighboring orientations
                             sublevel.transpose(1, 2, 0)[1:-1, 1:-1, idx].reshape((w-2)*(h-2), order-1),
-                            np.matrix(parent.reshape((w-2)*(h-2))).T,
+                            parent.reshape((w-2)*(h-2), 1),
                             #np.matrix(child[1:-1, 1:-1].reshape((w-2)*(h-2))).T,
                     )))
                 _, _, cov_mat = mean_cov(cov)
@@ -285,9 +285,9 @@ class Steerable:
 
                 #force positive semi-definite
                 eigval, eigvec = np.linalg.eig(cov_mat)
-                Q = np.matrix(eigvec)
-                xdiag = np.matrix(np.diag(np.maximum(eigval, 0)))
-                cov_mat = Q*xdiag*Q.T
+                Q = eigvec
+                xdiag = np.diag(np.maximum(eigval, 0))
+                cov_mat = Q @ xdiag @ Q.T
 
                 #reference code claims to be correcting the cov matrix, by below basic computation
                 #L = diag(diag(L).*(diag(L)>0))*sum(diag(L))/(sum(diag(L).*(diag(L)>0))+(sum(diag(L).*(diag(L)>0))==0));
