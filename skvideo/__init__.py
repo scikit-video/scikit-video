@@ -78,14 +78,15 @@ def scan_ffmpeg():
     try:
         # grab program version string
         version = check_output([os.path.join(_FFMPEG_PATH, _FFMPEG_APPLICATION), "-version"])
-        # only parse the first line returned
-        firstline = version.split(b'\n')[0]
+        # only parse the first line returned, decoded so the parts below are
+        # str (they feed the "%s.%s.%s" in getFFmpegVersion)
+        firstline = version.decode(errors="replace").split('\n')[0]
 
         # the 3rd element in this line is the version number
-        version = firstline.split(b' ')[2].strip()
-        versionparts = version.split(b'.')
-        if version[0] == b'N':
-            # this is the 'git' version of FFmpeg
+        version = firstline.split(' ')[2].strip()
+        versionparts = version.split('.')
+        if version.startswith('N'):
+            # this is the 'git' version of FFmpeg, e.g. "N-115000-g..."
             _FFMPEG_MAJOR_VERSION = version
         else:
             _FFMPEG_MAJOR_VERSION = versionparts[0]
@@ -347,33 +348,35 @@ def scan_libav():
     try:
         # grab program version string
         version = check_output([os.path.join(_AVCONV_PATH, _AVCONV_APPLICATION), "-version"])
-        # only parse the first line returned
-        firstline = version.split(b'\n')[0]
+        # only parse the first line returned, decoded so the parts below are
+        # str (they feed the "%s.%s" in getLibAVVersion)
+        firstline = version.decode(errors="replace").split('\n')[0]
 
-        firstlineparts = firstline.split(b' ')
+        firstlineparts = firstline.split(' ')
 
         # in older versions, the second word is "version",
         # else the version number starts with "v"
         version = ""
-        if firstlineparts[1].strip() == b"version":
-            version = firstlineparts[2].split('.')[0]
+        if firstlineparts[1].strip() == "version":
+            version = firstlineparts[2]
         else:
-            version = firstlineparts[1].split(b'-')[0]
+            version = firstlineparts[1].split('-')[0]
 
         # check for underscore
-        version = version.split(b'_')[0]
-        versionparts = version.split(b'.')
-        if versionparts[0].decode()[0] == 'v':
-            _LIBAV_MAJOR_VERSION = versionparts[0].decode()[1:]
+        version = version.split('_')[0]
+        versionparts = version.split('.')
+        if versionparts[0].startswith('v'):
+            _LIBAV_MAJOR_VERSION = versionparts[0][1:]
         else:
-            _LIBAV_MAJOR_VERSION = str(versionparts[0].decode())
-            _LIBAV_MINOR_VERSION = str(versionparts[1].decode())
+            _LIBAV_MAJOR_VERSION = versionparts[0]
+            _LIBAV_MINOR_VERSION = versionparts[1]
     except:
         pass
 
 
 
-if _MEDIAINFO_PATH is not None:
+# which() returns "" (not None) when the binary is missing
+if len(_MEDIAINFO_PATH) > 0:
     _HAS_MEDIAINFO = 1
 
 

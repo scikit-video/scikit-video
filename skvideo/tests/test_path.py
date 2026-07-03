@@ -36,6 +36,28 @@ def test_FFmpeg_paths():
     assert skvideo.getFFmpegVersion() == current_version, "FFmpeg version is not loaded properly from valid FFmpeg."
 
 
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
+def test_getFFmpegVersion_is_clean_string():
+    """getFFmpegVersion must return a real dotted version string (or an
+    N-prefixed git-build string), never a repr of bytes like "b'8'.b'1'"."""
+    version = skvideo.getFFmpegVersion()
+    assert "b'" not in version, "bytes leaked into version string: %r" % version
+    if not version.startswith("N"):
+        for part in version.split("."):
+            assert part.isdigit(), "non-numeric version component in %r" % version
+
+
+def test_HAS_MEDIAINFO_matches_actual_binary():
+    """_HAS_MEDIAINFO must be set only when the mediainfo binary actually
+    exists. which() returns '' (not None) on a miss, so an `is not None`
+    check marks mediainfo present on every system."""
+    from skvideo.utils import where
+    actually_present = len(where("mediainfo")) > 0
+    assert bool(skvideo._HAS_MEDIAINFO) == actually_present, (
+        "_HAS_MEDIAINFO=%r but mediainfo present=%r"
+        % (skvideo._HAS_MEDIAINFO, actually_present))
+
+
 @unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")
 def test_LibAV_paths():
     current_path = skvideo.getLibAVPath()
