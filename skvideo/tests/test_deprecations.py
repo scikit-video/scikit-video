@@ -92,3 +92,43 @@ def test_binaries_not_resolved_from_cwd(tmp_path, monkeypatch):
     matches = list(skvideo.utils.where("fakebinary_skvideo_test"))
     assert matches == [], (
         "binary resolved from CWD: %r" % matches)
+
+
+def test_empty_path_elements_do_not_resolve_cwd(tmp_path, monkeypatch):
+    """POSIX treats empty PATH elements ('', leading/trailing/double
+    colons) as the CWD. Filtering only the explicit os.curdir prepend is
+    not enough -- binaries must resolve exclusively from absolute PATH
+    entries."""
+    fake = tmp_path / "fakebinary_skvideo_p1"
+    fake.write_text("#!/bin/sh\necho fake\n")
+    fake.chmod(0o755)
+    monkeypatch.chdir(tmp_path)
+    for path_value in ("", os.pathsep, os.pathsep + "/usr/bin",
+                       "/usr/bin" + os.pathsep, ".", "relative/dir"):
+        monkeypatch.setenv("PATH", path_value)
+        matches = list(skvideo.utils.where("fakebinary_skvideo_p1"))
+        assert matches == [], (
+            "binary resolved from CWD with PATH=%r: %r" % (path_value, matches))
+
+
+def test_high_level_backend_libav_warns_deprecated(tmp_path):
+    """The documented public API (vread/vreader/vwrite with
+    backend='libav') must warn even on systems without libav, where the
+    RuntimeError fires before LibAVReader/LibAVWriter would."""
+    with pytest.warns(DeprecationWarning, match="libav"):
+        try:
+            skvideo.io.vread(skvideo.datasets.bigbuckbunny(), backend="libav")
+        except RuntimeError:
+            pass
+    with pytest.warns(DeprecationWarning, match="libav"):
+        try:
+            next(skvideo.io.vreader(skvideo.datasets.bigbuckbunny(), backend="libav"))
+        except RuntimeError:
+            pass
+    with pytest.warns(DeprecationWarning, match="libav"):
+        try:
+            skvideo.io.vwrite(str(tmp_path / "o.mp4"),
+                              np.zeros((1, 4, 4, 3), dtype=np.uint8),
+                              backend="libav")
+        except RuntimeError:
+            pass

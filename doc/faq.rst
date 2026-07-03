@@ -17,10 +17,13 @@ against a consistent and peer-reviewed set of tools.
 Finally, scikit-video provides helpful utilities, like scene-boundary detectors and block-motion estimators commonly
 used in video processing algorithms.
 
-How do I tell scikit-video to use different FFmpeg/LibAV installs?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How do I tell scikit-video to use a different FFmpeg install?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use the function :mod:`skvideo.setFFmpegPath` or :mod:`skvideo.setLibAVPath` in the core :mod:`skvideo` API.
+You can use the function :mod:`skvideo.setFFmpegPath` in the core
+:mod:`skvideo` API. (:mod:`skvideo.setLibAVPath` still exists but the
+libav/avconv backend is deprecated and will be removed in a future
+release.)
 
 I installed scikit-video, but the API I installed does not match the website! How do I fix this?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

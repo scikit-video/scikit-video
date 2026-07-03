@@ -265,10 +265,15 @@ def imapchain(*a, **kwa):
     return itertools.chain(*imap_results)
 
 def _gen_possible_matches(filename):
-    # PATH only -- never the current working directory. Resolving (and at
-    # import time, executing) an ffprobe found in CWD is a hijack vector
-    # and shadows the real install with any stray same-named file.
+    # Absolute PATH entries only -- never the current working directory.
+    # Resolving (and at import time, executing) an ffprobe found in CWD is
+    # a hijack vector and shadows the real install with any stray
+    # same-named file. Merely dropping the old explicit os.curdir prepend
+    # is not enough: POSIX treats EMPTY PATH elements (leading/trailing/
+    # double separators) as the CWD, and relative entries are
+    # CWD-dependent too, so both are excluded.
     path_parts =     os.environ.get("PATH", "").split(os.pathsep)
+    path_parts =     [p for p in path_parts if p and os.path.isabs(p)]
     possible_paths = map(lambda path_part: os.path.join(path_part, filename), path_parts)
 
     if platform.system() == "Windows":

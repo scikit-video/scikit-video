@@ -43,7 +43,7 @@ Requirements:
 - numpy >= 1.22
 - scipy >= 1.9
 - Pillow >= 9.0
-- mediainfo (optional)
+- mediainfo (optional; **deprecated**, will be removed in a future release)
 
 Installation from PyPI::
 
@@ -106,7 +106,7 @@ TODO/Roadmap
 ------------
 - Spatial-Temporal filtering helper functions
 - Speedup routines (using cython and/or opencl)
-- More ffmpeg/avconv interfacing
+- More ffmpeg interfacing
 - Add additional algorithms and maintain more comprehensive benchmarks
 
 

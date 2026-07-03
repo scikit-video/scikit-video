@@ -24,6 +24,10 @@ Classes
    LibAVWriter
    LibAVReader
 
+.. deprecated:: 1.3.0
+   ``LibAVWriter`` and ``LibAVReader`` (the libav/avconv backend) are
+   deprecated and will be removed in a future release. Use the FFmpeg
+   backend.
 
 Functions
 ---------
@@ -37,3 +41,7 @@ Functions
    mprobe
    ffprobe
    avprobe
+
+.. deprecated:: 1.3.0
+   ``mprobe`` (mediainfo) and ``avprobe`` (libav) are deprecated and
+   will be removed in a future release. Use :func:`skvideo.io.ffprobe`.

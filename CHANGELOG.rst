@@ -22,10 +22,13 @@ Deprecations (removal planned for the release after next)
 Fixed
 ~~~~~
 
-- Binaries (ffprobe/ffmpeg/avconv/mediainfo) are no longer resolved from
-  the current working directory -- only from PATH. A stray or malicious
-  file named ``ffprobe`` in the CWD could previously be executed by
-  ``import skvideo``.
+- Binaries (ffprobe/ffmpeg/avconv/mediainfo) are now resolved only from
+  **absolute** PATH entries -- never from the current working directory.
+  A stray or malicious file named ``ffprobe`` in the CWD could
+  previously be executed by ``import skvideo``, both via the explicit
+  CWD search entry and via empty PATH elements (leading/trailing/double
+  separators, which POSIX treats as the CWD); relative PATH entries are
+  excluded for the same reason.
 
 
 1.2.1 (2026-07-02)
