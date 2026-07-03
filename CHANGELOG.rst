@@ -1,3 +1,83 @@
+1.2.1 (2026-07-02)
+------------------
+Maintenance release: NumPy 2.5 compatibility, reader error-reporting,
+dependency cleanup, and release-infrastructure work. No metric values
+change.
+
+Compatibility
+~~~~~~~~~~~~~
+
+- **NumPy 2.5 compatibility.** ``numpy.linalg.eig`` always returns complex
+  arrays as of NumPy 2.5 (numpy/numpy#30411). The symmetric
+  eigendecompositions in ``measure.strred`` / ``utils.stpyr`` (force-PSD
+  projections) and ``measure.videobliinds`` (motion structure tensor) now
+  use ``eigh`` / ``eigvalsh``, which are guaranteed real on every NumPy
+  version. Previously ``strred`` crashed with a ufunc casting error and
+  ``videobliinds`` emitted a ``ComplexWarning`` per motion block under
+  NumPy >= 2.5. Numerically inert on older NumPy (the projections are
+  invariant to eigenvalue ordering and eigenvector sign).
+- ``strred`` / ``viideo`` no longer use the deprecated ``np.matrix``
+  (``PendingDeprecationWarning`` on every call); replaced with plain
+  ndarray operations, verified byte-identical.
+
+Dependencies
+~~~~~~~~~~~~
+
+- **Removed the ``opencv-python-headless`` dependency.** Nothing has
+  imported ``cv2`` since the 1.2.0 metric fixes replaced ``cv2.resize``
+  with the internal Pillow-based ``imresize``; the pin shipped a large
+  binary wheel to every install for nothing.
+
+Fixed
+~~~~~
+
+- **A reader-side decode failure now raises instead of silently
+  truncating.** If ffmpeg dies partway through a read (decode error,
+  dropped network source), ``vread`` / ``vreader`` / ``FFmpegReader``
+  raise ``RuntimeError`` with ffmpeg's exit code and stderr diagnostics
+  instead of returning the frames read so far as if they were the whole
+  video. (The writer has had this guarantee since issue #111.) Quiet-mode
+  readers now run ffmpeg at ``-loglevel error`` with stderr spooled to a
+  leak-proof temp file rather than an undrained pipe (a latent deadlock).
+- ``skvideo.setFFmpegPath()`` / ``setLibAVPath()`` now take effect even
+  when called after ``import skvideo.io``. The io modules previously
+  bound the path/availability globals at import time, so late calls
+  silently did nothing.
+- ``skvideo.getFFmpegVersion()`` returned repr-of-bytes garbage like
+  ``b'8'.b'1'.b'1'``; git-build FFmpeg ("N-...") detection was also dead
+  code. Both fixed; same decode-once fix applied to the libav scan.
+- ``skvideo._HAS_MEDIAINFO`` was 1 on every system (an ``is not None``
+  check against a function that returns ``""``), so ``mprobe()``'s clear
+  "mediainfo not found" error path never ran.
+- ``vread`` / ``vreader`` / ``vwrite`` with an unknown ``backend=`` name,
+  and the writer with a >4-channel frame, raised the bare
+  ``NotImplemented`` singleton (surfacing as an unrelated ``TypeError``);
+  they now raise ``ValueError`` naming the problem.
+- ``vread`` of an input whose frame count cannot be probed (URL/stream
+  sources) crashed with ``IndexError`` on the first frame; it now
+  collects the frames it reads.
+- ``vreader()`` skips the exact frame-count probe for unknown-count
+  inputs (#193, #194) -- generator reads no longer pay a full decode
+  pass up front.
+- Reader teardown escalates to ``kill()`` when SIGTERM doesn't take,
+  instead of orphaning a hung ffmpeg process.
+
+Packaging / infrastructure
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- New ``publish.yml`` workflow: build + ``twine check`` + upload to PyPI
+  via Trusted Publishing (OIDC) on GitHub release publication.
+- CI now tests Python 3.14; pip downloads are cached.
+- ``LICENSE.txt`` still contained the unfilled BSD template placeholder
+  "[project]"; fixed, and the divergent duplicate ``COPYING`` removed.
+- The sdist now includes ``CHANGELOG.rst`` and ``CONTRIBUTING.rst``
+  (vestigial ``MANIFEST.in``).
+- README/docs release text refreshed for the 1.2 line (was still 1.1.15);
+  ``CONTRIBUTING.rst`` rewritten around the real pytest workflow (was
+  markdown-link syntax in rst, nose-era commands, and paths that do not
+  exist).
+
+
 1.2.0 (2026-06-08)
 ------------------
 Metric accuracy overhaul: NIQE, VIIDEO, Video-BLIINDS, and BRISQUE.
