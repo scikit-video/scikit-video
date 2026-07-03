@@ -916,10 +916,38 @@ class VideoWriterAbstract(object):
                 self.DEVNULL.close()
             return
         if self._proc.poll() is not None:
-            # Process already exited; release DEVNULL and drop the handle.
+            # Process already exited before close() (crash, kill, early
+            # ffmpeg failure). Apply the same integrity check as the
+            # normal path below (issue #111): a nonzero exit means the
+            # output file is corrupt/partial and must not pass silently.
+            returncode = self._proc.returncode
+            stderr_data = b""
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b""
+                except (OSError, ValueError):
+                    pass
+            for pipe in (self._proc.stdin, self._proc.stdout,
+                         self._proc.stderr):
+                if pipe is not None and not pipe.closed:
+                    try:
+                        pipe.close()
+                    except OSError:
+                        # closing buffered stdin flushes into a dead
+                        # process (BrokenPipeError); the returncode below
+                        # is the meaningful signal, not this
+                        pass
+            if self._stdout_drain_thread is not None:
+                self._stdout_drain_thread.join(timeout=30)
+                self._stdout_drain_thread = None
             self._proc = None
             if self.DEVNULL is not None and not self.DEVNULL.closed:
                 self.DEVNULL.close()
+            if returncode != 0:
+                msg = "FFmpeg exited with code %d before close()" % returncode
+                if stderr_data:
+                    msg += ":\n" + stderr_data.decode(errors='replace')
+                raise RuntimeError(msg)
             return
 
         if self._dest_kind == "memory":

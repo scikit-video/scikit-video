@@ -36,3 +36,18 @@ def test_close_returns_normally_on_success(tmp_path):
         writer.writeFrame(np.zeros((64, 64, 3), dtype=np.uint8))
     writer.close()  # should not raise
     assert out_path.stat().st_size > 0
+
+
+def test_close_raises_when_process_died_before_close(tmp_path):
+    """If the ffmpeg process is already dead when close() runs (crash,
+    OOM-kill), close() previously returned silently -- the caller got a
+    corrupt/partial file with no error. The already-exited branch must
+    apply the same nonzero-exit check as the normal path (issue #111)."""
+    import time
+    out_path = tmp_path / "out.mp4"
+    writer = skvideo.io.FFmpegWriter(str(out_path))
+    writer.writeFrame(np.zeros((64, 64, 3), dtype=np.uint8))
+    writer._proc.kill()
+    writer._proc.wait()
+    with pytest.raises(RuntimeError, match="[Ff][Ff]mpeg"):
+        writer.close()

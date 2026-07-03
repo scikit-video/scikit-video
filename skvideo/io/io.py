@@ -297,10 +297,6 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         M is frame height, N is frame width, and
         C is number of channels per pixel
 
-    ----------------
-    plugin_args : keywords
-        Passed to the given plugin.
-
     """
     fname = _normalize_source(fname)
 

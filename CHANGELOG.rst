@@ -1,8 +1,10 @@
 1.2.1 (2026-07-02)
 ------------------
 Maintenance release: NumPy 2.5 compatibility, reader error-reporting,
-dependency cleanup, and release-infrastructure work. No metric values
-change.
+dependency cleanup, and release-infrastructure work. No intentional
+metric changes; the eigendecomposition fix can shift metric outputs at
+float-rounding level (see the NumPy 2.5 note below), unlike 1.2.0's
+deliberate value corrections.
 
 Compatibility
 ~~~~~~~~~~~~~
@@ -14,8 +16,13 @@ Compatibility
   use ``eigh`` / ``eigvalsh``, which are guaranteed real on every NumPy
   version. Previously ``strred`` crashed with a ufunc casting error and
   ``videobliinds`` emitted a ``ComplexWarning`` per motion block under
-  NumPy >= 2.5. Numerically inert on older NumPy (the projections are
-  invariant to eigenvalue ordering and eigenvector sign).
+  NumPy >= 2.5. The projections are mathematically invariant to
+  eigenvalue ordering and eigenvector sign, but ``eigh`` uses a
+  different LAPACK driver than ``eig``, so outputs are not bit-identical
+  to 1.2.0: measured on deterministic ST-RRED input, the aggregate
+  scores shift by ~2e-6 to ~1e-4 relative -- float-rounding territory,
+  far below metric noise, and inside the test suite's cross-BLAS
+  tolerances.
 - ``strred`` / ``viideo`` no longer use the deprecated ``np.matrix``
   (``PendingDeprecationWarning`` on every call); replaced with plain
   ndarray operations, verified byte-identical.
