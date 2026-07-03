@@ -4,8 +4,8 @@
 import os
 import platform
 import itertools
-from .xmltodict import parse as xmltodictparser
 import subprocess as sp
+import xml.etree.ElementTree as _ET
 from .edge import canny
 from .stpyr import SpatialSteerablePyramid, rolling_window
 from .mscn import compute_image_mscn_transform, gen_gauss_window
@@ -186,6 +186,45 @@ bpplut["ayuv64le"] = [4, 64]
 bpplut["ayuv64be"] = [4, 64]
 bpplut["videotoolbox_vld"] = [0, 0]
 
+
+
+def _element_to_dict(elem):
+    """Map one XML element to the xmltodict shape: attributes become
+    ``@name`` keys, repeated child tags become lists, meaningful text
+    becomes ``#text`` (or the value itself when there is nothing else),
+    and a fully empty element is None."""
+    d = {}
+    for name, value in elem.attrib.items():
+        d["@" + name] = value
+    for child in elem:
+        mapped = _element_to_dict(child)
+        if child.tag in d:
+            existing = d[child.tag]
+            if isinstance(existing, list):
+                existing.append(mapped)
+            else:
+                d[child.tag] = [existing, mapped]
+        else:
+            d[child.tag] = mapped
+    text = (elem.text or "").strip()
+    if text:
+        if d:
+            d["#text"] = text
+        else:
+            return text
+    return d or None
+
+
+def xmltodictparser(xml):
+    """Parse an XML document (bytes or str) into nested dicts.
+
+    Drop-in replacement for the previously vendored xmltodict.parse for
+    the subset of XML that ffprobe and mediainfo emit -- same key shape
+    (``@attr`` / ``#text`` / repeated-tag lists), implemented on the
+    stdlib ElementTree instead of a 400-line vendored module.
+    """
+    root = _ET.fromstring(xml)
+    return {root.tag: _element_to_dict(root)}
 
 
 def check_output(*popenargs, **kwargs):
