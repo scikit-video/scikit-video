@@ -8,6 +8,7 @@ a wide range of video formats.
 # distributed under the terms of the BSD License (included in release).
 
 import subprocess as sp
+import warnings
 
 import numpy as np
 
@@ -35,6 +36,11 @@ class LibAVReader(VideoReaderAbstract):
     OUTPUT_METHOD = "rawvideo"
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "The libav/avconv backend is deprecated and will be removed in "
+            "a future release (libav is unmaintained upstream and this "
+            "backend is not covered by scikit-video's CI). Use the ffmpeg "
+            "backend instead.", DeprecationWarning, stacklevel=2)
         if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVReader,self).__init__(*args, **kwargs)
@@ -90,6 +96,11 @@ class LibAVWriter(VideoWriterAbstract):
     """
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "The libav/avconv backend is deprecated and will be removed in "
+            "a future release (libav is unmaintained upstream and this "
+            "backend is not covered by scikit-video's CI). Use the ffmpeg "
+            "backend instead.", DeprecationWarning, stacklevel=2)
         if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVWriter,self).__init__(*args, **kwargs)

@@ -26,6 +26,10 @@ def mprobe(filename):
        about the passed-in source video.
 
     """
+    warnings.warn(
+        "mprobe/mediainfo support is deprecated and will be removed in a "
+        "future release; nothing inside scikit-video consumes it. Use "
+        "skvideo.io.ffprobe instead.", DeprecationWarning, stacklevel=2)
     if not _HAS_MEDIAINFO:
         raise RuntimeError("`mediainfo` not found in path. Is it installed?")
 

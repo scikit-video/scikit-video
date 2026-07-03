@@ -483,6 +483,10 @@ def setLibAVPath(path):
         none
 
     """
+    warnings.warn(
+        "The libav/avconv backend is deprecated and will be removed in a "
+        "future release. Use the ffmpeg backend (setFFmpegPath) instead.",
+        DeprecationWarning, stacklevel=2)
     global _AVCONV_PATH
     global _HAS_AVCONV
     _AVCONV_PATH = path

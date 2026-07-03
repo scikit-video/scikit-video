@@ -20,11 +20,14 @@ def test_failedwrite():
         skvideo.io.vwrite("garbage/garbage.mp4", outputdata)
 
 
-def test_failedextension():
-    # 'garbage' extension is not a known encoder extension -> ValueError
-    # (previously a bare assert, stripped under `python -O`).
+def test_failedextension(tmp_path):
+    # An unknown extension no longer trips the (deprecated) hardcoded
+    # allowlist ValueError; it warns and defers to ffmpeg, which cannot
+    # infer a muxer for '.garbage' and fails loudly at write time with
+    # its own diagnostics (issue #111 machinery).
     np.random.seed(0)
     outputdata = np.random.random(size=(5, 480, 640, 3)) * 255
     outputdata = outputdata.astype(np.uint8)
-    with pytest.raises(ValueError):
-        skvideo.io.vwrite("garbage.garbage", outputdata)
+    with pytest.warns(UserWarning, match="[Ee]xtension"):
+        with pytest.raises((RuntimeError, OSError)):
+            skvideo.io.vwrite(str(tmp_path / "garbage.garbage"), outputdata)

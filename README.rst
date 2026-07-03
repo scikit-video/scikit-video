@@ -38,13 +38,12 @@ Dependencies and Installation
 Requirements:
 
 - FFmpeg >= 2.8 on the system PATH (primary tested backend). The libav/avconv
-  backend is retained in the codebase for compatibility but is not validated
-  by the test suite.
+  backend is **deprecated** and will be removed in a future release.
 - Python >= 3.10
 - numpy >= 1.22
 - scipy >= 1.9
 - Pillow >= 9.0
-- mediainfo (optional)
+- mediainfo (optional; **deprecated**, will be removed in a future release)
 
 Installation from PyPI::
 
@@ -107,7 +106,7 @@ TODO/Roadmap
 ------------
 - Spatial-Temporal filtering helper functions
 - Speedup routines (using cython and/or opencl)
-- More ffmpeg/avconv interfacing
+- More ffmpeg interfacing
 - Add additional algorithms and maintain more comprehensive benchmarks
 
 

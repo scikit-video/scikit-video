@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import numpy as np
 
@@ -21,6 +22,14 @@ def _normalize_source(fname):
     if _classify_source(fname) == "memory":
         return fname
     return os.fspath(fname)
+
+
+def _warn_libav_deprecated():
+    warnings.warn(
+        "The libav/avconv backend is deprecated and will be removed in a "
+        "future release (libav is unmaintained upstream and this backend "
+        "is not covered by scikit-video's CI). Use the ffmpeg backend "
+        "instead.", DeprecationWarning, stacklevel=3)
 
 
 def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, audiosrc=None):
@@ -90,6 +99,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
             writer.writeFrame(videodata[t])
         writer.close()
     elif backend == "libav":
+        _warn_libav_deprecated()
         if audiosrc is not None:
             raise NotImplementedError("audiosrc passthrough is only supported with backend='ffmpeg'")
         # check if FFMPEG exists in the path
@@ -214,6 +224,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
 
         return videodata
     elif backend == "libav":
+        _warn_libav_deprecated()
         # check if FFMPEG exists in the path
         if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav.")
@@ -333,6 +344,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
             reader.close()
 
     elif backend == "libav":
+        _warn_libav_deprecated()
         # check if FFMPEG exists in the path
         if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav.")
