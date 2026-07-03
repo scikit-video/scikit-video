@@ -44,7 +44,6 @@ Requirements:
 - numpy >= 1.22
 - scipy >= 1.9
 - Pillow >= 9.0
-- opencv-python-headless >= 4.5 (required by ``skvideo.measure``)
 - mediainfo (optional)
 
 Installation from PyPI::

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Clean-install smoke test: verifies that `pip install scikit-video` in a
 # fresh venv brings in every runtime dependency the package needs at import
-# time — most importantly opencv-python-headless, which was a hidden
-# transitive requirement before v1.1.12.
+# time (historically this caught hidden requirements, e.g. the undeclared
+# cv2 dependency before v1.1.12; cv2 was removed entirely in 1.2.1).
 #
 # Run this before tagging a release. If it exits non-zero, do not tag.
 #
@@ -35,7 +35,7 @@ python - <<'PY'
 import skvideo
 import skvideo.io
 import skvideo.motion
-import skvideo.measure  # this is the one that needed cv2
+import skvideo.measure  # historically the import with hidden deps
 import skvideo.datasets
 import skvideo.utils
 print("OK skvideo", skvideo.__version__)
