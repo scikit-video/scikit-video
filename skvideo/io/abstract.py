@@ -410,9 +410,17 @@ class VideoReaderAbstract(object):
         else:
             decoders = self._getSupportedDecoders()
             if decoders != NotImplemented:
-                # check that the extension makes sense
+                # The extension allowlist is a frozen snapshot of an old
+                # ffmpeg's formats; ffmpeg detects containers from content,
+                # not extension, and URL/BytesIO inputs never went through
+                # this check. Defer to ffmpeg (whose failure now surfaces
+                # loudly) instead of rejecting.
                 if str.encode(self.extension).lower() not in decoders:
-                    raise ValueError("Unknown decoder extension: " + self.extension.lower())
+                    warnings.warn(
+                        "extension %r is not in skvideo's known-container "
+                        "list; passing the file to ffmpeg anyway. (This "
+                        "hardcoded allowlist is deprecated and will be "
+                        "removed.)" % self.extension.lower(), UserWarning)
 
         if '-f' not in outputdict:
             outputdict['-f'] = self.OUTPUT_METHOD
@@ -716,11 +724,18 @@ class VideoWriterAbstract(object):
         if self._dest_kind == "file":
             filename = os.path.abspath(os.fspath(filename))
             _, self.extension = os.path.splitext(filename)
-            # check that the extension makes sense
+            # See the reader-side note: the allowlist is a frozen snapshot.
+            # For writing, ffmpeg infers the muxer from the extension; if it
+            # can't, its own error surfaces at write/close time (issue #111).
             encoders = self._getSupportedEncoders()
             if encoders != NotImplemented:
                 if str.encode(self.extension).lower() not in encoders:
-                    raise ValueError("Unknown encoder extension: " + self.extension.lower())
+                    warnings.warn(
+                        "extension %r is not in skvideo's known-container "
+                        "list; passing it to ffmpeg anyway (set '-f' in "
+                        "outputdict to name the muxer explicitly). (This "
+                        "hardcoded allowlist is deprecated and will be "
+                        "removed.)" % self.extension.lower(), UserWarning)
 
             self._filename = filename
             basepath, _ = os.path.split(filename)

@@ -1,3 +1,33 @@
+Unreleased
+----------
+
+Deprecations (removal planned for the release after next)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **The libav/avconv backend is deprecated** (``LibAVReader``,
+  ``LibAVWriter``, ``backend='libav'``, ``setLibAVPath``). libav is
+  unmaintained upstream and the backend has never been covered by CI;
+  FFmpeg is the validated backend.
+- **``mprobe``/mediainfo support is deprecated.** Nothing inside
+  scikit-video consumes it; use ``skvideo.io.ffprobe``.
+- **The hardcoded container-extension allowlist is deprecated** and no
+  longer rejects: an extension missing from the (2016-era frozen) list
+  now warns and defers to ffmpeg, which detects containers from content.
+  Formats newer than the snapshot (e.g. ``.avif``) work; genuinely
+  unreadable inputs fail loudly through the 1.2.1 error-reporting paths.
+  **Behavior change:** writing to an unknown extension raises
+  ``RuntimeError`` with ffmpeg's diagnostics at write time instead of
+  ``ValueError`` at construction.
+
+Fixed
+~~~~~
+
+- Binaries (ffprobe/ffmpeg/avconv/mediainfo) are no longer resolved from
+  the current working directory -- only from PATH. A stray or malicious
+  file named ``ffprobe`` in the CWD could previously be executed by
+  ``import skvideo``.
+
+
 1.2.1 (2026-07-02)
 ------------------
 Maintenance release: NumPy 2.5 compatibility, reader error-reporting,

@@ -265,8 +265,10 @@ def imapchain(*a, **kwa):
     return itertools.chain(*imap_results)
 
 def _gen_possible_matches(filename):
+    # PATH only -- never the current working directory. Resolving (and at
+    # import time, executing) an ffprobe found in CWD is a hijack vector
+    # and shadows the real install with any stray same-named file.
     path_parts =     os.environ.get("PATH", "").split(os.pathsep)
-    path_parts =     itertools.chain((os.curdir,), path_parts)
     possible_paths = map(lambda path_part: os.path.join(path_part, filename), path_parts)
 
     if platform.system() == "Windows":

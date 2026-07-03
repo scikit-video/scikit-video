@@ -38,8 +38,7 @@ Dependencies and Installation
 Requirements:
 
 - FFmpeg >= 2.8 on the system PATH (primary tested backend). The libav/avconv
-  backend is retained in the codebase for compatibility but is not validated
-  by the test suite.
+  backend is **deprecated** and will be removed in a future release.
 - Python >= 3.10
 - numpy >= 1.22
 - scipy >= 1.9
