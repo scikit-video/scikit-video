@@ -2,8 +2,7 @@ import subprocess as sp
 import warnings
 
 from ..utils import *
-from .. import _HAS_AVCONV, _LIBAV_MAJOR_VERSION
-from .. import _AVCONV_PATH
+import skvideo  # accessed via attributes so setLibAVPath() updates are seen
 from .. import _AVPROBE_APPLICATION
 import json
 
@@ -27,13 +26,13 @@ def avprobe(filename):
 
     """
     # check if FFMPEG exists in the path
-    if not _HAS_AVCONV:
+    if not skvideo._HAS_AVCONV:
         raise RuntimeError("Cannot find installation of avprobe.")
-    if int(_LIBAV_MAJOR_VERSION) < 10:
-        raise RuntimeError("Version of libav (" + str(_LIBAV_MAJOR_VERSION) + ") is too old (need >= 10). Please update libav or use ffmpeg.")
+    if int(skvideo._LIBAV_MAJOR_VERSION) < 10:
+        raise RuntimeError("Version of libav (" + str(skvideo._LIBAV_MAJOR_VERSION) + ") is too old (need >= 10). Please update libav or use ffmpeg.")
 
     try:
-        command = [_AVCONV_PATH + "/" + _AVPROBE_APPLICATION, "-v", "error", "-show_streams", "-of", "json", filename]
+        command = [skvideo._AVCONV_PATH + "/" + _AVPROBE_APPLICATION, "-v", "error", "-show_streams", "-of", "json", filename]
 
         # simply get std output
         jsonstr = check_output(command)

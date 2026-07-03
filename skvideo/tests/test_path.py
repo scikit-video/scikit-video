@@ -76,3 +76,31 @@ def test_LibAV_paths():
     # check that it worked
     assert current_path == skvideo.getLibAVPath(), "LibAV path did not update correctly"
     assert skvideo.getLibAVVersion() == current_version, "LibAV version is not loaded properly from valid FFmpeg."
+
+
+@unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
+def test_setFFmpegPath_takes_effect_after_io_import():
+    """The io modules previously copied _HAS_FFMPEG/_FFMPEG_PATH via
+    from-imports at import time, so setFFmpegPath() called after
+    `import skvideo.io` silently did nothing -- the documented call
+    order dependency this test pins down."""
+    import skvideo.io  # noqa: F401 -- the import order IS the test
+
+    original_path = skvideo.getFFmpegPath()
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            skvideo.setFFmpegPath("/nonexistent/skvideo/path")
+        # vread checks the module-level flag; with the stale copy it
+        # proceeded and failed much later inside a subprocess call.
+        try:
+            skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
+            assert False, "vread must refuse to run without FFmpeg"
+        except RuntimeError as e:
+            assert "FFmpeg" in str(e) or "ffmpeg" in str(e)
+    finally:
+        skvideo.setFFmpegPath(original_path)
+
+    # and the restore must also take effect
+    videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny(), num_frames=1)
+    assert videodata.shape[0] == 1

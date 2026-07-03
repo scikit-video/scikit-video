@@ -8,7 +8,7 @@ import warnings
 
 import numpy as np
 
-from .. import _HAS_FFMPEG
+import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _warn_if_unsupported_protocol
 from ..utils import *
 
@@ -163,7 +163,7 @@ class VideoReaderAbstract(object):
 
         """
         # check if FFMPEG exists in the path
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         self._source_kind = _classify_source(filename)

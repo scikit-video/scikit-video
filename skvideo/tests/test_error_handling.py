@@ -196,8 +196,11 @@ def test_backend_missing_raises_runtimeerror_under_O():
     import sys
     code = (
         "import importlib\n"
+        "import skvideo\n"
         "m = importlib.import_module('skvideo.io.ffprobe')\n"
-        "m._HAS_FFMPEG = 0\n"   # simulate ffmpeg not installed
+        # simulate ffmpeg not installed; the io modules read this package
+        # attribute dynamically (the same knob setFFmpegPath flips)
+        "skvideo._HAS_FFMPEG = 0\n"
         "try:\n"
         "    m.ffprobe('whatever.mp4')\n"
         "    print('NORAISE')\n"

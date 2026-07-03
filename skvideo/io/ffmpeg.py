@@ -14,11 +14,8 @@ import numpy as np
 
 from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .ffprobe import ffprobe
+import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _FFMPEG_APPLICATION
-from .. import _FFMPEG_PATH
-from .. import _FFMPEG_SUPPORTED_DECODERS
-from .. import _FFMPEG_SUPPORTED_ENCODERS
-from .. import _HAS_FFMPEG
 from ..utils import *
 
 
@@ -41,7 +38,7 @@ class FFmpegReader(VideoReaderAbstract):
     OUTPUT_METHOD = "image2pipe"
 
     def __init__(self, *args, **kwargs):
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         super(FFmpegReader,self).__init__(*args, **kwargs)
 
@@ -53,11 +50,11 @@ class FFmpegReader(VideoReaderAbstract):
         oargs = self._dict2Args(outputdict)
 
         if verbosity > 0:
-            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
             stderr = None
         else:
-            cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
+            cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
                                                                                                       self._filename] + oargs + [
                       '-']
             stderr = sp.PIPE
@@ -67,7 +64,7 @@ class FFmpegReader(VideoReaderAbstract):
 
     def _probCountFrames(self):
         # open process, grabbing number of frames using ffprobe
-        probecmd = [_FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
+        probecmd = [skvideo._FFMPEG_PATH + "/ffprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
         try:
@@ -92,7 +89,7 @@ class FFmpegReader(VideoReaderAbstract):
         return ffprobe(self._filename)
 
     def _getSupportedDecoders(self):
-        return _FFMPEG_SUPPORTED_DECODERS
+        return skvideo._FFMPEG_SUPPORTED_DECODERS
 
 class FFmpegWriter(VideoWriterAbstract):
     """Writes frames using FFmpeg
@@ -156,7 +153,7 @@ class FFmpegWriter(VideoWriterAbstract):
 
     def __init__(self, filename, inputdict=None, outputdict=None,
                  audiosrc=None, verbosity=0):
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
         if audiosrc is not None:
             # Fail fast at construction time rather than letting ffmpeg
@@ -184,13 +181,13 @@ class FFmpegWriter(VideoWriterAbstract):
             filename, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
 
     def _getSupportedEncoders(self):
-        return _FFMPEG_SUPPORTED_ENCODERS
+        return skvideo._FFMPEG_SUPPORTED_ENCODERS
 
     def _createProcess(self, inputdict, outputdict, verbosity):
         iargs = self._dict2Args(inputdict)
         oargs = self._dict2Args(outputdict)
 
-        cmd = [_FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"]
+        cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-y"] + iargs + ["-i", "-"]
 
         if self._audiosrc is not None:
             # Mux audio from a separate source. stdin (raw video) is input #0;
