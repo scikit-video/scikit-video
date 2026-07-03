@@ -4,7 +4,6 @@ Implementation of edge-detection routines.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
 

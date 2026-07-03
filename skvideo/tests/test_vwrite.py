@@ -1,16 +1,7 @@
 import skvideo.io
 import sys
 import numpy as np
-import hashlib
 import os
-from numpy.testing import assert_equal
-
-def hashfile(afile, hasher, blocksize=65536):
-    buf = afile.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = afile.read(blocksize)
-    return hasher.hexdigest()
 
 def _vwrite(backend):
     outputfile = sys._getframe().f_code.co_name + ".mp4"
@@ -24,11 +15,9 @@ def _vwrite(backend):
     # save it out
     skvideo.io.vwrite(outputfile, outputdata, backend=backend)
 
-    # check a hash of the output file
-    h = hashfile(open(outputfile, 'rb'), hashlib.sha256())
-
-    # not done developing the writer yet, so this is disabled for now
-    #assert_equal(h, "7670dc3556bfc447210b66869a81774cab06774c05160a16d9865995f20e7b12")
+    # encoded bytes are ffmpeg-version-dependent, so no content hash;
+    # a non-empty output is the invariant
+    assert os.path.getsize(outputfile) > 0
 
     # remove test file
     os.remove(outputfile)

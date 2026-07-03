@@ -7,6 +7,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint (ruff, pyflakes rules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip ruff
+          ruff check skvideo/
+
   test:
     name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

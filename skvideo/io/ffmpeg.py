@@ -11,7 +11,6 @@ import os
 import subprocess as sp
 import tempfile
 
-import numpy as np
 
 from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .ffprobe import ffprobe

@@ -4,7 +4,6 @@ Implementation of global motion estimators.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
 

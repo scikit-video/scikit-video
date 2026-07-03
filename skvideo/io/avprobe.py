@@ -1,4 +1,3 @@
-import subprocess as sp
 import warnings
 
 from ..utils import *

@@ -2,12 +2,8 @@ import skvideo.io
 import skvideo.utils
 import numpy as np
 import os
-import sys
 
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 def pattern_sinusoid(backend):

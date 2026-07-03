@@ -1,5 +1,4 @@
 """Tests for pathlib.Path support across the I/O entry points (issues #148, #163)."""
-import os
 from pathlib import Path
 
 import numpy as np

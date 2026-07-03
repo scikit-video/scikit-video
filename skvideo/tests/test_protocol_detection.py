@@ -7,7 +7,6 @@ can't observe one half populated and the other half None.
 """
 import warnings
 
-import pytest
 
 import skvideo
 

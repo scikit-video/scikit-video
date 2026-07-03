@@ -1,6 +1,5 @@
 from ..utils import *
 import numpy as np
-import scipy.ndimage
 
 
 def mse(referenceVideoData, distortedVideoData):

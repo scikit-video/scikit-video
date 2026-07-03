@@ -4,7 +4,6 @@ import scipy.ndimage
 import scipy.fftpack
 import scipy.stats
 import scipy.io
-import sys
 
 def Li3DDCT_features(videoData):
     """Computes No-reference features from the Spatiotemporal Statistics for Video Quality Assessment paper. [#f1]_

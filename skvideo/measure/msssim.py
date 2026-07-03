@@ -4,7 +4,6 @@ import numpy as np
 import scipy.ndimage
 
 def compute_msssim(frame1, frame2, method='product'):
-    extend_mode = 'constant'
     avg_window = np.array(gen_gauss_window(5, 1.5))
     K_1 = 0.01
     K_2 = 0.03

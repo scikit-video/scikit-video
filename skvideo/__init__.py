@@ -3,7 +3,6 @@ __version__ = "1.2.1"
 from .utils import check_output, where
 import os
 import warnings
-import numpy as np
 
 # Run a program-based check to see if all install
 # requirements have been met.
@@ -95,88 +94,6 @@ def scan_ffmpeg():
                 _FFMPEG_PATCH_VERSION = versionparts[2]
     except:
         pass
-
-    # decoders = []
-    # encoders = []
-
-    # try:
-    #     extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-formats"])
-    #     extension_lst = extension_lst.split(b'\n')
-    #     # skip first line
-    #     for item in extension_lst[4:]:
-    #         parts = [x.strip() for x in item.split(b' ') if x]
-    #         if len(parts) < 2:
-    #             continue
-    #         rule = parts[0]
-    #         extension = parts[1]
-    #         if b'D' in rule:
-    #             for item in extension.split(b","):
-    #                 decoders.append(item)
-    #         if b'E' in rule:
-    #             for item in extension.split(b","):
-    #                 encoders.append(item)
-    # except:
-    #     pass
-
-    # try:
-    #     for enc in encoders:
-    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(enc)])
-    #         csvstring = ""
-    #         for line in extension_lst.split('\n'):
-    #             if "Common extensions:" in line:
-    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-    #                 break
-    #         if csvstring == "":
-    #             continue
-    #         csvlist = csvstring.split(',')
-    #         for listitem in csvlist:
-    #             _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
-    #     for enc in encoders:
-    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(enc)])
-    #         csvstring = ""
-    #         for line in extension_lst.split('\n'):
-    #             if "Common extensions:" in line:
-    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-    #                 break
-    #         if csvstring == "":
-    #             continue
-    #         csvlist = csvstring.split(',')
-    #         for listitem in csvlist:
-    #             _FFMPEG_SUPPORTED_ENCODERS.append(b"." + listitem)
-
-    #     _FFMPEG_SUPPORTED_ENCODERS = np.unique(_FFMPEG_SUPPORTED_ENCODERS)
-    # except:
-    #     pass
-
-    # try:
-    #     for dec in decoders:
-    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "muxer="+str(dec)])
-    #         csvstring = ""
-    #         for line in extension_lst.split('\n'):
-    #             if "Common extensions:" in line:
-    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-    #                 break
-    #         if csvstring == "":
-    #             continue
-    #         csvlist = csvstring.split(',')
-    #         for listitem in csvlist:
-    #             _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
-    #     for dec in decoders:
-    #         extension_lst = check_output([_FFMPEG_PATH + "/ffmpeg", "-v", "1", "-h", "demuxer="+str(dec)])
-    #         csvstring = ""
-    #         for line in extension_lst.split('\n'):
-    #             if "Common extensions:" in line:
-    #                 csvstring = line.replace("Common extensions:", "").replace(".", "").strip()
-    #                 break
-    #         if csvstring == "":
-    #             continue
-    #         csvlist = csvstring.split(',')
-    #         for listitem in csvlist:
-    #             _FFMPEG_SUPPORTED_DECODERS.append(b"." + listitem)
-
-    #     _FFMPEG_SUPPORTED_DECODERS = np.unique(_FFMPEG_SUPPORTED_DECODERS)
-    # except:
-    #     pass
 
     # by running the above code block, the bottom arrays are populated
     # output staticly provided for speed concerns

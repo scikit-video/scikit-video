@@ -1,17 +1,10 @@
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 
-from numpy.testing import assert_equal
-import os
-import sys
-import numpy as np
 import skvideo.io
 import skvideo.datasets
 
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 @unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")

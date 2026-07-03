@@ -64,3 +64,15 @@ version = { attr = "skvideo.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["skvideo/tests"]
+
+[tool.ruff.lint]
+# F = pyflakes: undefined names, unused imports/variables -- the
+# correctness class (issue #136 asked for flake8 in CI; ruff is the
+# current-generation implementation of the same checks). Style rules
+# are intentionally NOT enforced on this legacy-formatted codebase.
+select = ["F"]
+
+[tool.ruff.lint.per-file-ignores]
+# The io modules re-export via `from ..utils import *` (historical
+# public-API surface); F403/F405 flag the mechanism itself.
+"skvideo/**" = ["F403", "F405"]

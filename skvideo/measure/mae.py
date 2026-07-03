@@ -1,6 +1,5 @@
 from ..utils import *
 import numpy as np
-import scipy.ndimage
 
 
 def mae(referenceVideoData, distortedVideoData):

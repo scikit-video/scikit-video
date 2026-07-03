@@ -188,48 +188,14 @@ bpplut["videotoolbox_vld"] = [0, 0]
 
 
 
-# python2 only
-binary_type = str
-
-def check_dict(dic, key, valueifnot):
-    if key not in dic:
-        dic[key] = valueifnot
-
-
-# patch for python 2.6
 def check_output(*popenargs, **kwargs):
-    closeNULL = 0
-    try:
-        from subprocess import DEVNULL
-        closeNULL = 0
-    except ImportError:
-        import os
-        DEVNULL = open(os.devnull, 'wb')
-        closeNULL = 1
+    """subprocess.check_output with stderr suppressed.
 
-    process = sp.Popen(stdout=sp.PIPE, stderr=DEVNULL, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-
-    if closeNULL:
-        DEVNULL.close()
-
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        error = sp.CalledProcessError(retcode, cmd)
-        error.output = output
-        raise error
-    return output
-
-try:
-    # on py27 make map/filter behave like an iterator
-    map = itertools.imap
-    filter = itertools.ifilter
-except AttributeError:
-    # py3+
-    pass
+    Callers (scan_ffmpeg, ffprobe, ...) want the tool's stdout and treat
+    a nonzero exit as CalledProcessError; the tool's own stderr chatter
+    must not leak to the host process's console.
+    """
+    return sp.check_output(*popenargs, stderr=sp.DEVNULL, **kwargs)
 
 
 def where( filename ):
