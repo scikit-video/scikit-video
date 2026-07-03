@@ -13,7 +13,7 @@
 .. |PyPi| image:: https://badge.fury.io/py/scikit-video.svg
 .. _PyPi: https://badge.fury.io/py/scikit-video
 
-.. |PythonVersions| image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg
+.. |PythonVersions| image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
 .. _PythonVersions: https://pypi.org/project/scikit-video/
 
 .. |skvideologo| image:: doc/images/scikit-video.png

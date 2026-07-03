@@ -25,10 +25,12 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Video",
     "Topic :: Scientific/Engineering",
 ]
@@ -44,8 +46,10 @@ docs = ["sphinx>=5", "numpydoc"]
 
 [project.urls]
 Homepage = "http://scikit-video.org/"
+Documentation = "http://scikit-video.org/"
 Repository = "https://github.com/scikit-video/scikit-video"
 Issues = "https://github.com/scikit-video/scikit-video/issues"
+Changelog = "https://github.com/scikit-video/scikit-video/blob/master/CHANGELOG.rst"
 
 [tool.setuptools.packages.find]
 include = ["skvideo*"]
