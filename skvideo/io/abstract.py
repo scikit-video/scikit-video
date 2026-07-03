@@ -726,7 +726,9 @@ class VideoWriterAbstract(object):
                 elif C == 4:
                     self.inputdict["-pix_fmt"] = "rgba64" + suffix
                 else:
-                    raise NotImplemented
+                    raise ValueError(
+                        "unsupported channel count: %d (supported: 1-4); "
+                        "pass -pix_fmt in inputdict to override" % (C,))
             else:
                 if C == 1:
                     if self.NEED_RGB2GRAY_HACK:
@@ -742,7 +744,9 @@ class VideoWriterAbstract(object):
                 elif C == 4:
                     self.inputdict["-pix_fmt"] = "rgba"
                 else:
-                    raise NotImplemented
+                    raise ValueError(
+                        "unsupported channel count: %d (supported: 1-4); "
+                        "pass -pix_fmt in inputdict to override" % (C,))
 
         self.bpp = bpplut[self.inputdict["-pix_fmt"]][1]
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]

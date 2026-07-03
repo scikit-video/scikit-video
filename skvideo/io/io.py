@@ -101,7 +101,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
             writer.writeFrame(videodata[t])
         writer.close()
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))
 
 
 def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
@@ -231,7 +231,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         return videodata
 
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))
 
 
 def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
@@ -348,4 +348,4 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
             reader.close()
 
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))
