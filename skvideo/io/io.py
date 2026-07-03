@@ -184,16 +184,26 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         try:
             T, M, N, C = reader.getShape()
 
-            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-            count = 0
-            for idx, frame in enumerate(reader.nextFrame()):
-                videodata[idx, :, :, :] = frame
-                count = idx + 1
-            # An output filter (e.g. -vf select) can yield fewer frames than
-            # getShape() predicted from nb_frames; trim so the caller never
-            # sees uninitialized np.empty rows.
-            if count < T:
-                videodata = videodata[:count]
+            if T == 0:
+                # Frame count unknown (URL/stream inputs without nb_frames).
+                # Collect what the stream yields; preallocation would index
+                # into an empty array.
+                frames = list(reader.nextFrame())
+                if frames:
+                    videodata = np.stack(frames).astype(reader.dtype, copy=False)
+                else:
+                    videodata = np.empty((0, M, N, C), dtype=reader.dtype)
+            else:
+                videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+                count = 0
+                for idx, frame in enumerate(reader.nextFrame()):
+                    videodata[idx, :, :, :] = frame
+                    count = idx + 1
+                # An output filter (e.g. -vf select) can yield fewer frames
+                # than getShape() predicted from nb_frames; trim so the
+                # caller never sees uninitialized np.empty rows.
+                if count < T:
+                    videodata = videodata[:count]
 
             if as_grey:
                 videodata = vshape(videodata[:, :, :, 0])

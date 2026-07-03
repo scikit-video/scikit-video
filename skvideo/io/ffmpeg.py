@@ -9,6 +9,7 @@ a wide range of video formats.
 
 import os
 import subprocess as sp
+import tempfile
 
 import numpy as np
 
@@ -52,14 +53,40 @@ class FFmpegReader(VideoReaderAbstract):
         if verbosity > 0:
             cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
-            stderr = None
+            self._proc = sp.Popen(cmd, stdin=sp.PIPE,
+                                  stdout=sp.PIPE, stderr=None)
         else:
-            cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
+            # -loglevel error (not 0/quiet): if the read ends early we
+            # want ffmpeg's own diagnostics in the exception raised by
+            # _verify_clean_eof. stderr goes to a temp FILE, not a PIPE:
+            # a pipe that nothing drains can fill up and block ffmpeg
+            # mid-decode, and reading it concurrently would need a thread.
+            cmd = [skvideo._FFMPEG_PATH + "/" + _FFMPEG_APPLICATION, "-nostats", "-loglevel", "error"] + iargs + ['-i',
                                                                                                       self._filename] + oargs + [
                       '-']
-            stderr = sp.PIPE
-        self._proc = sp.Popen(cmd, stdin=sp.PIPE,
-                              stdout=sp.PIPE, stderr=stderr)
+            stderr_file = tempfile.NamedTemporaryFile(
+                prefix="skvideo_err_", suffix=".log", delete=False)
+            try:
+                self._proc = sp.Popen(cmd, stdin=sp.PIPE,
+                                      stdout=sp.PIPE, stderr=stderr_file)
+            except Exception:
+                stderr_file.close()
+                os.unlink(stderr_file.name)
+                raise
+            if os.name == "posix":
+                # Unlink immediately: the inode stays alive through the
+                # open handles (ours + the child's dup), and vanishes when
+                # both close -- so it cannot leak even if the caller never
+                # calls close(). We keep our handle to read the diagnostics
+                # back in _verify_clean_eof (shared file description with
+                # the child's fd, so seek(0) + read sees its output).
+                os.unlink(stderr_file.name)
+                self._stderr_file = stderr_file
+            else:
+                # Windows can't unlink an open file; fall back to
+                # path-based cleanup in close().
+                stderr_file.close()
+                self._stderr_path = stderr_file.name
         self._cmd = " ".join(cmd)
 
     def _probCountFrames(self):
