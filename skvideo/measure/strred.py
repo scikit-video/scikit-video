@@ -20,10 +20,12 @@ def est_params(frame, blk, sigma_nn):
     cov_mat = np.cov(temp, bias=1).astype(np.float32)
 
     # force PSD
-    eigval, eigvec = np.linalg.eig(cov_mat)
-    Q = np.matrix(eigvec)
-    xdiag = np.matrix(np.diag(np.maximum(eigval, 0)))
-    cov_mat = Q*xdiag*Q.T
+    # eigh, not eig: cov_mat is symmetric, and numpy >= 2.5 makes eig always
+    # return complex arrays, which would poison cov_mat downstream
+    eigval, eigvec = np.linalg.eigh(cov_mat)
+    Q = eigvec
+    xdiag = np.diag(np.maximum(eigval, 0))
+    cov_mat = Q @ xdiag @ Q.T
 
     temp = []
     for u in range(blk):

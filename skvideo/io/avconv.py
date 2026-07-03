@@ -14,8 +14,7 @@ import numpy as np
 from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .avprobe import avprobe
 from .. import _AVCONV_APPLICATION
-from .. import _AVCONV_PATH
-from .. import _HAS_AVCONV
+import skvideo  # accessed via attributes so setLibAVPath() updates are seen
 from ..utils import *
 
 
@@ -36,7 +35,7 @@ class LibAVReader(VideoReaderAbstract):
     OUTPUT_METHOD = "rawvideo"
 
     def __init__(self, *args, **kwargs):
-        if not _HAS_AVCONV:
+        if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVReader,self).__init__(*args, **kwargs)
 
@@ -45,20 +44,20 @@ class LibAVReader(VideoReaderAbstract):
         oargs = self._dict2Args(outputdict)
 
         if verbosity == 0:
-            cmd = [_AVCONV_PATH + "/" + _AVCONV_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
+            cmd = [skvideo._AVCONV_PATH + "/" + _AVCONV_APPLICATION, "-nostats", "-loglevel", "0"] + iargs + ['-i',
                                                                                                       self._filename] + oargs + [
                       '-']
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=sp.PIPE)
         else:
-            cmd = [_AVCONV_PATH + "/" + _AVCONV_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
+            cmd = [skvideo._AVCONV_PATH + "/" + _AVCONV_APPLICATION] + iargs + ['-i', self._filename] + oargs + ['-']
             print(cmd)
             self._proc = sp.Popen(cmd, stdin=sp.PIPE,
                                   stdout=sp.PIPE, stderr=None)
 
     def _probCountFrames(self):
         # open process, grabbing number of frames using avprobe
-        probecmd = [_AVCONV_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
+        probecmd = [skvideo._AVCONV_PATH + "/avprobe"] + ["-v", "error", "-count_frames", "-select_streams", "v:0",
                                                   "-show_entries", "stream=nb_read_frames", "-of",
                                                   "default=nokey=1:noprint_wrappers=1", self._filename]
         try:
@@ -91,7 +90,7 @@ class LibAVWriter(VideoWriterAbstract):
     """
 
     def __init__(self, *args, **kwargs):
-        if not _HAS_AVCONV:
+        if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav (which comes with avprobe).")
         super(LibAVWriter,self).__init__(*args, **kwargs)
 
@@ -99,7 +98,7 @@ class LibAVWriter(VideoWriterAbstract):
         iargs = self._dict2Args(inputdict)
         oargs = self._dict2Args(outputdict)
 
-        cmd = [_AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
+        cmd = [skvideo._AVCONV_PATH + "/avconv", "-y"] + iargs + ["-i", "pipe:"] + oargs + [self._filename]
 
         self._cmd = " ".join(cmd)
 

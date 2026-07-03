@@ -3,8 +3,7 @@ import subprocess as sp
 import warnings
 
 from ..utils import *
-from .. import _HAS_FFMPEG
-from .. import _FFMPEG_PATH
+import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _FFPROBE_APPLICATION
 
 def ffprobe(filename):
@@ -42,13 +41,13 @@ def ffprobe(filename):
 
     """
     # check if FFMPEG exists in the path
-    if not _HAS_FFMPEG:
+    if not skvideo._HAS_FFMPEG:
         raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
     filename = os.fspath(filename)
 
     try:
-        command = [_FFMPEG_PATH + "/" + _FFPROBE_APPLICATION, "-v", "error", "-show_streams", "-print_format", "xml", filename]
+        command = [skvideo._FFMPEG_PATH + "/" + _FFPROBE_APPLICATION, "-v", "error", "-show_streams", "-print_format", "xml", filename]
 
         xml = check_output(command)
         d = xmltodictparser(xml)["ffprobe"]["streams"]

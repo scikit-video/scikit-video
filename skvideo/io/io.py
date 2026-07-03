@@ -7,8 +7,7 @@ from .avconv import LibAVReader
 from .avconv import LibAVWriter
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
-from .. import _HAS_AVCONV
-from .. import _HAS_FFMPEG
+import skvideo  # accessed via attributes so set*Path() updates are seen
 from ..utils import *
 
 
@@ -82,7 +81,7 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         writer = FFmpegWriter(fname, inputdict=inputdict, outputdict=outputdict,
@@ -94,14 +93,14 @@ def vwrite(fname, videodata, inputdict=None, outputdict=None, backend='ffmpeg', 
         if audiosrc is not None:
             raise NotImplementedError("audiosrc passthrough is only supported with backend='ffmpeg'")
         # check if FFMPEG exists in the path
-        if not _HAS_AVCONV:
+        if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav.")
         writer = LibAVWriter(fname, inputdict=inputdict, outputdict=outputdict, verbosity=verbosity)
         for t in range(T):
             writer.writeFrame(videodata[t])
         writer.close()
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))
 
 
 def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
@@ -169,7 +168,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         if ((height != 0) and (width != 0)):
@@ -185,16 +184,26 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         try:
             T, M, N, C = reader.getShape()
 
-            videodata = np.empty((T, M, N, C), dtype=reader.dtype)
-            count = 0
-            for idx, frame in enumerate(reader.nextFrame()):
-                videodata[idx, :, :, :] = frame
-                count = idx + 1
-            # An output filter (e.g. -vf select) can yield fewer frames than
-            # getShape() predicted from nb_frames; trim so the caller never
-            # sees uninitialized np.empty rows.
-            if count < T:
-                videodata = videodata[:count]
+            if T == 0:
+                # Frame count unknown (URL/stream inputs without nb_frames).
+                # Collect what the stream yields; preallocation would index
+                # into an empty array.
+                frames = list(reader.nextFrame())
+                if frames:
+                    videodata = np.stack(frames).astype(reader.dtype, copy=False)
+                else:
+                    videodata = np.empty((0, M, N, C), dtype=reader.dtype)
+            else:
+                videodata = np.empty((T, M, N, C), dtype=reader.dtype)
+                count = 0
+                for idx, frame in enumerate(reader.nextFrame()):
+                    videodata[idx, :, :, :] = frame
+                    count = idx + 1
+                # An output filter (e.g. -vf select) can yield fewer frames
+                # than getShape() predicted from nb_frames; trim so the
+                # caller never sees uninitialized np.empty rows.
+                if count < T:
+                    videodata = videodata[:count]
 
             if as_grey:
                 videodata = vshape(videodata[:, :, :, 0])
@@ -206,7 +215,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         return videodata
     elif backend == "libav":
         # check if FFMPEG exists in the path
-        if not _HAS_AVCONV:
+        if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav.")
 
         if ((height != 0) and (width != 0)):
@@ -231,7 +240,7 @@ def vread(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None,
         return videodata
 
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))
 
 
 def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=None, outputdict=None, backend='ffmpeg', verbosity=0, start_frame=0):
@@ -288,10 +297,6 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
         M is frame height, N is frame width, and
         C is number of channels per pixel
 
-    ----------------
-    plugin_args : keywords
-        Passed to the given plugin.
-
     """
     fname = _normalize_source(fname)
 
@@ -303,7 +308,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
 
     if backend == "ffmpeg":
         # check if FFMPEG exists in the path
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of ffmpeg.")
 
         if ((height != 0) and (width != 0)):
@@ -329,7 +334,7 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
 
     elif backend == "libav":
         # check if FFMPEG exists in the path
-        if not _HAS_AVCONV:
+        if not skvideo._HAS_AVCONV:
             raise RuntimeError("Cannot find installation of libav.")
 
         if ((height != 0) and (width != 0)):
@@ -348,4 +353,4 @@ def vreader(fname, height=0, width=0, num_frames=0, as_grey=False, inputdict=Non
             reader.close()
 
     else:
-        raise NotImplemented
+        raise ValueError("unknown backend: %r (supported: 'ffmpeg', 'libav')" % (backend,))

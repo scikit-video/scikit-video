@@ -33,8 +33,23 @@ def test_reader_verbosity_starts_one_process(capsys):
     assert frames_read == 3
 
 
-def test_reader_verbosity_off_pipes_stderr():
-    """Without verbosity, stderr should be captured (sp.PIPE)."""
+def test_reader_verbosity_off_captures_stderr():
+    """Without verbosity, stderr must be captured, not inherited. It is
+    spooled to a temp file (not sp.PIPE: an undrained pipe can fill and
+    block ffmpeg mid-decode) so _verify_clean_eof can attach ffmpeg's
+    diagnostics when a read ends early. On POSIX the file is unlinked
+    at creation (anonymous inode -- cannot leak even without close());
+    on Windows close() unlinks it by path."""
+    import os
     reader = skvideo.io.FFmpegReader(skvideo.datasets.bigbuckbunny(), verbosity=0)
-    assert reader._proc.stderr is not None
+    # not inherited from the parent: Popen was given a file object
+    assert reader._proc.stderr is None
+    if os.name == "posix":
+        assert reader._stderr_file is not None
+        # already unlinked -- nothing on disk to leak
+        assert not os.path.exists(reader._stderr_file.name)
+    else:
+        assert reader._stderr_path is not None
+        assert os.path.exists(reader._stderr_path)
     reader.close()
+    assert reader._stderr_file is None and reader._stderr_path is None

@@ -26,3 +26,11 @@ htmlcov/
 
 # Metric-accuracy validation harness - kept local until results are published
 validation/
+
+# Sphinx build output
+doc/_build/
+doc/modules/generated/
+
+# Local environments / lockfiles (project is pip-based; no committed lockfile)
+.venv/
+uv.lock

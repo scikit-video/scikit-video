@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import subprocess as sp
 import tempfile
 import threading
 import time
@@ -8,7 +9,7 @@ import warnings
 
 import numpy as np
 
-from .. import _HAS_FFMPEG
+import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _warn_if_unsupported_protocol
 from ..utils import *
 
@@ -163,13 +164,21 @@ class VideoReaderAbstract(object):
 
         """
         # check if FFMPEG exists in the path
-        if not _HAS_FFMPEG:
+        if not skvideo._HAS_FFMPEG:
             raise RuntimeError("Cannot find installation of real FFmpeg (which comes with ffprobe).")
 
         self._source_kind = _classify_source(filename)
         # Track temp files spooled from memory sources so close() can clean
         # them up. None for file / url sources.
         self._temp_input_path = None
+        # Backends may spool the subprocess's stderr to a temp file (see
+        # FFmpegReader._createProcess) so a decode failure can be reported
+        # with ffmpeg's own diagnostics without risking a blocked pipe.
+        # POSIX: _stderr_file holds our handle to an already-unlinked
+        # anonymous file (leak-proof). Windows: _stderr_path is a real
+        # path that close() unlinks.
+        self._stderr_file = None
+        self._stderr_path = None
         # Memory sources (BytesIO, file-like): spool to a temp file so the
         # rest of __init__ — ffprobe, extension heuristics, frame reading —
         # can operate on a regular path. mp4's moov atom in particular
@@ -509,6 +518,19 @@ class VideoReaderAbstract(object):
             except OSError:
                 pass
             self._temp_input_path = None
+        # Clean up the spooled stderr file, if the backend created one.
+        if self._stderr_file is not None:
+            try:
+                self._stderr_file.close()
+            except OSError:
+                pass
+            self._stderr_file = None
+        if self._stderr_path is not None:
+            try:
+                os.unlink(self._stderr_path)
+            except OSError:
+                pass
+            self._stderr_path = None
 
     def _terminate(self, timeout=1.0):
         """ Terminate the sub process.
@@ -526,6 +548,10 @@ class VideoReaderAbstract(object):
             time.sleep(0.01)
             if self._proc.poll() is not None:
                 break
+        else:
+            # SIGTERM didn't take (hung decoder); escalate so we never
+            # orphan a running ffmpeg.
+            self._proc.kill()
 
     def _read_frame_data(self):
         # Init and check
@@ -564,6 +590,56 @@ class VideoReaderAbstract(object):
 
         return self._lastread
 
+    def _verify_clean_eof(self):
+        """Called when the output stream ends. If the subprocess exited
+        nonzero (decode error, dropped source, killed), raise instead of
+        letting the caller mistake a truncated read for a legitimately
+        shorter video. The writer has had this guarantee since issue #111;
+        this is the reader side.
+        """
+        if self._proc is None:
+            return
+        try:
+            returncode = self._proc.wait(timeout=5)
+        except sp.TimeoutExpired:
+            # stdout hit EOF but the process won't exit; close() will
+            # terminate it. Exit status is unknowable here, so no verdict.
+            return
+        if returncode == 0:
+            return
+        stderr_text = ""
+        if self._stderr_file is not None:
+            # our handle on the (unlinked) spool file; the child has
+            # exited, so its output is complete
+            try:
+                self._stderr_file.seek(0)
+                data = self._stderr_file.read()[-4096:]
+                stderr_text = data.decode(errors="replace").strip()
+            except (OSError, ValueError):
+                pass
+        elif self._stderr_path is not None:
+            try:
+                with open(self._stderr_path, "rb") as f:
+                    # tail only: enough for the actual error, bounded size
+                    data = f.read()[-4096:]
+                stderr_text = data.decode(errors="replace").strip()
+            except OSError:
+                pass
+        elif self._proc.stderr is not None:
+            # pipe variant (libav backend): the process has exited, so a
+            # full read cannot block
+            try:
+                stderr_text = (self._proc.stderr.read() or b"").decode(
+                    errors="replace").strip()
+            except (OSError, ValueError):
+                pass
+        msg = ("Backend process (ffmpeg/avconv) exited with code %d before "
+               "the video was fully read -- the frames read so far are a "
+               "TRUNCATED result, not the whole video." % returncode)
+        if stderr_text:
+            msg += "\n\nBackend stderr output:\n" + stderr_text
+        raise RuntimeError(msg)
+
     def nextFrame(self):
         """Yields frames using a generator
 
@@ -575,12 +651,14 @@ class VideoReaderAbstract(object):
             while True:
                 frame = self._readFrame()
                 if len(frame) == 0:
+                    self._verify_clean_eof()
                     break
                 yield frame
         else:
             for i in range(self.inputframenum):
                 frame = self._readFrame()
                 if len(frame) == 0:
+                    self._verify_clean_eof()
                     break
                 yield frame
 
@@ -726,7 +804,9 @@ class VideoWriterAbstract(object):
                 elif C == 4:
                     self.inputdict["-pix_fmt"] = "rgba64" + suffix
                 else:
-                    raise NotImplemented
+                    raise ValueError(
+                        "unsupported channel count: %d (supported: 1-4); "
+                        "pass -pix_fmt in inputdict to override" % (C,))
             else:
                 if C == 1:
                     if self.NEED_RGB2GRAY_HACK:
@@ -742,7 +822,9 @@ class VideoWriterAbstract(object):
                 elif C == 4:
                     self.inputdict["-pix_fmt"] = "rgba"
                 else:
-                    raise NotImplemented
+                    raise ValueError(
+                        "unsupported channel count: %d (supported: 1-4); "
+                        "pass -pix_fmt in inputdict to override" % (C,))
 
         self.bpp = bpplut[self.inputdict["-pix_fmt"]][1]
         self.inputNumChannels = bpplut[self.inputdict["-pix_fmt"]][0]
@@ -834,10 +916,38 @@ class VideoWriterAbstract(object):
                 self.DEVNULL.close()
             return
         if self._proc.poll() is not None:
-            # Process already exited; release DEVNULL and drop the handle.
+            # Process already exited before close() (crash, kill, early
+            # ffmpeg failure). Apply the same integrity check as the
+            # normal path below (issue #111): a nonzero exit means the
+            # output file is corrupt/partial and must not pass silently.
+            returncode = self._proc.returncode
+            stderr_data = b""
+            if self._proc.stderr is not None:
+                try:
+                    stderr_data = self._proc.stderr.read() or b""
+                except (OSError, ValueError):
+                    pass
+            for pipe in (self._proc.stdin, self._proc.stdout,
+                         self._proc.stderr):
+                if pipe is not None and not pipe.closed:
+                    try:
+                        pipe.close()
+                    except OSError:
+                        # closing buffered stdin flushes into a dead
+                        # process (BrokenPipeError); the returncode below
+                        # is the meaningful signal, not this
+                        pass
+            if self._stdout_drain_thread is not None:
+                self._stdout_drain_thread.join(timeout=30)
+                self._stdout_drain_thread = None
             self._proc = None
             if self.DEVNULL is not None and not self.DEVNULL.closed:
                 self.DEVNULL.close()
+            if returncode != 0:
+                msg = "FFmpeg exited with code %d before close()" % returncode
+                if stderr_data:
+                    msg += ":\n" + stderr_data.decode(errors='replace')
+                raise RuntimeError(msg)
             return
 
         if self._dest_kind == "memory":

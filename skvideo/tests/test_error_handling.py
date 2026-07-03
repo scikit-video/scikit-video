@@ -196,8 +196,11 @@ def test_backend_missing_raises_runtimeerror_under_O():
     import sys
     code = (
         "import importlib\n"
+        "import skvideo\n"
         "m = importlib.import_module('skvideo.io.ffprobe')\n"
-        "m._HAS_FFMPEG = 0\n"   # simulate ffmpeg not installed
+        # simulate ffmpeg not installed; the io modules read this package
+        # attribute dynamically (the same knob setFFmpegPath flips)
+        "skvideo._HAS_FFMPEG = 0\n"
         "try:\n"
         "    m.ffprobe('whatever.mp4')\n"
         "    print('NORAISE')\n"
@@ -275,3 +278,44 @@ def test_start_frame_past_eof_emits_no_resourcewarning():
             skvideo.datasets.bigbuckbunny(), start_frame=99999, num_frames=2
         )
     assert v.shape[0] == 0
+
+
+def test_unknown_backend_raises_valueerror():
+    """vread/vreader/vwrite with a bogus backend name previously ended in
+    `raise NotImplemented` (the singleton -> TypeError). They must raise a
+    real, descriptive exception."""
+    import skvideo.datasets
+    import skvideo.io
+    with pytest.raises(ValueError, match="backend"):
+        skvideo.io.vread(skvideo.datasets.bigbuckbunny(), backend="bogus")
+    with pytest.raises(ValueError, match="backend"):
+        next(skvideo.io.vreader(skvideo.datasets.bigbuckbunny(), backend="bogus"))
+    with pytest.raises(ValueError, match="backend"):
+        skvideo.io.vwrite("_unused.mp4", np.zeros((1, 4, 4, 3), dtype=np.uint8),
+                          backend="bogus")
+
+
+def test_writer_rejects_unsupported_channel_count_with_real_exception():
+    """FFmpegWriter with a 5-channel frame previously hit
+    `raise NotImplemented` (TypeError). Must be a real exception naming
+    the problem."""
+    import os
+    import tempfile
+    import skvideo.io
+    if not skvideo._HAS_FFMPEG:
+        pytest.skip("FFmpeg required for this test.")
+    outfile = os.path.join(tempfile.gettempdir(), "skvideo_c5_test.mp4")
+    frame5 = np.zeros((1, 16, 16, 5), dtype=np.uint8)
+    frame5_16 = np.zeros((1, 16, 16, 5), dtype=np.uint16)
+    for data in (frame5, frame5_16):
+        writer = skvideo.io.FFmpegWriter(outfile)
+        try:
+            with pytest.raises(ValueError, match="channel"):
+                writer.writeFrame(data)
+        finally:
+            try:
+                writer.close()
+            except Exception:
+                pass
+    if os.path.exists(outfile):
+        os.remove(outfile)

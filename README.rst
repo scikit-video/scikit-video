@@ -13,7 +13,7 @@
 .. |PyPi| image:: https://badge.fury.io/py/scikit-video.svg
 .. _PyPi: https://badge.fury.io/py/scikit-video
 
-.. |PythonVersions| image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg
+.. |PythonVersions| image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
 .. _PythonVersions: https://pypi.org/project/scikit-video/
 
 .. |skvideologo| image:: doc/images/scikit-video.png
@@ -44,7 +44,6 @@ Requirements:
 - numpy >= 1.22
 - scipy >= 1.9
 - Pillow >= 9.0
-- opencv-python-headless >= 4.5 (required by ``skvideo.measure``)
 - mediainfo (optional)
 
 Installation from PyPI::
@@ -76,33 +75,30 @@ Then check that ``skvideo`` resolves to the expected location::
     print(skvideo.__file__)
 
 
-What's new in 1.1.15
---------------------
+What's new in 1.2
+-----------------
 
-scikit-video is actively maintained again. The 1.1.12–1.1.15 line modernizes
-the package for current Python (3.10–3.13), NumPy 2.x, and SciPy, with **no
-breaking API changes**; code that worked with 1.1.11 should continue to work
-unchanged. Highlights:
+scikit-video is actively maintained again.
 
-- **Correctness completion (1.1.15).** Remaining user-facing ``assert``
-  validation now raises real exceptions (so it survives ``python -O``);
-  ``ssim`` rejects sub-window-size frames instead of returning ``NaN``; last
-  Python-2 ``xrange`` removed.
-- **Non-local I/O (1.1.14).** ``vread`` / ``vreader`` / ``vwrite`` and the
-  ``FFmpegReader`` / ``FFmpegWriter`` constructors now accept file paths, URL
-  strings (``http://``, ``https://``, ``rtsp://``, ...), and file-like objects
-  (``io.BytesIO``) interchangeably (issues #117, #113, #81). A ``UserWarning``
-  is emitted if a URL scheme isn't compiled into the local FFmpeg build.
-- **Python-3 correctness pass.** Fixed several public functions that crashed on
-  modern Python (e.g. ``measure.Li3DDCT_features``, ``utils.canny``,
-  ``motion.globalEdgeMotion``, ``from skvideo import *``), replaced
-  ``assert``-based input validation with real exceptions (so it survives
-  ``python -O``), and made probe failures warn instead of silently returning
-  empty metadata.
-- **Earlier in the 1.1.12–1.1.13 line:** ``pyproject.toml`` packaging (restores
-  ``pip install`` on modern Python/NumPy), ``pathlib.Path`` support everywhere,
-  audio passthrough (``audiosrc=``) and multi-stream ``ffprobe`` in the writer,
-  repeated-flag dict values, and a windowed-read ``start_frame`` argument.
+- **Metric accuracy overhaul (1.2.0).** The NIQE, BRISQUE, VIIDEO, and
+  Video-BLIINDS implementations were validated against their reference
+  MATLAB implementations and fixed where they diverged (reference NIQE
+  model, antialiased half-scale resize, faithful VIIDEO port, motion
+  tie-breaking). **Breaking: these four metrics return different --
+  more accurate -- values than 1.1.x.** Scores and features are not
+  comparable across the 1.1.x/1.2.x boundary. Function signatures are
+  unchanged. MSE/PSNR/SSIM/MS-SSIM and ST-RRED were validated as already
+  correct and are unchanged.
+- **Maintenance (1.2.1).** NumPy 2.5 compatibility (``linalg.eig`` now
+  always returns complex; symmetric eigendecompositions use ``eigh``),
+  the unused ``opencv-python-headless`` dependency removed, FFmpeg
+  version/binary detection fixes, and clearer errors on bad ``backend=``
+  names and unsupported channel counts.
+- **The 1.1.12–1.1.15 line** modernized the package for current Python
+  (3.10+), NumPy 2.x, and SciPy with no breaking API changes: modern
+  ``pyproject.toml`` packaging, non-local I/O (URLs and file-like
+  objects), ``pathlib.Path`` support, audio passthrough (``audiosrc=``),
+  a Python-3 correctness pass, and exception-based input validation.
 
 See ``CHANGELOG.rst`` for the complete per-version history.
 

@@ -30,7 +30,14 @@ You may be using an old version of scikit-video. Uninstall it using
 .. code-block:: console
 
     $ python -m pip uninstall sk-video scikit-video
-    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.1.12.tar.gz
+    $ python -m pip install scikit-video
+
+If PyPI does not yet carry the latest release, install the newest tag from
+GitHub instead (see https://github.com/scikit-video/scikit-video/releases):
+
+.. code-block:: console
+
+    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.2.1.tar.gz
 
 You can verify the module path by importing skvideo and printing the path to the init file
 
