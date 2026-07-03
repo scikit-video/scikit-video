@@ -45,7 +45,10 @@ def motion_feature_extraction(frames):
             [upper_left[y, x], off_diag[y, x]],
             [off_diag[y, x], lower_right[y, x]],
           ])
-          w, _ = np.linalg.eig(mat)
+          # eigh, not eig: mat is symmetric, and numpy >= 2.5 makes eig always
+          # return complex arrays (ComplexWarning per block on assignment).
+          # The coherence formula below is invariant to eigenvalue order.
+          w = np.linalg.eigvalsh(mat)
           Eigens[i, y, x] = w
 
     num = (Eigens[:, :, :, 0] - Eigens[:, :, :, 1])**2

@@ -284,7 +284,9 @@ class Steerable:
                 N = 10 - pyr_h
 
                 #force positive semi-definite
-                eigval, eigvec = np.linalg.eig(cov_mat)
+                #eigh, not eig: cov_mat is symmetric, and numpy >= 2.5 makes eig
+                #always return complex arrays, which would poison cov_mat downstream
+                eigval, eigvec = np.linalg.eigh(cov_mat)
                 Q = eigvec
                 xdiag = np.diag(np.maximum(eigval, 0))
                 cov_mat = Q @ xdiag @ Q.T
