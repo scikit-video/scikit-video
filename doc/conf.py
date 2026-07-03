@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# scikit-example documentation build configuration file, created by
+# scikit-video documentation build configuration file, created by
 # sphinx-quickstart on Thu May  9 17:07:16 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -203,8 +203,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'scikit-example.tex', u'scikit-example Documentation',
-   u'Your Name', 'manual'),
+  ('index', 'scikit-video.tex', u'scikit-video Documentation',
+   u'scikit-video developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -233,8 +233,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'scikit-example', u'scikit-example Documentation',
-     [u'Your Name'], 1)
+    ('index', 'scikit-video', u'scikit-video Documentation',
+     [u'scikit-video developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -247,8 +247,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'scikit-example', u'scikit-example Documentation',
-   u'Your Name', 'scikit-example', 'One line description of project.',
+  ('index', 'scikit-video', u'scikit-video Documentation',
+   u'scikit-video developers', 'scikit-video',
+   'Video processing in Python.',
    'Miscellaneous'),
 ]
 
