@@ -38,13 +38,14 @@ def test_FFmpeg_paths():
 
 @unittest.skipIf(not skvideo._HAS_FFMPEG, "FFmpeg required for this test.")
 def test_getFFmpegVersion_is_clean_string():
-    """getFFmpegVersion must return a real dotted version string (or an
-    N-prefixed git-build string), never a repr of bytes like "b'8'.b'1'"."""
+    """getFFmpegVersion must return a real version string (or an N-prefixed
+    git-build string), never a repr of bytes like "b'8'.b'1'". Components
+    may carry distro suffixes (Ubuntu ships e.g. '6.1.1-3ubuntu5'), so only
+    the leading digit is required, not fully-numeric parts."""
     version = skvideo.getFFmpegVersion()
     assert "b'" not in version, "bytes leaked into version string: %r" % version
-    if not version.startswith("N"):
-        for part in version.split("."):
-            assert part.isdigit(), "non-numeric version component in %r" % version
+    assert version.startswith("N") or version[0].isdigit(), (
+        "unexpected version format: %r" % version)
 
 
 def test_HAS_MEDIAINFO_matches_actual_binary():
