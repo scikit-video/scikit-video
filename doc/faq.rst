@@ -40,7 +40,7 @@ GitHub instead (see https://github.com/scikit-video/scikit-video/releases):
 
 .. code-block:: console
 
-    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.2.1.tar.gz
+    $ python -m pip install https://github.com/scikit-video/scikit-video/archive/refs/tags/v1.3.0.tar.gz
 
 You can verify the module path by importing skvideo and printing the path to the init file
 

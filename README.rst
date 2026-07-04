@@ -74,10 +74,18 @@ Then check that ``skvideo`` resolves to the expected location::
     print(skvideo.__file__)
 
 
-What's new in 1.2
------------------
+What's new
+----------
 
 scikit-video is actively maintained again.
+
+- **Deprecations and cleanup (1.3.0).** The libav/avconv backend,
+  ``mprobe``/mediainfo, and the hardcoded container-extension allowlist
+  are deprecated (``DeprecationWarning``; removal planned for 1.4.0) --
+  unknown extensions now warn and defer to ffmpeg instead of raising.
+  Binaries are resolved only from absolute PATH entries (never the
+  CWD). Roughly 1,000 lines of dead, vendored, and Python-2-era code
+  removed, with a pyflakes lint gate in CI keeping it that way.
 
 - **Metric accuracy overhaul (1.2.0).** The NIQE, BRISQUE, VIIDEO, and
   Video-BLIINDS implementations were validated against their reference
