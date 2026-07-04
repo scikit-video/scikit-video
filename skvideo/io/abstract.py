@@ -10,7 +10,7 @@ import numpy as np
 
 import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _warn_if_unsupported_protocol
-from ..utils import *
+from ..utils import bpplut, vshape
 
 
 # Matches URL schemes ffmpeg supports for input/output (http, https, rtsp, rtmp,

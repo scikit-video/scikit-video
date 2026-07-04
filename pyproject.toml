@@ -71,8 +71,3 @@ testpaths = ["skvideo/tests"]
 # current-generation implementation of the same checks). Style rules
 # are intentionally NOT enforced on this legacy-formatted codebase.
 select = ["F"]
-
-[tool.ruff.lint.per-file-ignores]
-# The io modules re-export via `from ..utils import *` (historical
-# public-API surface); F403/F405 flag the mechanism itself.
-"skvideo/**" = ["F403", "F405"]

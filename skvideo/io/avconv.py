@@ -16,7 +16,7 @@ from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .avprobe import avprobe
 from .. import _AVCONV_APPLICATION
 import skvideo  # accessed via attributes so setLibAVPath() updates are seen
-from ..utils import *
+from ..utils import check_output
 
 
 # uses libav to read the given file with parameters

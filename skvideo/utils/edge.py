@@ -7,7 +7,6 @@ import numpy as np
 import scipy.ndimage
 import scipy.spatial
 
-from ..utils import *
 
 def gauss_window(lw, sigma):
     sd = float(sigma)

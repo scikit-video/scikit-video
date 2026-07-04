@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils import *
+from ..utils import rgb2gray, vshape
 
 
 def _costMAD(block1, block2):

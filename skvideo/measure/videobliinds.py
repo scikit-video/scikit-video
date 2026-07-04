@@ -8,7 +8,8 @@ import scipy.ndimage
 import scipy.stats
 
 from ..motion import blockMotion
-from ..utils import *
+from ..utils import (aggd_features, compute_image_mscn_transform,
+                     gen_gauss_window, paired_product, vshape)
 from ..utils.image import imresize
 
 

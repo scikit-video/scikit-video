@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage
 import scipy.special
 
-from ..utils import *
+from ..utils import vshape
 
 # VIIDEO's own AGGD shape grid (estimateaggdparam.m: gam = 0.2:0.01:5).
 # NOTE: this is deliberately NOT skvideo's shared aggd_features grid

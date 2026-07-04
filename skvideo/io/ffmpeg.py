@@ -16,7 +16,7 @@ from .abstract import VideoReaderAbstract, VideoWriterAbstract
 from .ffprobe import ffprobe
 import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _FFMPEG_APPLICATION
-from ..utils import *
+from ..utils import check_output
 
 
 # uses FFmpeg to read the given file with parameters

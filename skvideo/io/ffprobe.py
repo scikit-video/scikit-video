@@ -1,7 +1,7 @@
 import os
 import warnings
 
-from ..utils import *
+from ..utils import check_output, xmltodictparser
 import skvideo  # accessed via attributes so setFFmpegPath() updates are seen
 from .. import _FFPROBE_APPLICATION
 

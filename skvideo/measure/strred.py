@@ -1,4 +1,4 @@
-from ..utils import *
+from ..utils import SpatialSteerablePyramid, vshape
 import numpy as np
 import scipy.ndimage
 import scipy.linalg
