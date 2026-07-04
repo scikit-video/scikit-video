@@ -1,5 +1,5 @@
-Unreleased
-----------
+1.3.0 (2026-07-04)
+------------------
 
 Internal cleanup (no intended behavior change; all pinned metric
 values verified unchanged)
@@ -23,7 +23,7 @@ values verified unchanged)
 - CI gained a ruff lint gate (pyflakes rules), closing the 2020
   request for flake8 in CI (#136).
 
-Deprecations (removal planned for the release after next)
+Deprecations (removal planned for 1.4.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **The libav/avconv backend is deprecated** (``LibAVReader``,
