@@ -1,4 +1,4 @@
-from ..utils import *
+from ..utils import gen_gauss_window, vshape
 import numpy as np
 import scipy.ndimage
 

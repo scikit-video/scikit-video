@@ -2,17 +2,11 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 
 from numpy.testing import assert_equal, assert_almost_equal, assert_allclose
-import os
-import sys
 import numpy as np
 import skvideo.io
 import skvideo.datasets
 import skvideo.measure
 
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 def test_measure_STRRED():
     # ST-RRED's per-frame entropy step involves a matrix inverse whose result

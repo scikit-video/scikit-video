@@ -202,7 +202,7 @@ class TestMultiValueMetadata:
     ):
         """Spec: "When a list, each element produces a separate --flag value pair on the ffmpeg command line, in list order." """
         output = tmp_path / "metadata_list.mp4"
-        info = _write_small_mp4(
+        _write_small_mp4(
             skvideo_modules,
             output,
             short_rgb_frames[:3],
@@ -215,13 +215,13 @@ class TestMultiValueMetadata:
         self, skvideo_modules, short_rgb_frames, tmp_path
     ):
         """Spec: "A single-element list outputdict={'-metadata': ['title=foo']} produces the same result as the string form 'title=foo'." """
-        list_info = _write_small_mp4(
+        _write_small_mp4(
             skvideo_modules,
             tmp_path / "metadata_list_single.mp4",
             short_rgb_frames[:3],
             outputdict={"-metadata": ["title=foo"]},
         )
-        string_info = _write_small_mp4(
+        _write_small_mp4(
             skvideo_modules,
             tmp_path / "metadata_string_single.mp4",
             short_rgb_frames[:3],

@@ -1,6 +1,28 @@
 Unreleased
 ----------
 
+Internal cleanup (no intended behavior change; all pinned metric
+values verified unchanged)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Removed ~900 lines of dead or vendored code: the ``Steerable``
+  pyramid class (uncallable since it was added -- it referenced a
+  ``dgemm`` that was never imported), the vendored 2012
+  ``xmltodict.py`` (replaced by a 35-line stdlib ElementTree parser,
+  output verified deep-equal on real ffprobe/mediainfo XML), Python-2
+  compatibility shims, a commented-out format scanner, unused imports
+  and dead local assignments throughout.
+- All ``from ... import *`` star-imports inside the package replaced
+  with explicit imports; the package ``__init__`` modules now import
+  exactly their ``__all__``. **Namespace note:** incidental names that
+  leaked through the star-imports (e.g. ``skvideo.io.np``,
+  ``skvideo.measure.scipy``, ``skvideo.motion.vshape``) are no longer
+  present; every documented/``__all__`` name is unchanged.
+  ``skvideo.measure.ssim_full`` (previously reachable only via the
+  leak) is now explicit public API.
+- CI gained a ruff lint gate (pyflakes rules), closing the 2020
+  request for flake8 in CI (#136).
+
 Deprecations (removal planned for the release after next)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

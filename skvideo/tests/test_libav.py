@@ -8,10 +8,7 @@ import skvideo
 import skvideo.datasets
 import skvideo.io
 
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 @unittest.skipIf(not skvideo._HAS_AVCONV, "LibAV required for this test.")

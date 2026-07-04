@@ -8,7 +8,8 @@ import scipy.ndimage
 import scipy.stats
 
 from ..motion import blockMotion
-from ..utils import *
+from ..utils import (aggd_features, compute_image_mscn_transform,
+                     gen_gauss_window, paired_product, vshape)
 from ..utils.image import imresize
 
 
@@ -189,9 +190,6 @@ def compute_niqe_features(frames):
 def temporal_dc_variation_feature_extraction(frames):
     frames = frames.astype(np.float32)
     mblock=16
-    mbsize=16
-    ih = int(frames.shape[1]/mbsize)*mbsize
-    iw = int(frames.shape[2]/mbsize)*mbsize
     # step 1: motion vector calculation
     motion_vectors = blockMotion(frames, method='N3SS', mbSize=mblock, p=7)
     # step 2: compensated temporal dct differences.

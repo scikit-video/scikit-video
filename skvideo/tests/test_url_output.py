@@ -6,7 +6,6 @@ infrastructure is heavier than v1.1.14 needs. The wrapper's actual guarantee
 is narrower: "don't block construction on the URL string." That's what these
 tests verify.
 """
-import io as _io
 
 import pytest
 

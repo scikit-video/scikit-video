@@ -1,7 +1,6 @@
-import subprocess as sp
 import warnings
 
-from ..utils import *
+from ..utils import check_output
 import skvideo  # accessed via attributes so setLibAVPath() updates are seen
 from .. import _AVPROBE_APPLICATION
 import json

@@ -11,7 +11,7 @@ import pytest
 # test read twice
 def test_vread2x():
     for i in range(2):
-        videodata = skvideo.io.vread(skvideo.datasets.bigbuckbunny())
+        skvideo.io.vread(skvideo.datasets.bigbuckbunny())
 
 
 def test_vread():

@@ -1,7 +1,6 @@
-import subprocess as sp
 import warnings
 
-from ..utils import *
+from ..utils import check_output, xmltodictparser
 from .. import _HAS_MEDIAINFO
 from .. import _MEDIAINFO_APPLICATION
 

@@ -9,7 +9,7 @@ from .avconv import LibAVWriter
 from .ffmpeg import FFmpegReader
 from .ffmpeg import FFmpegWriter
 import skvideo  # accessed via attributes so set*Path() updates are seen
-from ..utils import *
+from ..utils import vshape
 
 
 def _normalize_source(fname):

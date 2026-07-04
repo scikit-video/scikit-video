@@ -43,7 +43,6 @@ def test_close_raises_when_process_died_before_close(tmp_path):
     OOM-kill), close() previously returned silently -- the caller got a
     corrupt/partial file with no error. The already-exited branch must
     apply the same nonzero-exit check as the normal path (issue #111)."""
-    import time
     out_path = tmp_path / "out.mp4"
     writer = skvideo.io.FFmpegWriter(str(out_path))
     writer.writeFrame(np.zeros((64, 64, 3), dtype=np.uint8))

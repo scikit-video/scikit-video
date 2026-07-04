@@ -4,11 +4,9 @@ Implementation of edge-detection routines.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
 
-from ..utils import *
 
 def gauss_window(lw, sigma):
     sd = float(sigma)

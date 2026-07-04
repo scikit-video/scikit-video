@@ -4,8 +4,8 @@
 import os
 import platform
 import itertools
-from .xmltodict import parse as xmltodictparser
 import subprocess as sp
+import xml.etree.ElementTree as _ET
 from .edge import canny
 from .stpyr import SpatialSteerablePyramid, rolling_window
 from .mscn import compute_image_mscn_transform, gen_gauss_window
@@ -188,48 +188,53 @@ bpplut["videotoolbox_vld"] = [0, 0]
 
 
 
-# python2 only
-binary_type = str
+def _element_to_dict(elem):
+    """Map one XML element to the xmltodict shape: attributes become
+    ``@name`` keys, repeated child tags become lists, meaningful text
+    becomes ``#text`` (or the value itself when there is nothing else),
+    and a fully empty element is None."""
+    d = {}
+    for name, value in elem.attrib.items():
+        d["@" + name] = value
+    for child in elem:
+        mapped = _element_to_dict(child)
+        if child.tag in d:
+            existing = d[child.tag]
+            if isinstance(existing, list):
+                existing.append(mapped)
+            else:
+                d[child.tag] = [existing, mapped]
+        else:
+            d[child.tag] = mapped
+    text = (elem.text or "").strip()
+    if text:
+        if d:
+            d["#text"] = text
+        else:
+            return text
+    return d or None
 
-def check_dict(dic, key, valueifnot):
-    if key not in dic:
-        dic[key] = valueifnot
+
+def xmltodictparser(xml):
+    """Parse an XML document (bytes or str) into nested dicts.
+
+    Drop-in replacement for the previously vendored xmltodict.parse for
+    the subset of XML that ffprobe and mediainfo emit -- same key shape
+    (``@attr`` / ``#text`` / repeated-tag lists), implemented on the
+    stdlib ElementTree instead of a 400-line vendored module.
+    """
+    root = _ET.fromstring(xml)
+    return {root.tag: _element_to_dict(root)}
 
 
-# patch for python 2.6
 def check_output(*popenargs, **kwargs):
-    closeNULL = 0
-    try:
-        from subprocess import DEVNULL
-        closeNULL = 0
-    except ImportError:
-        import os
-        DEVNULL = open(os.devnull, 'wb')
-        closeNULL = 1
+    """subprocess.check_output with stderr suppressed.
 
-    process = sp.Popen(stdout=sp.PIPE, stderr=DEVNULL, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-
-    if closeNULL:
-        DEVNULL.close()
-
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        error = sp.CalledProcessError(retcode, cmd)
-        error.output = output
-        raise error
-    return output
-
-try:
-    # on py27 make map/filter behave like an iterator
-    map = itertools.imap
-    filter = itertools.ifilter
-except AttributeError:
-    # py3+
-    pass
+    Callers (scan_ffmpeg, ffprobe, ...) want the tool's stdout and treat
+    a nonzero exit as CalledProcessError; the tool's own stderr chatter
+    must not leak to the host process's console.
+    """
+    return sp.check_output(*popenargs, stderr=sp.DEVNULL, **kwargs)
 
 
 def where( filename ):

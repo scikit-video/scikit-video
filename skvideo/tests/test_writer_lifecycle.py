@@ -1,5 +1,4 @@
 """Tests for FFmpegWriter lifecycle edge cases (issue #139)."""
-import pytest
 
 import skvideo.io
 

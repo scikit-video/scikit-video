@@ -4,11 +4,10 @@ Implementation of global motion estimators.
 """
 
 import numpy as np
-import os
 import scipy.ndimage
 import scipy.spatial
 
-from ..utils import *
+from ..utils import canny, rgb2gray, vshape
 
 
 def _hausdorff_distance(E_1, E_2):

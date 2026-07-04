@@ -1,4 +1,5 @@
-from ..utils import *
+from ..utils import (aggd_features, compute_image_mscn_transform,
+                     paired_product, vshape)
 from ..utils.image import imresize
 
 import numpy as np

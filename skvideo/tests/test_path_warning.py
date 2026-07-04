@@ -1,7 +1,6 @@
 """Tests for FFmpeg/LibAV not-found warning message clarity (issue #159)."""
 import warnings
 
-import pytest
 
 import skvideo
 

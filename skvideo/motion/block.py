@@ -1,8 +1,6 @@
 import numpy as np
-import os
-import time
 
-from ..utils import *
+from ..utils import rgb2gray, vshape
 
 
 def _costMAD(block1, block2):
@@ -66,8 +64,6 @@ def _DS(imgP, imgI, mbSize, p):
 
     vectors = np.zeros((int(h / mbSize), int(w / mbSize), 2))
     costs = np.ones((9))*65537
-
-    L = np.floor(np.log2(p + 1))
 
     LDSP = []
     LDSP.append([0, -2])
@@ -480,7 +476,6 @@ def _SE3SS(imgP, imgI, mbSize, p):
                         computations += 1
 
                 dxy = np.argmin(costs) + 1
-                cost = costs[dxy - 1]
 
                 if dxy == 2:
                     x = refBlkHorPointB

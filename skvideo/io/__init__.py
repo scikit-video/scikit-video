@@ -3,12 +3,12 @@
 """
 
 
-from .avconv import *
-from .avprobe import *
-from .ffmpeg import *
-from .ffprobe import *
-from .io import *
-from .mprobe import *
+from .avconv import LibAVReader, LibAVWriter
+from .avprobe import avprobe
+from .ffmpeg import FFmpegReader, FFmpegWriter
+from .ffprobe import ffprobe
+from .io import vread, vreader, vwrite
+from .mprobe import mprobe
 
 __all__ = [
     'vread',

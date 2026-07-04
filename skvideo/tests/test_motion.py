@@ -1,6 +1,4 @@
 from numpy.testing import assert_equal, assert_almost_equal
-import os
-import sys
 import numpy as np
 import skvideo.io
 import skvideo.motion

@@ -1,5 +1,4 @@
 """Tests for verbosity mode behavior (issue #174)."""
-import subprocess
 
 import skvideo.io
 import skvideo.datasets

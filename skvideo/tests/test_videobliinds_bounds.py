@@ -1,6 +1,5 @@
 """Tests for videobliinds out-of-bounds motion vector handling (issue #97)."""
 import numpy as np
-import pytest
 
 import skvideo.measure.videobliinds as vb
 

@@ -8,7 +8,7 @@ import scipy.ndimage
 import scipy.spatial
 
 from ..motion.gme import globalEdgeMotion
-from ..utils import *
+from ..utils import canny, rgb2gray, vshape
 
 
 def _percentage_distance(canny_in, canny_out, r):
