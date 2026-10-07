@@ -11,6 +11,7 @@ Follow any of the below links to see scikit-video in action.
 - :ref:`ioexampleimages`
 - :ref:`ioexamplevideo`
 - :ref:`sceneexample`
+- :ref:`foregroundexample`
 - :ref:`motionexample`
 - :ref:`didacticexample`
 
